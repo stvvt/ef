@@ -18,6 +18,9 @@
  * @link
  * @since      v 0.1
  */
+
+require_once(EF_EF_PATH . "/core/Loader.class.php");
+
 class core_Cls
 {
     
@@ -84,7 +87,21 @@ class core_Cls
      */
     function load($className, $silent = FALSE, $suffix = ".class.php")
     {
-        $fullClassName = cls::getClassName($className);
+        $parsed = Loader::parseClassName($className);
+        
+//        if (!empty($parsed['ns']) && Loader::createClassAliasNs($parsed['realClassName'], $parsed['ns'])) {
+        if (!empty($parsed['ns'])) {
+        	if (class_exists($parsed['realClassName'], FALSE)) {
+        		if ( !@class_alias($parsed['realClassName'], $className) ) {
+					eval("namespace {$parsed['ns']}; class {$parsed['realClassName']} extends \\{$parsed['realClassName']} {}");
+				}
+				
+        		return;
+        	}
+        }
+        
+        
+        $fullClassName = core_Cls::getClassName($parsed['realClassName']);
 
         if($fullClassName === FALSE) {
             
@@ -96,14 +113,19 @@ class core_Cls
 
         }
         
-        // Проверяваме дали класа вече не съществува, и ако е така не правим нищо
-        if (class_exists($fullClassName, FALSE)) {
-            
-            return TRUE;
+        $fcn = $fullClassName;
+        if (!empty($parsed['ns'])) {
+        	$fcn = "{$parsed['ns']}\\{$fcn}";
         }
         
+        // Проверяваме дали класа вече не съществува, и ако е така не правим нищо
+//        if (class_exists($className, FALSE)) {
+//            
+//            return TRUE;
+//        }
+        
         // Проверяваме дали името на класа съдържа само допустими символи
-        if (!preg_match("/^[a-z0-9_]+$/i", $fullClassName)) {
+        if (!preg_match("/^[\\a-z0-9_]+$/i", $fullClassName)) {
             
             if (!$silent) {
                 error("Некоректно име на клас", "'{$className}'");
@@ -113,38 +135,49 @@ class core_Cls
         }
         
         // Определяме името на файла, в който трябва да се намира класа
-        $fileName = str_replace('_', '/', $fullClassName) . $suffix;
+//        $fileName = str_replace('_', '/', $fullClassName) . $suffix;
         
-        // Определяме пълния път до файла, където трябва да се намира класа
-        $filePath = getFullPath($fileName);
+		// Определяме пълния път до файла, където трябва да се намира класа
+        $filePath = getFullPath($parsed['classFile']);
         
         // Връщаме грешка, ако файлът не съществува или не може да се чете
         if (!$filePath) {
-            
+        	
             if (!$silent) {
-                error("Файлът с кода на класа не съществува или не е четим", $fileName);
+                error("Файлът с кода на класа не съществува или не е четим", $parsed['classFile']);
             }
             
             return FALSE;
         }
 
-        // Включваме файла
-        if(!include_once($filePath)) {
-            error("Не може да бъде парсиран файла", "'{$className}'  in '{$fileName}'");
-        }
+        if (!empty($parsed['ns'])) {
+			Loader::loadNs($filePath, $parsed['ns'], $parsed['realClassName']);
+		} else {
+	        // Включваме файла
+	        if(!include_once($filePath)) {
+	            error("Не може да бъде парсиран файла", "'{$parsed['className']}'  in '{$parsed['fileName']}'");
+	        }
+		}
         
         // Проверяваме дали включения файл съдържа търсения клас
-        if (!class_exists($fullClassName, FALSE)) {
+        if (!class_exists($fcn, FALSE)) {
             
-            if (!$silent) {
-                error("Не може да се намери класа в посочения файл", "'{$className}'  in '{$fileName}'");
+        	if (!$silent) {
+                error("Не може да се намери класа в посочения файл", "'{$parsed['className']}'  in '{$parsed['fileName']}'");
             }
             
             return FALSE;
         }
 
+		if ($parsed['className'] != $parsed['realClassName']) {
+			$ns = '';
+			if (!empty($parsed['ns'])) {
+				$ns = $parsed['ns'] . '\\';
+			}
+			class_alias("{$ns}{$parsed['realClassName']}", "{$ns}{$parsed['className']}");
+		}
         
-        return TRUE;
+		return TRUE;
     }
     
     

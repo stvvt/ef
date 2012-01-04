@@ -23,7 +23,6 @@
  *                                                                                          *
  ********************************************************************************************/
 
-
 /**
  * Осигурява автоматичното зареждане на класовете
  */
@@ -42,12 +41,19 @@ function __autoload($className)
         'users' => 'core_Users',
     );
     
+//    echo '<h3 style="color: blue;">In `' . __NAMESPACE__ . '` - ' . $fullName . ' - ' . $className . '</h3>';
+    
+    cls::load($className);
+    
+    /*
     if( $fullName = $aliases[strtolower($className)] ) {
         cls::load($fullName);
         class_alias($fullName, $className);
     } else {
-        cls::load($className, TRUE);
+        cls::load($className, FALSE);
     }
+    */
+
 }
 
 
@@ -716,6 +722,29 @@ if (!function_exists('class_alias')) {
 
 // Зареждаме 'CLS' класа за работа с класове
 require_once(EF_EF_PATH . "/core/Cls.class.php");
+
+Loader::classAlias(
+	array(
+		'arr' => 'core_Array',
+        'dt' => 'core_DateTime',
+        'ht' => 'core_Html',
+        'et' => 'core_ET',
+        'ET' => 'core_ET',
+        'str' => 'core_String',
+        'debug' => 'core_Debug',
+        'DEBUG' => 'core_Debug',
+        'mode' => 'core_Mode',
+        'Mode' => 'core_Mode',
+        'redirect' => 'core_Redirect',
+        'request' => 'core_Request',
+        'Request' => 'core_Request',
+        'url' => 'core_Url',
+        'Url' => 'core_Url',
+        'users' => 'core_Users',
+        'Users' => 'core_Users',
+        'cls' => 'core_Cls',
+    )
+);
 
 /********************************************************************************************
  *                                                                                          *
