@@ -791,20 +791,17 @@ if (!defined('EF_APP_NAME')) {
         halt('Error: Unable to determinate application name (EF_APP_NAME)</b>');
     }
     
-    
     /**
      *  @todo Чака за документация...
      */
     defIfNot('EF_APP_NAME', $_GET['App']);
-    
-    
+
     /**
      * Дали името на приложението е зададено фиксирано
      */
     DEFINE('EF_APP_NAME_FIXED', FALSE);
 } else {
-    
-    
+
     /**
      *  @todo Чака за документация...
      */
@@ -848,8 +845,8 @@ ini_set("display_startup_errors", isDebug());
  * Времева зона
  */
 defIfNot('EF_TIMEZONE', function_exists("date_default_timezone_get") ?
-date_default_timezone_get() :
-'Europe/Sofia');
+date_default_timezone_get() : 'Europe/Sofia');
+
 // Сетваме времевата зона
 date_default_timezone_set(EF_TIMEZONE);
 
@@ -858,6 +855,7 @@ mb_internal_encoding("UTF-8");
 
 // Локал за функции като basename
 setlocale(LC_ALL, 'en_US.UTF8');
+
 
 /**
  * Директорията с външни пакети
@@ -930,22 +928,16 @@ $Plugins =& cls::get('core_Plugins');
 
 // Задаваме стойности по подразбиране на обкръжението
 if (!Mode::is('screenMode')) {
-    
     Mode::set('screenMode', core_Browser::detectMobile() ? 'narrow' : 'wide');
 }
 
 // Генерираме съдържанието
 $content = Request::forward();
 
-if (!Mode::is('wrapper')) {
-    Mode::set('wrapper', Mode::is('printing') ? 'tpl_PrintPage' : 'tpl_DefaultPage');
-}
+// Зарежда опаковката
+$Wrapper = cls::get('tpl_Wrapper');
 
-// Зареждаме опаковката
-$wrapper = cls::get(Mode::get('wrapper'));
-
-// Изпращаме на изхода опаковано съдържанието
-$wrapper->output($content, 'PAGE_CONTENT');
+$Wrapper->renderWrapping($content);
 
 exit; // Край на работата на скрипта
 
