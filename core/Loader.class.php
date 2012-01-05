@@ -27,9 +27,15 @@ class Loader
 	 * @param string $class име на клас
 	 * @param string $path директория
 	 */
-	public static function map($class, $path)
+	public static function map($class, $path = NULL)
 	{
-		static::$classMap[$class] = $path;
+		if (isset($path)) {
+			static::$classMap[$class] = $path;
+		} else {
+			$path = static::$classMap[$class];
+		}
+		
+		return $path;
 	}
 	
 	
@@ -57,7 +63,7 @@ class Loader
 	 */
 	public static function createClassAliasNs($class, $ns)
 	{
-		if (!class_exists("{$class}", FALSE)) {
+		if (!class_exists($class, FALSE)) {
 			return FALSE;
 		}
 		if (class_exists("{$ns}\\{$class}", FALSE)) {
@@ -182,11 +188,11 @@ class Loader
 		list($parentName, $classOwnName) = static::classOwnName($realClassName);
 		
 		if (empty($path)) {
-			if (!empty(static::$classMap[$realClassName])) {
-				$path = static::$classMap[$realClassName];
-			} else {
-				$path = str_replace('_', '/', $parentName);
-			}				
+			$path = static::map($realClassName);
+		}
+		
+		if (empty($path)) {
+			$path = str_replace('_', '/', $parentName);
 		}
 		
 		$classFile = $path . '/' . $classOwnName . '.class.php';

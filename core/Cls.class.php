@@ -93,15 +93,23 @@ class core_Cls
     	
     	$parsed = Loader::parseClassName($className);
     	
-//        if (!empty($parsed['ns']) && Loader::createClassAliasNs($parsed['realClassName'], $parsed['ns'])) {
         if (!empty($parsed['ns'])) {
-        	if (class_exists($parsed['realClassName'], FALSE)) {
-        		if ( !@class_alias($parsed['realClassName'], $className) ) {
-					eval("namespace {$parsed['ns']}; class {$parsed['realClassName']} extends \\{$parsed['realClassName']} {}");
+       		if (!class_exists($parsed['realClassName'], FALSE) && !Loader::map($parsed['realClassName'])) {
+       			self::load($parsed['realClassName']);
+       		}
+        		
+       		if (Loader::createClassAliasNs($parsed['realClassName'], $parsed['ns'])) {
+	
+				if ($parsed['className'] != $parsed['realClassName']) {
+					$ns = '';
+					if (!empty($parsed['ns'])) {
+						$ns = $parsed['ns'] . '\\';
+					}
+					class_alias("{$ns}{$parsed['realClassName']}", "{$ns}{$parsed['className']}");
 				}
-				
+	        	
         		return;
-        	}
+       		}
         }
         
         
