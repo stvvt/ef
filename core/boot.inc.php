@@ -41,7 +41,6 @@ function __autoload($className)
         'users' => 'core_Users',
     );
     
-//    echo '<h3 style="color: blue;">In `' . __NAMESPACE__ . '` - ' . $fullName . ' - ' . $className . '</h3>';
     
     cls::load($className);
     
@@ -733,9 +732,11 @@ Loader::classAlias(
         'str' => 'core_String',
         'debug' => 'core_Debug',
         'DEBUG' => 'core_Debug',
+        'Debug' => 'core_Debug',
         'mode' => 'core_Mode',
         'Mode' => 'core_Mode',
         'redirect' => 'core_Redirect',
+        'Redirect' => 'core_Redirect',
         'request' => 'core_Request',
         'Request' => 'core_Request',
         'url' => 'core_Url',

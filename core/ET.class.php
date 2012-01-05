@@ -80,7 +80,7 @@ class core_ET extends core_BaseClass
     /**
      * Конструктор на шаблона
      */
-    function core_ET($content = "")
+    function __construct($content = "")
     {
         if (is_a($content, 'core_ET') || is_a($content, 'ET')) {
             $this->content = $content->content;
@@ -113,6 +113,10 @@ class core_ET extends core_BaseClass
                 $this->replace($args[$i], $i);
             }
         }
+    }
+    
+    function core_ET($content = "") {
+    	$this->__construct($content);
     }
     
     

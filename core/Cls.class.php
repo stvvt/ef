@@ -87,8 +87,12 @@ class core_Cls
      */
     function load($className, $silent = FALSE, $suffix = ".class.php")
     {
-        $parsed = Loader::parseClassName($className);
-        
+    	if (class_exists($className, FALSE)) {
+    		return TRUE;
+    	}
+    	
+    	$parsed = Loader::parseClassName($className);
+    	
 //        if (!empty($parsed['ns']) && Loader::createClassAliasNs($parsed['realClassName'], $parsed['ns'])) {
         if (!empty($parsed['ns'])) {
         	if (class_exists($parsed['realClassName'], FALSE)) {
@@ -119,54 +123,52 @@ class core_Cls
         }
         
         // Проверяваме дали класа вече не съществува, и ако е така не правим нищо
-//        if (class_exists($className, FALSE)) {
-//            
-//            return TRUE;
-//        }
-        
-        // Проверяваме дали името на класа съдържа само допустими символи
-        if (!preg_match("/^[\\a-z0-9_]+$/i", $fullClassName)) {
-            
-            if (!$silent) {
-                error("Некоректно име на клас", "'{$className}'");
-            }
-            
-            return FALSE;
-        }
-        
-        // Определяме името на файла, в който трябва да се намира класа
-//        $fileName = str_replace('_', '/', $fullClassName) . $suffix;
-        
-		// Определяме пълния път до файла, където трябва да се намира класа
-        $filePath = getFullPath($parsed['classFile']);
-        
-        // Връщаме грешка, ако файлът не съществува или не може да се чете
-        if (!$filePath) {
-        	
-            if (!$silent) {
-                error("Файлът с кода на класа не съществува или не е четим", $parsed['classFile']);
-            }
-            
-            return FALSE;
-        }
-
-        if (!empty($parsed['ns'])) {
-			Loader::loadNs($filePath, $parsed['ns'], $parsed['realClassName']);
-		} else {
-	        // Включваме файла
-	        if(!include_once($filePath)) {
-	            error("Не може да бъде парсиран файла", "'{$parsed['className']}'  in '{$parsed['fileName']}'");
-	        }
-		}
-        
-        // Проверяваме дали включения файл съдържа търсения клас
         if (!class_exists($fcn, FALSE)) {
-            
-        	if (!$silent) {
-                error("Не може да се намери класа в посочения файл", "'{$parsed['className']}'  in '{$parsed['fileName']}'");
-            }
-            
-            return FALSE;
+        
+	        // Проверяваме дали името на класа съдържа само допустими символи
+	        if (!preg_match("/^[\\a-z0-9_]+$/i", $fullClassName)) {
+	            
+	            if (!$silent) {
+	                error("Некоректно име на клас", "'{$className}'");
+	            }
+	            
+	            return FALSE;
+	        }
+	        
+	        // Определяме името на файла, в който трябва да се намира класа
+	//        $fileName = str_replace('_', '/', $fullClassName) . $suffix;
+	        
+			// Определяме пълния път до файла, където трябва да се намира класа
+	        $filePath = getFullPath($parsed['classFile']);
+	        
+	        // Връщаме грешка, ако файлът не съществува или не може да се чете
+	        if (!$filePath) {
+	        	
+	            if (!$silent) {
+	                error("Файлът с кода на класа не съществува или не е четим", $parsed['classFile']);
+	            }
+	            
+	            return FALSE;
+	        }
+	
+	        if (!empty($parsed['ns'])) {
+				Loader::loadNs($filePath, $parsed['ns'], $parsed['realClassName']);
+			} else {
+		        // Включваме файла
+		        if(!include_once($filePath)) {
+		            error("Не може да бъде парсиран файла", "'{$parsed['className']}'  in '{$parsed['fileName']}'");
+		        }
+			}
+	
+	        // Проверяваме дали включения файл съдържа търсения клас
+	        if (!class_exists($fcn, FALSE)) {
+	            
+	        	if (!$silent) {
+	                error("Не може да се намери класа в посочения файл", "'{$parsed['className']}'  in '{$parsed['fileName']}'");
+	            }
+	            
+	            return FALSE;
+	        }
         }
 
 		if ($parsed['className'] != $parsed['realClassName']) {
