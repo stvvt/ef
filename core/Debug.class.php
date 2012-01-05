@@ -24,7 +24,7 @@ class core_Debug
     /**
      * Инициализираме таймерите
      */
-    function core_Debug()
+    function __construct()
     {
         $this->lastMicroTime = 0;
         $this->debugTime[] = "0.00000: Begin";
@@ -34,6 +34,11 @@ class core_Debug
         }
     }
     
+
+    function core_Debug()
+    {
+    	$this->__construct();
+    }
     
     /**
      * Пускаме хронометъра за посоченото име

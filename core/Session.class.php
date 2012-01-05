@@ -60,7 +60,7 @@ class core_Session {
      *
      * @param    string    $name    име на идентификатора на сесията (PHPSESSID)
      */
-    function core_Session($name = "SID")
+    function __construct($name = "SID")
     {
         // HTTP header-и непозволяващи кеширането на документ-а
         $this->_headers["Expires"] = "Mon, 26 Jul 1997 05:00:00 GMT"; // Date in the past
@@ -96,6 +96,11 @@ class core_Session {
         }
     }
     
+    
+    function core_Session($name = "SID")
+    {
+    	$this->__construct($name);
+    }
     
     /**
      * Връща идентификатора на сесията, към която е прикачен обекта

@@ -21,7 +21,7 @@ class core_Os
     /**
      * Конструктор
      */
-    function core_Os()
+    function __construct()
     {
         if ($this->isWindows()) {
             $this->wshShell = @new COM("WScript.Shell");
@@ -35,6 +35,11 @@ class core_Os
         }
     }
     
+    function core_Os()
+    {
+    	$this->__construct();	
+    }   
+
     
     /**
      * Връща TRUE ако операзионната система е Win

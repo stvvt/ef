@@ -38,11 +38,16 @@ class core_BaseClass
     /**
      * Конструктор. Дава възможност за инициализация
      */
-    function core_BaseClass($params = NULL)
+    function __construct($params = NULL)
     {
         if(isset($params)) {
             $this->init($params);
         }
+    }
+    
+    function core_BaseClass($params = NULL)
+    {
+    	$this->__construct($params);
     }
     
     

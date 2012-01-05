@@ -20,9 +20,15 @@ class core_Tabs extends core_BaseClass
     /**
      *
      */
-    function core_Tabs()
+    function __construct()
     {
         $this->description();
+    }
+    
+
+    function core_Tabs()
+    {
+    	$this->__construct();
     }
     
     

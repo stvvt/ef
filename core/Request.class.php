@@ -33,7 +33,7 @@ class core_Request
     /**
      * Зарежда променливите от заявката в собствен стек
      */
-    function core_Request()
+    function __construct()
     {
         global $_GET, $_POST, $_COOKIE, $_REQUEST;
         
@@ -74,6 +74,12 @@ class core_Request
                 }
             }
         }
+    }
+    
+    
+    function core_Request()
+    {
+    	$this->__construct();
     }
     
     

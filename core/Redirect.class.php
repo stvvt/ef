@@ -20,7 +20,7 @@ class core_Redirect extends core_ET
     /**
      *  @todo Чака за документация...
      */
-    function core_Redirect($url, $msg = NULL, $type = 'info')
+    function __construct($url, $msg = NULL, $type = 'info')
     {
         if($msg) {
             $Nid = rand(1000000, 9999999);
@@ -31,4 +31,10 @@ class core_Redirect extends core_ET
         
         $this->push(toUrl($url), '_REDIRECT_');
     }
+    
+    function core_Redirect($url, $msg = NULL, $type = 'info')
+    {
+    	$this->__construct($url, $msg, $type);
+    }
+    
 }
