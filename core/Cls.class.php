@@ -23,8 +23,11 @@ require_once(EF_EF_PATH . "/core/Loader.class.php");
 
 class core_Cls
 {
-    
-    
+    /**
+     * Масив в който се съхраняват всички инстанси на сингълтон обекти
+     */
+    static $singletons = array();
+
     /**
      * Връща името на класа, от който е този обект или
      * прави стринга да отговаря на стандартите за име
@@ -202,19 +205,17 @@ class core_Cls
      */
     function &get($class, $initArr = NULL)
     {
-        static $singletons;
-        
         $class = cls::getClassName($class);
         
         cls::load($class);
         
         if (cls::isSingleton($class)) {
-            if (!isset($singletons[$class])) {
-                $singletons[$class] = new stdClass();
-                $singletons[$class] = cls::createObject($class, $initArr);
+            if (!isset(core_Cls::$singletons[$class])) {
+                core_Cls::$singletons[$class] = new stdClass();
+                core_Cls::$singletons[$class] = cls::createObject($class, $initArr);
             }
             
-            $obj =& $singletons[$class];
+            $obj =& core_Cls::$singletons[$class];
         } else {
             $obj = cls::createObject($class, $initArr);
         }
@@ -407,6 +408,21 @@ class core_Cls
         if($obj->title) return $obj->title;
 
         return $firstLine;
+    }
+
+
+    /**
+     * Генерира последователно 'shutdown' събития във всички singleton класове
+     */
+    function shutdown()
+    {
+        if(count(core_Cls::$singletons)) {
+            foreach(core_Cls::$singletons as $name => $instance) {
+                if($instance instanceof core_BaseClass) {
+                    $instance->invoke('shutdown');
+                }
+            }
+        }
     }
 
 }
