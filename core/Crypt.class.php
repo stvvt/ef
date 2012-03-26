@@ -1,7 +1,9 @@
 <?php
 
+
+
 /**
- * Ключа с който ще се крипира, ако не бъде зададен експлицитно
+ * Ключа с който ще се криптира, ако не бъде зададен експлицитно
  */
 defIfNot(EF_CRYPT_CODE, EF_SALT . 'EF_CRYPT_CODE');
 
@@ -9,14 +11,14 @@ defIfNot(EF_CRYPT_CODE, EF_SALT . 'EF_CRYPT_CODE');
 /**
  * Клас 'core_Crypt' - Функции за двупосочно криптиране със споделен ключ
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2010 Experta OOD
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Crypt extends core_BaseClass
 {
@@ -129,11 +131,11 @@ class core_Crypt extends core_BaseClass
     {
         // Генерираме събитие, което дава възможност за бъдещо разширение
         if ($this->invoke('beforeEncode', array(
-            &$res,
-            &$str,
-            &$key,
-            &$minRand
-        )) === FALSE)
+                    &$res,
+                    &$str,
+                    &$key,
+                    &$minRand
+                )) === FALSE)
         return;
         
         // Установяваме стринга-разделител
@@ -167,10 +169,10 @@ class core_Crypt extends core_BaseClass
         
         // Генерираме събитие след кодирането, с цел за бъдещо разширение
         $this->invoke('afterEncode', array(
-            &$res,
-            $str,
-            $key
-        ));
+                &$res,
+                $str,
+                $key
+            ));
     }
     
     
@@ -181,10 +183,10 @@ class core_Crypt extends core_BaseClass
     {
         // Генерираме събитие, което дава възможност за бъдещо разширение
         if ($this->invoke('beforeDecode', array(
-            &$res,
-            $str,
-            $key
-        )) === FALSE)
+                    &$res,
+                    $str,
+                    $key
+                )) === FALSE)
         return;
         
         // Ако дължината не е кратна на 16 връщаме грешка
@@ -216,20 +218,20 @@ class core_Crypt extends core_BaseClass
             return;
         }
         
-        // Резултата е равен на часта след разделителя
+        // Резултата е равен на частта след разделителя
         $res = substr($res, $divPos + strlen($div));
         
         // Генерираме събитие след разкодирането, с цел бъдещо разширение
         $this->invoke('afterDecode', array(
-            &$res,
-            $str,
-            $key
-        ));
+                &$res,
+                $str,
+                $key
+            ));
     }
     
     
     /**
-     * Определя разделителя между хедъра на кодираната част и данните
+     * Определя разделителя между хедър-а на кодираната част и данните
      */
     function getDivStr($key)
     {
@@ -251,7 +253,7 @@ class core_Crypt extends core_BaseClass
      */
     function encodeStr($str, $key, $minRand = NULL)
     {
-        $this->encode(&$res, $str, $key, $minRand);
+        $this->encode($res, $str, $key, $minRand);
         
         return $res;
     }

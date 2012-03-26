@@ -1,20 +1,23 @@
 <?php
 
+
+
 /**
- *  Клас 'core_Debug' ['Debug'] - Функции за дебъг и настройка на приложения
+ * Клас 'core_Debug' ['Debug'] - Функции за дебъг и настройка на приложения
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev
- * @copyright  2006-2010 Experta OOD
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Debug
 {
+    
+    
     /**
      * Функция - флаг, че обектите от този клас са Singleton
      */
@@ -24,7 +27,7 @@ class core_Debug
     /**
      * Инициализираме таймерите
      */
-    function __construct()
+    function core_Debug()
     {
         $this->lastMicroTime = 0;
         $this->debugTime[] = "0.00000: Begin";
@@ -34,11 +37,6 @@ class core_Debug
         }
     }
     
-
-    function core_Debug()
-    {
-    	$this->__construct();
-    }
     
     /**
      * Пускаме хронометъра за посоченото име
@@ -48,11 +46,11 @@ class core_Debug
         // Функцията работи само в режим DEBUG
         if(!isDebug()) return;
         
-        static $Debug;
+        //static $Debug;
         
         if (!$Debug)
-        $Debug =& cls::get('core_Debug');
-        
+        $Debug = & cls::get('core_Debug');
+        $Debug->timers[$name] = new stdClass();
         $Debug->timers[$name]->start = dt::getMicrotime();
     }
     
@@ -65,10 +63,10 @@ class core_Debug
         // Функцията работи само в режим DEBUG
         if(!isDebug()) return;
         
-        static $Debug;
+        //static $Debug;
         
         if (!$Debug)
-        $Debug =& cls::get('core_Debug');
+        $Debug = & cls::get('core_Debug');
         
         if ($Debug->timers[$name]->start) {
             $workingTime = dt::getMicrotime() - $Debug->timers[$name]->start;
@@ -89,7 +87,7 @@ class core_Debug
         static $Debug;
         
         if (!$Debug)
-        $Debug =& cls::get('core_Debug');
+        $Debug = & cls::get('core_Debug');
         
         $Debug->debugTime[] = number_format((dt::getMicrotime() - $Debug->startMicroTime), 5) . ": " . $name;
     }
@@ -103,7 +101,7 @@ class core_Debug
         static $Debug;
         
         if (!$Debug)
-        $Debug =& cls::get('core_Debug');
+        $Debug = & cls::get('core_Debug');
         
         return number_format((dt::getMicrotime() - $Debug->startMicroTime), 5);
     }
@@ -116,7 +114,7 @@ class core_Debug
     {
         static $Debug;
         
-        if (!$Debug) $Debug =& cls::get('core_Debug');
+        if (!$Debug) $Debug = & cls::get('core_Debug');
         
         if (count($Debug->debugTime) > 1) {
             $Debug->log('End');

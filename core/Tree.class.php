@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
- * Клас 'core_Tree' - Вюър за дърво
+ * Клас 'core_Tree' - Изглед за дърво
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Tree extends core_BaseClass
 {
@@ -24,7 +25,7 @@ class core_Tree extends core_BaseClass
     
     
     /**
-     *  Инициализиране на обекта
+     * Инициализиране на обекта
      */
     function init($params)
     {
@@ -45,7 +46,7 @@ class core_Tree extends core_BaseClass
         
         foreach($nodes as $node) {
             
-            $currentPath .= ($currentPath? "->":"") . $node;
+            $currentPath .= ($currentPath ? "->" : "") . $node;
             
             if(!isset($this->nodes[$currentPath])) {
                 

@@ -1,44 +1,47 @@
 <?php
 
+
+
 /**
  * Клас 'core_Cron' - Стартиране на процеси по часовник
  *
- * Поддържа механизъм за переодично (по часовник) извикване на методи
+ * Поддържа механизъм за периодично (по часовник) извикване на методи
  * в системата, които са регистрирани в таблицата на този клас и името
  * им започва с приставката 'cron_'
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2010 Experta OOD
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Cron extends core_Manager
 {
     
+    
     /**
-     *  @todo Чака за документация...
+     * Заглавие на мениджъра
      */
     var $title = 'Периодични процеси';
     
     
     /**
-     *  @todo Чака за документация...
+     * Полета, които ще се показват в листов изглед
      */
     var $listFields = "id,title=Описание,parameters=Параметри,last=Последно";
-
-
+    
+    
     /**
-     *  @todo Чака за документация...
+     * Време за опресняване информацията при лист на събитията
      */
     var $refreshRowsTime = 5000;
     
     
     /**
-     *  Описание на модела (таблицата)
+     * Описание на модела (таблицата)
      */
     function description()
     {
@@ -46,8 +49,8 @@ class core_Cron extends core_Manager
         $this->FLD('description', 'varchar', 'caption=Описание');
         $this->FLD('controller', 'varchar(64)', 'caption=Контролер');
         $this->FLD('action', 'varchar(32)', 'caption=Функция');
-        $this->FLD('period', 'int', 'caption=Период (мин)');
-        $this->FLD('offset', 'int', 'caption=Отместване (мин)');
+        $this->FLD('period', 'minutes', 'caption=Период (мин)');
+        $this->FLD('offset', 'minutes', 'caption=Отместване (мин)');
         $this->FLD('delay', 'int', 'caption=Закъснение (s)');
         $this->FLD('timeLimit', 'int', 'caption=Време-лимит (s)');
         $this->FLD('state', 'enum(free=Свободно,locked=Заключено,stopped=Спряно)', 'caption=Състояние,1input=none');
@@ -59,14 +62,14 @@ class core_Cron extends core_Manager
     
     
     /**
-     *  Извиква се след подготовката на toolbar-а за табличния изглед
+     * Извиква се след подготовката на toolbar-а за табличния изглед
      */
     function on_AfterPrepareListToolbar($mvc, &$data)
     {
         $data->toolbar->addBtn('Логове на Cron', array(
-            'core_Logs',
-            'className' => $mvc->className
-        ));
+                'core_Logs',
+                'className' => $mvc->className
+            ));
     }
     
     
@@ -76,7 +79,7 @@ class core_Cron extends core_Manager
     function act_Cron()
     {
         header('Cache-Control: no-cache, no-store');
-
+        
         // Отключваме всички процеси, които са в състояние заключено, а от последното
         // им стартиране е изминало повече време от Време-лимита-а
         $query = $this->getQuery();
@@ -103,15 +106,15 @@ class core_Cron extends core_Manager
         while ($rec = $query->fetch()) {
             $i++;
             fopen(toUrl(array(
-                'Act' => 'ProcessRun',
-                'id' => str::addHash($rec->id)
-            ), 'absolute'), 'r');
+                        'Act' => 'ProcessRun',
+                        'id' => str::addHash($rec->id)
+                    ), 'absolute'), 'r');
             echo "\n\r<li>" . toUrl(array(
-                'Act' => 'ProcessRun',
-                'id' => str::addHash($rec->id)
-            ), 'absolute');
+                    'Act' => 'ProcessRun',
+                    'id' => str::addHash($rec->id)
+                ), 'absolute');
         }
-
+        
         $host = gethostbyname($_SERVER['SERVER_NAME']);
         
         $this->log("{$this->className} is working: {$i} processes was run in $currentMinute");
@@ -121,13 +124,13 @@ class core_Cron extends core_Manager
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function act_ProcessRun()
-    {       
+    {
         // Форсираме системния потребител
         core_Users::forceSystemUser();
-
+        
         // Затваряме връзката създадена от httpTimer, ако извикването не е форсирано
         if(!$forced = Request::get('forced')) {
             header("Connection: close");
@@ -192,14 +195,14 @@ class core_Cron extends core_Manager
         
         $class = cls::getClassName($rec->controller);
         
-        $handlerObject =& cls::get($class);
+        $handlerObject = & cls::get($class);
         
         if (is_a($handlerObject, $class)) {
             if (method_exists($handlerObject, $act)) {
                 $msg = "ProcessRun found {$rec->controller}->{$act}";
                 $this->log($msg, $rec->id);
                 
-                // Ако е зададено максимално време за изпъление, 
+                // Ако е зададено максимално време за изпълнение, 
                 // задаваме го към PHP , като добавяме 5 секунди
                 if ($rec->timeLimit) {
                     set_time_limit($rec->timeLimit + 5);
@@ -208,7 +211,7 @@ class core_Cron extends core_Manager
                 $startingMicroTime = $this->getMicrotime();
                 $content = $handlerObject->$act();
                 
-                // Ако извикания метод е генерирал резултат, то го дабавяме
+                // Ако извикания метод е генерирал резултат, то го добавяме
                 // подходящо форматиран към лога
                 if ($content) {
                     $content = "<p><i>$content</i></p>";
@@ -257,8 +260,8 @@ class core_Cron extends core_Manager
     function on_AfterPrepareEditForm($mvc, $data)
     {
         $data->form->setOptions('state', array('free' => 'Свободно',
-            'stopped' => 'Спряно'
-        ));
+                'stopped' => 'Спряно'
+            ));
     }
     
     
@@ -289,17 +292,17 @@ class core_Cron extends core_Manager
         }
         
         $url = toUrl(array(
-            'Act' => 'ProcessRun',
-            'id' => str::addHash($rec->id),
-        'forced' => 'yes'
-        ), 'absolute');
+                'Act' => 'ProcessRun',
+                'id' => str::addHash($rec->id),
+                'forced' => 'yes'
+            ), 'absolute');
         
         $row->systemId = ht::createLink("<b>{$row->systemId}</b>", $url, NULL, array('target' => 'null'));
         
         $row->title = "<p>" . $row->systemId . "</p><p><i>{$row->description}</i></p>";
         
         $row->parameters = "<p style='color:green'><b>\${$row->controller}->{$row->action}</b><p>" .
-        "Всеки <b>{$row->period}</b> + <b>{$row->offset}</b> min";
+        "Всеки <b>{$row->period}</b> + <b>{$row->offset}</b>";
         
         if($rec->delay) {
             $row->parameters .= ", Зак.: <b>{$row->delay}</b> s";
@@ -311,8 +314,8 @@ class core_Cron extends core_Manager
         
         $now = dt::mysql2timestamp(dt::verbal2mysql());
         
-        if( $rec->state == 'locked' ||
-        ($rec->state == 'free' && ($now - $this->refreshRowsTime/1000-2) < dt::mysql2timestamp($rec->lastStart)) ) {
+        if($rec->state == 'locked' ||
+            ($rec->state == 'free' && ($now - $this->refreshRowsTime / 1000-2) < dt::mysql2timestamp($rec->lastStart))) {
             
             $row->ROW_ATTR['style'] .= 'background-color:#ffa;';
         } elseif ($rec->state == 'free') {
@@ -326,7 +329,7 @@ class core_Cron extends core_Manager
     
     
     /**
-     *  @todo Чака за документация...
+     * Връща timestamp в микро секунди, като рационално число
      */
     function getMicrotime()
     {
@@ -346,11 +349,11 @@ class core_Cron extends core_Manager
         $rec->state = 'free';
         
         $this->save($rec);
-
+        
         if(!$id) return $rec->id;
     }
-
-
+    
+    
     /**
      * Рутинен метод, премахва задачите, свързани с класове от посочения пакет
      */
@@ -358,6 +361,6 @@ class core_Cron extends core_Manager
     {
         $query = self::getQuery();
         $preffix = $pack . "_";
-        $query->delete( array("#controller LIKE '[#1#]%'", $preffix ));
+        $query->delete(array("#controller LIKE '[#1#]%'", $preffix));
     }
 }

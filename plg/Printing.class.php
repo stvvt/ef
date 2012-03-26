@@ -1,24 +1,25 @@
 <?php
 
+
+
 /**
  * Клас 'plg_Printing' - Добавя бутони за печат
  *
  *
- * @category   Experta Framework
- * @package    plg
- * @author     Milen Georgiev
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   plg
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class plg_Printing extends core_Plugin
 {
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function plg_Printing()
     {
@@ -30,9 +31,9 @@ class plg_Printing extends core_Plugin
     
     
     /**
-     *  Извиква се след подготовката на toolbar-а за табличния изглед
+     * Извиква се след подготовката на toolbar-а за табличния изглед
      */
-    function on_AfterPrepareListToolbar($mvc, $res, $data)
+    function on_AfterPrepareListToolbar($mvc, &$res, $data)
     {
         // Бутон за отпечатване
         $url = getCurrentUrl();
@@ -40,30 +41,32 @@ class plg_Printing extends core_Plugin
         $url['Printing'] = 'yes';
         
         $data->toolbar->addBtn('Печат', $url,
-        'id=btnPrint,target=_blank,class=print');
+            'id=btnPrint,target=_blank,class=print');
     }
     
     
     /**
-     *  @todo Чака за документация...
+     * Добавя бутон за настройки в единичен изглед
+     * @param stdClass $mvc
+     * @param stdClass $data
      */
-    function on_AfterPrepareSingleToolbar($mvc, $res, $data)
+    function on_AfterPrepareSingleToolbar($mvc, &$res, $data)
     {
         // Бутон за отпечатване
         $data->toolbar->addBtn('Печат', array(
-            $mvc,
-            'single',
-            $data->rec->id,
-            'Printing' => 'yes',
-        ),
-        'id=btnPrint,target=_blank,class=print');
+                $mvc,
+                'single',
+                $data->rec->id,
+                'Printing' => 'yes',
+            ),
+            'id=btnPrint,target=_blank,class=print');
     }
     
     
     /**
-     *  Извиква се преди изпълняването на екшън
+     * Извиква се преди изпълняването на екшън
      */
-    function on_BeforeAction($mvc, $res, $act)
+    function on_BeforeAction($mvc, &$res, $act)
     {
         if(Request::get('Printing')) {
             Mode::set('wrapper', 'tpl_PrintPage');
@@ -73,25 +76,25 @@ class plg_Printing extends core_Plugin
     
     
     /**
-     *  @todo Чака за документация...
+     * Извиква се преди рендирането на 'опаковката'
      */
-    function on_BeforeRenderWrapping($mvc, $res, $tpl)
+    function on_BeforeRenderWrapping($mvc, &$res, $tpl)
     {
         if(Request::get('Printing')) {
             
             $tpl->append(tr($mvc->title) . " » ", 'PAGE_TITLE');
-
+            
             $res = $tpl;
             
             return FALSE;
         }
     }
-
-
+    
+    
     /**
      * Предотвратява рендирането на тулбарове
      */
-    function on_BeforeRenderHtml($mvc, $res)
+    function on_BeforeRenderHtml($mvc, &$res)
     {
         if(Request::get('Printing')) {
             

@@ -1,25 +1,25 @@
 <?php
 
+
+
 /**
  * Клас 'core_Url' ['url'] - Функции за за работа със URL
  *
  *
- * @category   Experta Framework
- * @package    core
- * @subpackage string
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Url
 {
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function parseUrl(&$url)
     {
@@ -54,21 +54,21 @@ class core_Url
             );
             
             switch (count($match)) {
-                case 10:
+                case 10 :
                     $parts['fragment'] = $match[9];
-                case 9:
+                case 9 :
                     $parts['query'] = $match[8];
-                case 8:
+                case 8 :
                     $parts['path'] = $match[7];
-                case 7:
+                case 7 :
                     $parts['path'] = $match[6] . $parts['path'];
-                case 6:
+                case 6 :
                     $parts['port'] = $match[5];
-                case 5:
+                case 5 :
                     $parts['host'] = $match[3] ? "[" . $match[3] . "]" : $match[4];
-                case 4:
+                case 4 :
                     $parts['userinfo'] = $match[2];
-                case 3:
+                case 3 :
                     $parts['scheme'] = $match[1];
             }
             $parts['authority'] = ($parts['userinfo'] ? $parts['userinfo'] . "@" : "") . $parts['host'] . ($parts['port'] ? ":" . $parts['port'] : "");
@@ -168,7 +168,7 @@ class core_Url
         $urlregex .= "([a-z0-9+!*(),;?&=\$_.-]+(\:[a-z0-9+!*(),;?&=\$_.-]+)?@)?";
         
         // HOSTNAME или IP
-        $urlregex .= "[a-z0-9+\$_-]+(\.[a-z0-9+\$_-]+)*"; // http://x = allowed (ex. http://localhost, http://routerlogin)
+        $urlregex .= "[a-z0-9+\$_-]+(\.[a-z0-9+\$_-]+)*";    // http://x = allowed (ex. http://localhost, http://routerlogin)
         //$urlregex .= "[a-z0-9+\$_-]+(\.[a-z0-9+\$_-]+)+";  // http://x.x = minimum
         //$urlregex .= "([a-z0-9+\$_-]+\.)*[a-z0-9+\$_-]{2,3}";  // http://x.xx(x) = minimum
         //use only one of the above
@@ -193,7 +193,6 @@ class core_Url
     
     
     /**
-     *
      * This function should only be used on actual URLs. It should not be used for
      * Drupal menu paths, which can contain arbitrary characters.
      * Valid values per RFC 3986.
@@ -201,21 +200,20 @@ class core_Url
      * @param $url
      * The URL to verify.
      * TRUE if the URL is in a valid format.
-     *
      */
     function isValidUrl($url, $absolute = TRUE)
     {
         if ($absolute) {
             $res = (bool) preg_match("/^" . # Start at the beginning of the text
-            "(?:[a-z0-9+-._]+?):\/\/" . # Look for ftp, http, or https schemes
-            "(?:" . # Userinfo (optional) which is typically
-            "(?:(?:[\w\.\-\+!$&'\(\)*\+,;=]|%[0-9a-f]{2})+:)*" . # a username or a username and password
-            "(?:[\w\.\-\+%!$&'\(\)*\+,;=]|%[0-9a-f]{2})+@" . # combination
-            ")?" . "(?:" . "(?:[a-z0-9\-\.]|%[0-9a-f]{2})+" . # A domain name or a IPv4 address
-            "|(?:\[(?:[0-9a-f]{0,4}:)*(?:[0-9a-f]{0,4})\])" . # or a well formed IPv6 address
-            ")" . "(?::[0-9]+)?" . # Server port number (optional)
-            "(?:[\/|\?]" . "(?:[\w#!:\.\?\+=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})" . # The path and query (optional)
-            "*)?" . "$/xi", $url, $m);
+                "(?:[a-z0-9+-._]+?):\/\/" . # Look for ftp, http, or https schemes
+                "(?:" . # Userinfo (optional) which is typically
+                "(?:(?:[\w\.\-\+!$&'\(\)*\+,;=]|%[0-9a-f]{2})+:)*" . # a username or a username and password
+                "(?:[\w\.\-\+%!$&'\(\)*\+,;=]|%[0-9a-f]{2})+@" . # combination
+                ")?" . "(?:" . "(?:[a-z0-9\-\.]|%[0-9a-f]{2})+" . # A domain name or a IPv4 address
+                "|(?:\[(?:[0-9a-f]{0,4}:)*(?:[0-9a-f]{0,4})\])" . # or a well formed IPv6 address
+                ")" . "(?::[0-9]+)?" . # Server port number (optional)
+                "(?:[\/|\?]" . "(?:[\w#!:\.\?\+=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})" . # The path and query (optional)
+                "*)?" . "$/xi", $url, $m);
         } else {
             $res = preg_match("/^(?:[\w#!:\.\?\+=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})+$/i", $url);
         }
@@ -243,6 +241,7 @@ class core_Url
             'session' => FALSE,
             'session_close' => FALSE
         );
+        
         // Sets the default options.
         foreach ($default_options as $opt => $value) {
             if (!isset($options[$opt]))
@@ -259,7 +258,7 @@ class core_Url
         $send_header = array(
             'Accept' => 'text/*',
             'User-Agent' => 'BinGet/1.00.A (http://www.bin-co.com/php/scripts/load/)'
-        ) + $options['headers']; // Add custom headers provided by the user.
+        ) + $options['headers'];    // Add custom headers provided by the user.
         if ($options['cache']) {
             $cache_folder = joinPath(sys_get_temp_dir(), 'php-load-function');
             
@@ -267,13 +266,13 @@ class core_Url
             $cache_folder = $options['cache_folder'];
             
             if (!file_exists($cache_folder)) {
-                $old_umask = umask(0); // Or the folder will not get write permission for everybody.
+                $old_umask = umask(0);    // Or the folder will not get write permission for everybody.
                 mkdir($cache_folder, 0777);
                 umask($old_umask);
             }
             
             $cache_file_name = md5($url) . '.cache';
-            $cache_file = joinPath($cache_folder, $cache_file_name); //Don't change the variable name - used at the end of the function.
+            $cache_file = joinPath($cache_folder, $cache_file_name);    //Don't change the variable name - used at the end of the function.
             if (file_exists($cache_file)) { // Cached file exists - return that.
                 $response = file_get_contents($cache_file);
                 
@@ -319,6 +318,7 @@ class core_Url
         } elseif (isset($options['multipart_data'])) { //There is an option to specify some data to be posted.
             $options['method'] = 'post';
             $url_parts['query'] = $options['multipart_data'];
+            
             /*
             This array consists of a name-indexed set of options.
             For example,
@@ -361,15 +361,15 @@ class core_Url
             }
             
             if ($options['session'] and isset($GLOBALS['_binget_curl_session']))
-            $ch = $GLOBALS['_binget_curl_session']; //Session is stored in a global variable
+            $ch = $GLOBALS['_binget_curl_session'];    //Session is stored in a global variable
             else
             $ch = curl_init($url_parts['host']);
             
             curl_setopt($ch, CURLOPT_URL, $page) or die("Invalid cURL Handle Resouce");
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE); //Just return the data - not print the whole thing.
-            curl_setopt($ch, CURLOPT_HEADER, TRUE); //We need the headers
-            curl_setopt($ch, CURLOPT_NOBODY, !($options['return_body'])); //The content - if TRUE, will not download the contents. There is a ! operation - don't remove it.
-            $tmpdir = NULL; //This acts as a flag for us to clean up temp files
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);    //Just return the data - not print the whole thing.
+            curl_setopt($ch, CURLOPT_HEADER, TRUE);    //We need the headers
+            curl_setopt($ch, CURLOPT_NOBODY, !($options['return_body']));    //The content - if TRUE, will not download the contents. There is a ! operation - don't remove it.
+            $tmpdir = NULL;    //This acts as a flag for us to clean up temp files
             if (isset($options['method']) and $options['method'] == 'post' and isset($url_parts['query'])) {
                 curl_setopt($ch, CURLOPT_POST, TRUE);
                 
@@ -414,7 +414,7 @@ class core_Url
             }
             
             //Set the headers our spiders sends
-            curl_setopt($ch, CURLOPT_USERAGENT, $send_header['User-Agent']); //The Name of the UserAgent we will be using ;)
+            curl_setopt($ch, CURLOPT_USERAGENT, $send_header['User-Agent']);    //The Name of the UserAgent we will be using ;)
             $custom_headers = array(
                 "Accept: " . $send_header['Accept']
             );
@@ -426,13 +426,13 @@ class core_Url
             if ($options['referer'])
             curl_setopt($ch, CURLOPT_REFERER, $options['referer']);
             
-            curl_setopt($ch, CURLOPT_COOKIEJAR, "/tmp/binget-cookie.txt"); //If ever needed...
+            curl_setopt($ch, CURLOPT_COOKIEJAR, "/tmp/binget-cookie.txt");    //If ever needed...
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
             curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
             
             $custom_headers = array();
-            unset($send_header['User-Agent']); // Already done (above)
+            unset($send_header['User-Agent']);    // Already done (above)
             foreach ($send_header as $name => $value) {
                 if (is_array($value)) {
                     foreach ($value as $item) {
@@ -454,11 +454,11 @@ class core_Url
                 //rmdirr($tmpdir); //Cleanup any temporary files :TODO:
             }
             
-            $info = curl_getinfo($ch); //Some information on the fetch
+            $info = curl_getinfo($ch);    //Some information on the fetch
             if ($options['session'] and !$options['session_close'])
-            $GLOBALS['_binget_curl_session'] = $ch; //Dont close the curl session. We may need it later - save it to a global variable
+            $GLOBALS['_binget_curl_session'] = $ch;    //Dont close the curl session. We may need it later - save it to a global variable
             else
-            curl_close($ch); //If the session option is not set, close the session.
+            curl_close($ch);    //If the session option is not set, close the session.
             //////////////////////////////////////////// FSockOpen //////////////////////////////
         } else { //If there is no curl, use fsocketopen - but keep in mind that most advanced features will be lost with this approch.
             
@@ -478,7 +478,7 @@ class core_Url
                 if (isset($options['method']) and $options['method'] == 'post' and isset($url_parts['query'])) {
                     $out .= "POST $page HTTP/1.1\r\n";
                 } else {
-                    $out .= "GET $page HTTP/1.0\r\n"; //HTTP/1.0 is much easier to handle than HTTP/1.1
+                    $out .= "GET $page HTTP/1.0\r\n";    //HTTP/1.0 is much easier to handle than HTTP/1.1
                 }
                 $out .= "Host: $url_parts[host]\r\n";
                 

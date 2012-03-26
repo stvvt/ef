@@ -1,26 +1,28 @@
 <?php
 
+
+
 /**
  * Клас 'core_Array' ['arr'] - Функции за работа с масиви
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2011 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
-class core_Array
+class core_Array 
 {
     
     
     /**
-     * Конкатинира към стойностите от първия масив, стойностите от втория със
-     * същите клюючове
+     * Конкатенира към стойностите от първия масив, стойностите от втория със
+     * същите ключове
      */
-    function union($a1, $a2)
+    static function union($a1, $a2)
     {
         foreach ($a2 as $key => $value) {
             $a1[$key] .= $value;
@@ -31,9 +33,9 @@ class core_Array
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
-    function combine()
+    static function combine()
     {
         $res = array();
         
@@ -60,14 +62,14 @@ class core_Array
     
     
     /**
-     * Конвертира стрингов смисък или обект, към масив
+     * Конвертира стрингов списък или обект, към масив
      * Може да не слага целочислени индекси, като наместо тях
      * слага за индекси самите стойности.
      * Използва се повсеместно във фреймуърка за предаване като параметри на масиви
      * които могат да се запишат във вида "a=23,b=ddd,c=ert->wer"
      * Само знаците '=' и ',' не могат да се използват в ключовете или стойностите
      */
-    function make($mixed, $noIntKeys = FALSE)
+    static function make($mixed, $noIntKeys = FALSE)
     {
         if (!$mixed) {
             return array();
@@ -83,7 +85,6 @@ class core_Array
             } else {
                 $sep = ',';
             }
-            
             
             /**
              * Ескейпваме двойния сепаратор
@@ -127,20 +128,20 @@ class core_Array
         
         return $p;
     }
-
+    
     
     /**
      * Дали ключовете на двата масива имат сечение
      * Ако един от двата масива е празен, то резултата е истина
      * защото, често в EF празния масив означава всички допустими елементи
      */
-    function haveSection($arr1, $arr2)
+    static function haveSection($arr1, $arr2)
     {
         $arr1 = arr::make($arr1, TRUE);
         $arr2 = arr::make($arr2, TRUE);
         
         if((count($arr1) == 0) || (count($arr2) == 0)) return TRUE;
-
+        
         foreach($arr1 as $key => $value) {
             if(isset($arr2[$key])) return TRUE;
         }
@@ -148,19 +149,31 @@ class core_Array
         foreach($arr2 as $key => $value) {
             if(isset($arr1[$key])) return TRUE;
         }
-
+        
         return FALSE;
     }
-
-
-
+    
+    
     /**
      * Връща ключа на елемента с най-голяма стойност
      */
-    function getMaxValueKey($arr)
+    static function getMaxValueKey($arr)
     {
         if(count($arr)) {
             return array_search(max($arr), $arr);
         }
     }
+
+
+    /**
+     * Сортира масив от обекти по тяхното поле 'order'
+     */
+    static function order(&$array, $field = 'order')
+    {
+        usort($array, function($a, $b) use ($field) {
+            if($a->{$field} == $b->{$field})  return 0;
+            return $a->{$field} > $b->{$field} ? 1 : -1;
+        }); 
+    }
+
 }

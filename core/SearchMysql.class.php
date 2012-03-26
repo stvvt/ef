@@ -1,21 +1,22 @@
 <?php
 
+
+
 /**
  * Клас 'core_SearchMysql' - Генератор на MySQL заявка за пълнотекстово търсене
- *
  *
  * Предполага, че таблицата в която се прави търсенето има две
  * полета 'searcht' и 'searchd', в които има само думи на латински, разделени
  * с интервал. Думите в 'searcht' имат по-висока тежест от тези в 'searchd'
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>, Stefan Stefanov
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>, SStefan Stefanov <stefan.bg@gmail.com>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_SearchMysql extends core_BaseClass
 {
@@ -37,13 +38,14 @@ class core_SearchMysql extends core_BaseClass
      * ==============================
      * Последователност от думи, някои от които могат да имат знак ^ (чавка)
      * отпред, което е маркиране на изключена дума.
-     * *ДУМА* е всяка последователност от букви на латиница, кирилица и/или цифри.
+     * ДУМА* е всяка последователност от букви на латиница, кирилица и/или цифри.
      *
      * @param string $str Заявката, както я пише потребителя
      */
     function init($params = array())
     {
         parent::init($params);
+        
         // Обработка на кавичките - искаме да ги третираме като думи,
         // за това подсигуряваме, че са обградени от разделители.
         
@@ -182,7 +184,6 @@ class core_SearchMysql extends core_BaseClass
         
         */
         
-        
         /**
          * TODO: ...
          */
@@ -200,7 +201,7 @@ class core_SearchMysql extends core_BaseClass
      * 0 (нула), което означава, че наличието им не променя резултата от
      * търсенето - той би бил същия дори тези думи да не се срещаха в текста
      * и/или в заявката.
-     * Честотата на срещане на различните думи (респ. вероятноста за срещането
+     * Честотата на срещане на различните думи (респ. вероятността за срещането
      * им в произволен текст от сайта) е определена емпирично и точно тези данни
      * определят какви резултати връща този метод.
      *
@@ -240,20 +241,19 @@ class core_SearchMysql extends core_BaseClass
      *
      * @param string $str
      * @return string
-     *
      */
     function normalizeText($str)
     {
         $str = str::utf2ascii($str);
         $str = strtolower($str);
-        $str = preg_replace('/[^a-zа-я0-9]+/', ' ', " {$str} ");
+        $str = preg_replace('/[^a-z0-9]+/', ' ', " {$str} ");
         
         return $str;
     }
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getHiliteRegexp()
     {
@@ -274,7 +274,7 @@ class core_SearchMysql extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function hiliteText($str, $prefix, $suffix)
     {
@@ -298,17 +298,16 @@ class core_SearchMysql extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function hiliteHtml($html, $prefix, $suffix)
     {
         // Извличаме от HTML кода парчета прост текст
         $textChunks = preg_split("/\s*?(<script.*>.*<\/script>|<textarea.*>.*<\/textarea>|" .
-        "<style.*>.*<\/style>|<.*>|&[a-z]{2,};)\s*?/Usi",
-        $html,
-        -1,
-        PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE);
-        
+            "<style.*>.*<\/style>|<.*>|&[a-z]{2,};)\s*?/Usi",
+            $html,
+            -1,
+            PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE);
         
         /**
          * $textChunk[$i][0] - фрагмент чист текст
@@ -335,7 +334,7 @@ class core_SearchMysql extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getChar($str, $pos)
     {
@@ -346,7 +345,7 @@ class core_SearchMysql extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getSubStr($str, $begin, $end)
     {
@@ -366,7 +365,7 @@ class core_SearchMysql extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function hiliteHtml1($html, $prefix, $suffix, $maxLen = 0)
     {
@@ -439,7 +438,7 @@ class core_SearchMysql extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function translateGoogleQuery($str)
     {

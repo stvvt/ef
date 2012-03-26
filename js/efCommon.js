@@ -179,16 +179,22 @@ function comboBoxInit(id, suffix)
 	var txtCombo = get$(id);
 	var selCombo = get$(id + suffix);
 	var width = txtCombo.offsetWidth;
-	selCombo.style.width = width + 'px'; 
-	txtCombo.style.width = (width - 17)+'px';
-	txtCombo.style.marginRight = '17px';
-	
 
-	selCombo.style.clip = 'rect(auto, auto, auto, ' + (width-18) + 'px)';
+ 	var arrow = selCombo.clientHeight-10;
+
+	selCombo.style.width = (width + 0) + 'px'; 
+	txtCombo.style.width = (width - 2*arrow + 20) + 'px';
+	txtCombo.style.marginRight = (arrow-2) + 'px';
+
+	selCombo.style.clip = 'rect(auto, auto, auto, ' + (width - 2*arrow + 8) + 'px)';
 	
 
 	if(txtCombo.offsetHeight != selCombo.offsetHeight) {
-		selCombo.style.height = (txtCombo.offsetHeight + 0) + 'px';
+		txtCombo.style.height = (selCombo.offsetHeight -0) + 'px';
+		txtCombo.style.lineHeight = (selCombo.offsetHeight + 6) + 'px';
+		
+		txtCombo.style.marginTop = '2px';
+
 		selCombo.style.marginTop = '2px';
 	}
 
@@ -200,7 +206,16 @@ function comboBoxInit(id, suffix)
 // Прехвърля съдържанието от SELECT елемента към INPUT полето
 function comboSelectOnChange(id, value ) 
 {   
-	get$(id).value =  value; 
+	var inp = get$(id);
+
+	var exVal = inp.value;
+
+	if(exVal != '' && inp.getAttribute('data-role') == 'list') {
+		get$(id).value += ', ' +  value; 
+	} else {
+		get$(id).value =  value; 
+	}
+
 	get$(id).focus();
 }
 

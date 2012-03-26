@@ -1,5 +1,9 @@
 <?php
 
+
+/**
+ * @todo Чака за документация...
+ */
 defIfNot('EF_MODE_SESSION_VAR', 'pMode');
 
 
@@ -10,57 +14,79 @@ defIfNot('EF_MODE_SESSION_VAR', 'pMode');
  * Тези параметри могат да се задават както за текущия хит,
  * така и за текущата сесия.
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Mode
 {
     
+    /**
+     * Масив в който се записват runtime стойностите на параметрите
+     */
+    static $mode;
     
     /**
-     * Записва или прочита стойност на параметър. Ако $read е TRUE
-     * тогава само се връща текъщата стойност на параметъра
+     * Стек за запазване на старите стойности на параметрите от runtime обкръжението
      */
-    function set($name, $value = TRUE, $read = FALSE)
+    static $stack = array();
+    
+    
+    /**
+     * Записва стойност на параметър na runtime обкръжението.
+     */
+    function set($name, $value = TRUE)
     {
-        static $mode;
         
         expect($name, 'Параметъра $name трябва да е непразен стринг', $mode);
         
-        if (!is_array($mode)) {
-            $mode = core_Session::get(EF_MODE_SESSION_VAR);
-            
-            if (!is_array($mode)) {
-                $mode = array();
-            }
-        }
+        self::$mode[$name] = $value;
         
-        if (!$read) {
-            $mode[$name] = $value;
-        }
-        
-        return $mode[$name];
+        return self::$mode[$name];
     }
     
     
     /**
-     *  @todo Чака за документация...
+     * Вкарва в runtime променливите указаната двойка име=стойност,
+     * като запомня старото и значение, което по-късно може да бъде възстановено с ::pop
      */
-    function setPermanent($name, $value = TRUE)
+    static function push($name, $value)
+    {
+        $rec = new stdClass();
+        $rec->name = $name;
+        $rec->value = self::get($name);
+        
+        self::$stack[] = $rec;
+        self::set($name, $value);
+    }
+    
+    
+    /**
+     * Връща старото състояние на променливата от runtime-обкръжението
+     */
+    static function pop($name = NULL)
+    {
+        $rec = self::$stack[count(self::$stack)-1];
+        
+        if($name) expect($rec->name = $name);
+        
+        self::set($rec->name, $rec->value);
+    }
+    
+    
+    /**
+     * Запис на стойност в сесията
+     */
+    static function setPermanent($name, $value = TRUE)
     {
         // Запис в статичната памет
         Mode::set($name, $value);
         
-        // Логваме, какво се записва в сесията
-        // $Logs = cls::get('core_Logs');
-        // $Logs->add('core_Mode', NULL, " $name => $value ");
-
         // Запис в сесията
         $pMode = core_Session::get(EF_MODE_SESSION_VAR);
         $pMode[$name] = $value;
@@ -69,19 +95,29 @@ class core_Mode
     
     
     /**
-     * Връща стойостта на променлива от обкръжението
+     * Връща стойността на променлива от обкръжението
      */
-    function get($name)
+    static function get($name)
     {
-        return Mode::set($name, NULL, TRUE);
+        // Инициализираме стойностите с данните от сесията
+        if (!is_array(self::$mode)) {
+            
+            self::$mode = core_Session::get(EF_MODE_SESSION_VAR);
+            
+            if (!is_array(self::$mode)) {
+                self::$mode = array();
+            }
+        }
+        
+        return self::$mode[$name];
     }
     
     
     /**
-     * Сравнява стоността на променлива от обкръжението
+     * Сравнява стойността на променлива от обкръжението
      * с предварително зададена стойност
      */
-    function is($name, $value = TRUE)
+    static function is($name, $value = TRUE)
     {
         return Mode::get($name) == $value;
     }
@@ -90,7 +126,7 @@ class core_Mode
     /**
      * Връща уникален, случаен ключ валиден по време на сесията
      */
-    function getPermanentKey()
+    static function getPermanentKey()
     {
         if (!$key = Mode::get('permanentKey')) {
             $key = str::getRand();
@@ -104,7 +140,7 @@ class core_Mode
     /**
      * Връща уникален ключ валиден в рамките на текущия процес
      */
-    function getProcessKey()
+    static function getProcessKey()
     {
         if (!$key = Mode::get('processKey')) {
             $key = str::getRand();
@@ -116,9 +152,9 @@ class core_Mode
     
     
     /**
-     * Унищожава цялата перманетна информация
+     * Унищожава цялата перманентна информация
      */
-    function destroy()
+    static function destroy()
     {
         core_Session::set(EF_MODE_SESSION_VAR, NULL);
     }

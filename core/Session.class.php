@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_Session' - Клас-манипулатор на потребителска сесия
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Stefan Stefanov, Milen Georgiev
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Stefan Stefanov <stefan.bg@gmail.com>, Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Session {
     
@@ -47,26 +48,26 @@ class core_Session {
      * Конструктор - създава обект за манипулация на сесията и нейните променливи.
      *
      * ВНИМАНИЕ: Този обект не е едно и също като обекта сесия! Обекта от клас
-     *           Session има живот само през време на изпълнение на съответните
-     *           PHP скриптове, докато обекта сесия "живее" и през останалото време.
+     * Session има живот само през време на изпълнение на съответните
+     * PHP скриптове, докато обекта сесия "живее" и през останалото време.
      *
-     *           Гледаме на обект от клас Session като PHP интерфейс за връзка с
-     *           реалния обект сесия за времето на изпълнение PHP скрипта.
+     * Гледаме на обект от клас Session като PHP интерфейс за връзка с
+     * реалния обект сесия за времето на изпълнение PHP скрипта.
      *
      * Ако текущия PHP скрипт се изпълнява в контекста на сесия, т.е. чрез HTTP
-     * заявката е зададена валидна стойност на индентификатора на сесията (през GET,
+     * заявката е зададена валидна стойност на идентификатора на сесията (през GET,
      * POST или COOKIE), то обекта се "прикача", автоматично зарежда съдържанието на
      * сесията със зададения идентификатор.
      *
      * @param    string    $name    име на идентификатора на сесията (PHPSESSID)
      */
-    function __construct($name = "SID")
+    function core_Session($name = "SID")
     {
         // HTTP header-и непозволяващи кеширането на документ-а
-        $this->_headers["Expires"] = "Mon, 26 Jul 1997 05:00:00 GMT"; // Date in the past
-        $this->_headers["Last-Modified"] = gmdate("D, d M Y H:i:s") . " GMT"; // always modified
-        $this->_headers["Cache-Control"] = "no-cache, must-revalidate"; // HTTP/1.1
-        $this->_headers["Pragma"] = "no-cache"; // HTTP/1.0
+        $this->_headers["Expires"] = "Mon, 26 Jul 1997 05:00:00 GMT";    // Date in the past
+        $this->_headers["Last-Modified"] = gmdate("D, d M Y H:i:s") . " GMT";    // always modified
+        $this->_headers["Cache-Control"] = "no-cache, must-revalidate";    // HTTP/1.1
+        $this->_headers["Pragma"] = "no-cache";    // HTTP/1.0
         ini_set('session.gc_maxlifetime', 7200);
         session_name($name);
         $this->_started = FALSE;
@@ -78,16 +79,16 @@ class core_Session {
         
         $this->_resumed = FALSE;
         
-        if( $resumeSession ) {
+        if($resumeSession) {
             $this->_start();
             $this->_resumed = isset($_SESSION['session_is_valid']);
             
-            if( !$this->_resumed ) {
+            if(!$this->_resumed) {
                 $this->destroy();
             }
         }
         
-        if( !$this->_resumed ) {
+        if(!$this->_resumed) {
             unset($_REQUEST[session_name()]);
             unset($_GET[session_name()]);
             unset($_POST[session_name()]);
@@ -96,11 +97,6 @@ class core_Session {
         }
     }
     
-    
-    function core_Session($name = "SID")
-    {
-    	$this->__construct($name);
-    }
     
     /**
      * Връща идентификатора на сесията, към която е прикачен обекта
@@ -111,7 +107,7 @@ class core_Session {
     {
         if (isset($_COOKIE[session_name()])) {
             $sid = $_COOKIE[session_name()];
-        } elseif( isset($_REQUEST[session_name()]) ) {
+        } elseif(isset($_REQUEST[session_name()])) {
             $sid = $_REQUEST[session_name()];
         }
         
@@ -166,10 +162,10 @@ class core_Session {
             $Session = cls::get('core_Session');
         }
         
-        if( $Session->_started ) {
+        if($Session->_started) {
             $dv = $Session->_decorate($varName);
             
-            if( isset($_SESSION[$dv]) ) {
+            if(isset($_SESSION[$dv])) {
                 $var = $_SESSION[$dv];
                 
                 if($part) {
@@ -205,7 +201,7 @@ class core_Session {
             $Session = cls::get('core_Session');
         }
         
-        $Session->_start(); // Стартираме сесия, ако не е вече стартирана.
+        $Session->_start();    // Стартираме сесия, ако не е вече стартирана.
         $_SESSION[$Session->_decorate($varName)] = $value;
     }
     
@@ -250,9 +246,7 @@ class core_Session {
     
     
     /**
-     *
      * Унищожава сесията (не обекта от клас Session, а файла, съдържащ данните
-     *
      */
     function destroy()
     {
@@ -262,7 +256,7 @@ class core_Session {
             $Session = cls::get('core_Session');
         }
         
-        if( $Session->_started ) {
+        if($Session->_started) {
             session_regenerate_id();
             @session_unset();
             @session_destroy();
@@ -281,7 +275,7 @@ class core_Session {
      */
     function _start()
     {
-        if( !$this->_started ) {
+        if(!$this->_started) {
             @session_cache_limiter('nocache');
             @session_set_cookie_params(0);
             @session_start();
@@ -305,6 +299,6 @@ class core_Session {
      */
     function _decorate($varName)
     {
-        return 'sess_' .EF_APP_NAME . '_' . $varName;
+        return 'sess_' . EF_APP_NAME . '_' . $varName;
     }
 }

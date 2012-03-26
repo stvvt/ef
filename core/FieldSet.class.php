@@ -1,18 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_FieldSet' - Абстрактен клас за работа с полета
  *
  *
- *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_FieldSet extends core_BaseClass
 {
@@ -49,6 +49,7 @@ class core_FieldSet extends core_BaseClass
     //
     
     
+    
     /**
      * Данни за полетата
      */
@@ -61,13 +62,15 @@ class core_FieldSet extends core_BaseClass
     function FLD($name, $type, $params = array(), $moreParams = array())
     {
         $fieldType = core_Type::getByName($type);
-        
+
+        $params = arr::make($params, TRUE);
+
         $value = ($params['notNull'] && !isset($params['value'])) ? $fieldType->defVal() : NULL;
         $this->setField($name, arr::combine(array(
-            'kind' => 'FLD',
-            'value' => $value,
-            'type' => $fieldType
-        ), $params, $moreParams), TRUE);
+                    'kind' => 'FLD',
+                    'value' => $value,
+                    'type' => $fieldType
+                ), $params, $moreParams), TRUE);
     }
     
     
@@ -99,10 +102,10 @@ class core_FieldSet extends core_BaseClass
         $fieldType = $mvc->fields[$params['externalName']]->type;
         
         $this->setField($name, arr::combine(array(
-            'kind' => 'EXT',
-            'externalClass' => $externalClass,
-            'type' => $fieldType
-        ), $params), TRUE);
+                    'kind' => 'EXT',
+                    'externalClass' => $externalClass,
+                    'type' => $fieldType
+                ), $params), TRUE);
     }
     
     
@@ -113,10 +116,10 @@ class core_FieldSet extends core_BaseClass
     {
         $fieldType = core_Type::getByName($type);
         $this->setField($name, arr::combine(array(
-            'kind' => 'XPR',
-            'type' => $fieldType,
-            'expression' => $expr
-        ), $params, $moreParams), TRUE);
+                    'kind' => 'XPR',
+                    'type' => $fieldType,
+                    'expression' => $expr
+                ), $params, $moreParams), TRUE);
     }
     
     
@@ -131,15 +134,15 @@ class core_FieldSet extends core_BaseClass
     {
         $fieldType = core_Type::getByName($type);
         $this->setField($name, arr::combine(array(
-            'kind' => 'FNC',
-            'type' => $fieldType
-        ), $params, $moreParams), TRUE);
+                    'kind' => 'FNC',
+                    'type' => $fieldType
+                ), $params, $moreParams), TRUE);
     }
     
     
     /**
      * Задава параметри на едно поле от модела.
-     * Ако $forse е FALSE, тогава задаването на параметите не се извършва,
+     * Ако $forse е FALSE, тогава задаването на параметрите не се извършва,
      * ако те вече са зададени
      */
     function setField($names, $params, $newField = FALSE)
@@ -263,7 +266,7 @@ class core_FieldSet extends core_BaseClass
      * Връща масив с елементи име_на_поле => структура - описание
      * $where е условие, с PHP синтаксис, като имената на атрибутите на
      * полето са предхождани от #
-     * $fieldsArr е масив от полета, върху който се прави селектирането
+     * $fieldsArr е масив от полета, върху който се прави избирането
      */
     function selectFields($where = "", $fieldsArr = NULL)
     {
@@ -274,9 +277,9 @@ class core_FieldSet extends core_BaseClass
         }
         
         $cond = str::prepareExpression($where, array(
-            &$this,
-            'makePhpFieldName'
-        ));
+                &$this,
+                'makePhpFieldName'
+            ));
         
         foreach ($fArr as $name => $caption) {
             if (!$where || eval("return $cond;")) {
@@ -289,7 +292,7 @@ class core_FieldSet extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function makePhpFieldName($name)
     {

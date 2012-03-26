@@ -1,37 +1,41 @@
 <?php
 
+
+
 /**
  * Клас 'plg_Search' - Добавя пълнотекстово търсене в табличния изглед
  *
- * Мениджърът, към който се прекрепя този плъгин трябва да има пропърти
+ * Мениджърът, към който се закача този плъгин трябва да има пропърти
  * searchFields = "field1,field2,..." в които да са описани полетата за търсене
  *
- * @category   Experta Framework
- * @package    plg
- * @author     Milen Georgiev
- * @copyright  2006-2011 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   plg
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class plg_Search extends core_Plugin
 {
     
     
     /**
-     *  Извиква се след описанието на модела
+     * Извиква се след описанието на модела
      */
     function on_AfterDescription(&$mvc)
     {
         // Добавя поле за ключовите думи към обекта
-        $mvc->FLD('searchKeywords', 'text', 'caption=Ключови думи,notNull,column=none, input=none');
+        if (!$mvc->fields['searchKeywords']) {
+            $mvc->FLD('searchKeywords', 'text', 'caption=Ключови думи,notNull,column=none, input=none');
+        }
     }
     
     
     /**
-     *  Извиква се преди запис в MVC класа. Генерира ключовите
-     *  думи за записа, които се допълват в полето searchKeywords
+     * Извиква се преди запис в MVC класа. Генерира ключовите
+     * думи за записа, които се допълват в полето searchKeywords
      */
     function on_BeforeSave($mvc, $id, $rec)
     {
@@ -67,8 +71,10 @@ class plg_Search extends core_Plugin
      * @param stdClass $res
      * @param stdClass $data
      */
-    function on_BeforePrepareListRecs($mvc, $res, $data)
+    function on_BeforePrepareListRecs($mvc, &$res, $data)
     {
+        $data->listFilter->input(null, 'silent');
+        
         $filterRec = $data->listFilter->rec;
         
         if($filterRec->search) {
@@ -117,7 +123,6 @@ class plg_Search extends core_Plugin
      *
      * @param string $str
      * @return string
-     *
      */
     function normalizeText($str)
     {
@@ -130,7 +135,7 @@ class plg_Search extends core_Plugin
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function parseQuery($str)
     {
@@ -152,7 +157,7 @@ class plg_Search extends core_Plugin
             $c = $str{$i};
             
             // Кога трябва да прибавим буквата
-            if(($c != ' ' && $c != '"') || ($c == ' ' && $quote) ) {
+            if(($c != ' ' && $c != '"') || ($c == ' ' && $quote)) {
                 
                 if(($quote) && empty($words[$wordId])) {
                     $words[$wordId] = '"';

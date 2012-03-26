@@ -1,24 +1,25 @@
 <?php
 
+
+
 /**
  * Клас 'plg_SaveAndNew' - Инструменти за изтриване и редактиране на ред
  *
  *
- * @category   Experta Framework
- * @package    plg
- * @author     Milen Georgiev
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   plg
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class plg_SaveAndNew extends core_Plugin
 {
     
     
     /**
-     * Логика за определяне къде да се пренасочи потребителския интерфейс.
+     * Логика за определяне къде да се пренасочва потребителския интерфейс.
      *
      * @param core_Manager $mvc
      * @param stdClass $data
@@ -85,24 +86,24 @@ class plg_SaveAndNew extends core_Plugin
     
     
     /**
-     * Подоготовка на бутоните на формата за добавяне/редактиране.
+     * Подготовка на бутоните на формата за добавяне/редактиране.
      *
      * @param core_Manager $mvc
      * @param stdClass $res
      * @param stdClass $data
      */
-    function on_AfterPrepareEditToolbar($mvc, $res, $data)
+    function on_AfterPrepareEditToolbar($mvc, &$res, $data)
     {
         if (empty($data->form->rec->id)) {
-            $data->form->toolbar->addSbBtn('Запис и Нов', 'save_n_new', 'class=btn-save-n-new');
+            $data->form->toolbar->addSbBtn('Запис и Нов', 'save_n_new', 'class=btn-save-n-new,order=9.99965');
         }
     }
     
     
     /**
-     *  Извиква се след подготовката на формата за редактиране/добавяне $data->form
+     * Извиква се след подготовката на формата за редактиране/добавяне $data->form
      */
-    function on_AfterPrepareEditForm($mvc, $res, $data)
+    function on_AfterPrepareEditForm($mvc, &$res, $data)
     {
         if ($data->form->rec->id) {
             return;

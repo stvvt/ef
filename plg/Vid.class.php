@@ -1,5 +1,7 @@
 <?php
 
+
+
 /**
  * Максимална дължина на полето "Вербален идентификатор"
  */
@@ -15,21 +17,21 @@ defIfNot('EF_VID_LEN', 64);
  * За уникален идентификатор се използва титлата на записа, конвертирана до латиница
  * и съкратена до EF_VID_LEN символа
  *
- * @category   Experta Framework
- * @package    plg
- * @author     Milen Georgiev
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   plg
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class plg_Vid extends core_Plugin
 {
     
     
     /**
-     *  Извиква се след описанието на модела
+     * Извиква се след описанието на модела
      */
     function on_AfterDescription(&$mvc)
     {
@@ -42,7 +44,7 @@ class plg_Vid extends core_Plugin
     
     
     /**
-     *  Извиква се преди вкарване на запис в таблицата на модела
+     * Извиква се преди вкарване на запис в таблицата на модела
      */
     function on_BeforeSave(&$mvc, &$id, &$rec, &$fields = NULL)
     {

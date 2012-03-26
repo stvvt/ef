@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'plg_PrevAndNext' - Добавя бутони за предишен и следващ във форма за редактиране
  *
  *
- * @category   Experta Framework
- * @package    plg
- * @author     Milen Georgiev
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   plg
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class plg_PrevAndNext extends core_Plugin
 {
@@ -28,9 +29,9 @@ class plg_PrevAndNext extends core_Plugin
         $Cmd = Request::get('Cmd');
         
         if (isset($Cmd['save_n_prev'])) {
-            $data->retUrl = array($mvc, 'edit', 'id'=>$data->buttons->prevId);
+            $data->retUrl = array($mvc, 'edit', 'id' => $data->buttons->prevId);
         } elseif (isset($Cmd['save_n_next'])) {
-            $data->retUrl = array($mvc, 'edit', 'id'=>$data->buttons->nextId);
+            $data->retUrl = array($mvc, 'edit', 'id' => $data->buttons->nextId);
         }
     }
     
@@ -49,16 +50,15 @@ class plg_PrevAndNext extends core_Plugin
         }
         
         $query = $mvc->getQuery();
-
+        
         if($mvc instanceof core_Detail) {
             $mvc->prepareDetailQuery($data);
             $query = clone($data->query);
-            
         }
         
         $query->where("#id {$dir} {$data->form->rec->id}");
         $query->limit(1);
-        $query->orderBy('id', $dir == '>'?'ASC':'DESC');
+        $query->orderBy('id', $dir == '>' ? 'ASC' : 'DESC');
         
         $rec = $query->fetch();
         
@@ -67,10 +67,15 @@ class plg_PrevAndNext extends core_Plugin
     
     
     /**
+     * Подготовка на формата
      *
+     * @param core_Mvc $mvc
+     * @param stdClass $res
+     * @param stdClass $data
      */
     function on_AfterPrepareEditForm($mvc, $data)
     {
+        $data->buttons = new stdClass();
         $data->buttons->prevId = $this->getNeighbour($mvc, $data, '<');
         $data->buttons->nextId = $this->getNeighbour($mvc, $data, '>');
     }
@@ -83,18 +88,18 @@ class plg_PrevAndNext extends core_Plugin
      * @param unknown_type $res
      * @param unknown_type $data
      */
-    function on_AfterPrepareEditToolbar($mvc, $res, $data)
+    function on_AfterPrepareEditToolbar($mvc, &$res, $data)
     {
         if (isset($data->buttons->nextId)) {
-            $data->form->toolbar->addSbBtn('»', 'save_n_next', 'class=btn-next');
+            $data->form->toolbar->addSbBtn('»', 'save_n_next', 'class=btn-next noicon,order=30');
         } else {
-            $data->form->toolbar->addSbBtn('»', 'save_n_next', 'class=btn-next btn-disabled,disabled');
+            $data->form->toolbar->addSbBtn('»', 'save_n_next', 'class=btn-next btn-disabled noicon,disabled,order=30');
         }
         
         if (isset($data->buttons->prevId)) {
-            $data->form->toolbar->addSbBtn('«', 'save_n_prev', 'class=btn-prev');
+            $data->form->toolbar->addSbBtn('«', 'save_n_prev', 'class=btn-prev noicon,order=30');
         } else {
-            $data->form->toolbar->addSbBtn('«', 'save_n_prev', 'class=btn-prev btn-disabled,disabled');
+            $data->form->toolbar->addSbBtn('«', 'save_n_prev', 'class=btn-prev btn-disabled noicon,disabled,order=30');
         }
     }
 }

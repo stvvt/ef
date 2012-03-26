@@ -1,5 +1,7 @@
 <?php
 
+
+
 /**
  * Задава кодировката на базата данни по подразбиране
  */
@@ -7,40 +9,56 @@ defIfNot('EF_DB_CHARSET', 'utf8');
 
 
 /**
+ * Задава колацията на базата данни по подразбиране
+ */
+defIfNot('EF_DB_COLLATION', 'utf8_bin');
+
+
+/**
+ * Задава кодировката на клиента (PHP скрипта) за базата данни по подразбиране
+ */
+defIfNot('EF_DB_CHARSET_CLIENT', 'utf8');
+
+
+/**
  * Клас 'core_Db' - Манипулиране на MySQL-ски бази данни
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2010 Experta OOD
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Db extends core_BaseClass
 {
     
     
     /**
+     * Името на БД
      * @var string
      */
     var $dbName;
     
     
     /**
+     * Потребителя към БД
      * @var string
      */
     var $dbUser;
     
     
     /**
+     * Парола за БД
      * @var string
      */
     var $dbPass;
     
     
     /**
+     * Сървър за БД
      * @var string
      */
     var $dbHost;
@@ -60,6 +78,7 @@ class core_Db extends core_BaseClass
     
     
     /**
+     * Инициализиране на обекта
      * @param string $dbName
      * @param string $user
      * @param string $password
@@ -72,6 +91,8 @@ class core_Db extends core_BaseClass
         $this->dbPass = EF_DB_PASS;
         $this->dbHost = EF_DB_HOST;
         $this->dbCharset = EF_DB_CHARSET;
+        $this->dbCollation = EF_DB_COLLATION;
+        $this->dbCharsetClient = EF_DB_CHARSET_CLIENT;
         
         parent::init($params);
     }
@@ -85,25 +106,24 @@ class core_Db extends core_BaseClass
     function connect()
     {
         if (!isset($this->link)) {
-            $link = @mysql_connect($this->dbHost, $this->dbUser, $this->dbPass) or error("Грешка при свързване с MySQL сървър", mysql_error(), 'ГРЕШКА В БАЗАТА ДАННИ');
+            $link = @mysql_connect($this->dbHost, $this->dbUser, $this->dbPass) or
+            error("Грешка при свързване с MySQL сървър", mysql_error(), 'ГРЕШКА В БАЗАТА ДАННИ');
+            
+            // След успешно осъществяване на връзката изтриваме паролата
+            // с цел да не се появи случайно при някой забравен bp()
+            unset($this->dbPass);
+            
+            // Запомняме връзката към MySQL сървъра за по-късна употреба
             $this->link = $link;
             
-            if ($this->dbCharset == 'utf8') {
-                mysql_query("set character_set_results=utf8", $link);
-                mysql_query("set collation_connection=utf8_bin", $link);
-                mysql_query("set character_set_client=utf8", $link);
-            } elseif ($this->dbCharset == 'cp1251') {
-                mysql_query("set character_set_results=utf8", $link);
-                mysql_query("set collation_connection=cp1251_general_ci", $link);
-                mysql_query("set character_set_client=cp1251", $link);
-            }
+            // Задаваме настройките за символното кодиране на връзката
+            mysql_query('set character_set_results=' . $this->dbCharset, $link);
+            mysql_query('set collation_connection=' . $this->dbCollation, $link);
+            mysql_query('set character_set_client=' . $this->dbCharsetClient, $link);
             
+            // Избираме указаната база от данни на сървъра
             mysql_select_db($this->dbName);
         }
-        
-        // След успешно осъществяване на връзката изтриваме паролата
-        // с цел да не се появи случайно при някой забравен bp()
-        unset($this->dbPass);
         
         return $this->link;
     }
@@ -129,19 +149,15 @@ class core_Db extends core_BaseClass
      *
      * @param string $sqlQuery
      * @param bool $silent Ако е TRUE, функцията не прекъсва изпълнението на
-     *                      скрипта и не отпечатва съобщението за грешка на MySQL.
-     *                      В този случай извикващия трябва да провери стойностите на
-     *                      {$link DB::errno()} и {@link DB::error()} и да реагира според тях.
+     * скрипта и не отпечатва съобщението за грешка на MySQL.
+     * В този случай извикващия трябва да провери стойностите на
+     * {$link DB::errno()} и {@link DB::error()} и да реагира според тях.
      * @return resource
      */
     function query($sqlQuery, $silent = FALSE)
     {
         DEBUG::startTimer("DB::query()");
         DEBUG::log("$sqlQuery");
-        
-        if ($this->dbCharacter == 'cp1251') {
-            $sqlQuery = iconv('utf8', 'cp1251', $sqlQuery);
-        }
         
         $this->connect();
         $this->query = $sqlQuery;
@@ -160,7 +176,7 @@ class core_Db extends core_BaseClass
     /**
      * Връща броя записи, върнати от SELECT заявка.
      *
-     * @param resource $handle резултат на фунцията {@link DB::query()}, извикана със SELECT заявка.
+     * @param resource $handle резултат на функцията {@link DB::query()}, извикана със SELECT заявка.
      * @return int
      */
     function numRows($handle = NULL, $silent = FALSE)
@@ -189,7 +205,7 @@ class core_Db extends core_BaseClass
     /**
      * Връща id-то (Primary Key) на записа, които е бил последен вмъкнат чрез INSERT заявка.
      *
-     * @param resource $handle резултат на фунцията {@link DB::query()}, извикана с INSERT заявка.
+     * @param resource $handle резултат на функцията {@link DB::query()}, извикана с INSERT заявка.
      * @return mixed
      */
     function insertId($silent = NULL)
@@ -205,7 +221,7 @@ class core_Db extends core_BaseClass
     /**
      * Връща един запис, под формата на обект
      *
-     * @param resource $handle резултат на фунцията {@link DB::query()}, извикана със SELECT заявка.
+     * @param resource $handle резултат на функцията {@link DB::query()}, извикана със SELECT заявка.
      * @return object
      */
     function fetchObject($handle = NULL, $silent = NULL)
@@ -223,23 +239,15 @@ class core_Db extends core_BaseClass
     /**
      * Връща един запис, под формата на масив
      *
-     * @param resource $handle резултат на фунцията {@link DB::query()}, извикана със SELECT заявка.
+     * @param resource $handle резултат на функцията {@link DB::query()}, извикана със SELECT заявка.
      * @param int $resultType една от предефинираните константи MYSL_ASSOC или MYSQL_NUM
-     * @return array В зависимост от $resultType, ндексите на този масив са или цели числа (0, 1, ...) или стрингове
+     * @return array В зависимост от $resultType, индексите на този масив са или цели числа (0, 1, ...) или стрингове
      */
     function fetchArray($handle = NULL, $resultType = MYSQL_ASSOC)
     {
         if ($handle == NULL)
         $handle = $this->lastRes;
         $r = mysql_fetch_array($handle, $resultType);
-        
-        if (is_array($r)) {
-            foreach ($r as $i => $v) {
-                if ($v === "") {
-                    unset($r[$i]);
-                }
-            }
-        }
         
         return $r;
     }
@@ -274,7 +282,7 @@ class core_Db extends core_BaseClass
     /**
      * Освобождава ресурсите, асоциирани с $handle
      *
-     * @param resource $handle резултат на фунцията {@link DB::query()}, извикана със SELECT заявка.
+     * @param resource $handle резултат на функцията {@link DB::query()}, извикана със SELECT заявка.
      */
     function freeResult($handle = NULL)
     {
@@ -312,7 +320,6 @@ class core_Db extends core_BaseClass
     
     /**
      * Има ли таблицата такова поле?
-     *
      */
     function isFieldExists($tableName, $fieldName)
     {
@@ -346,10 +353,10 @@ class core_Db extends core_BaseClass
         
         // Установяване на параметрите по подразбиране
         setIfNot($params, array(
-            'ENGINE' => 'MYISAM',
-            'CHARACTER' => 'utf8',
-            'COLLATE' => 'utf8_bin'
-        ));
+                'ENGINE' => 'MYISAM',
+                'CHARACTER' => 'utf8',
+                'COLLATE' => 'utf8_bin'
+            ));
         
         // Правим допълнителните параметри към заявката
         $params = "ENGINE = " . $params['ENGINE'] . " CHARACTER SET =" . $params['CHARACTER'] . " COLLATE " . $params['COLLATE'] . ";";
@@ -365,7 +372,7 @@ class core_Db extends core_BaseClass
      */
     function getFieldAttr($tableName, $fieldName)
     {
-        $query = "SHOW COLUMNS FROM `{$tableName}` LIKE '{$fieldName}'";
+        $query = "SHOW FULL COLUMNS FROM `{$tableName}` LIKE '{$fieldName}'";
         
         $dbRes = $this->query($query);
         
@@ -381,6 +388,8 @@ class core_Db extends core_BaseClass
         // Ако няма атрибути - връщаме сигнал, че полето не съществува
         if (!$arr) return FALSE;
         
+        $res = new stdClass();
+
         // Правим всички имена на атрибути с малки букви
         foreach($arr as $key => $val) {
             $key = strtolower($key);
@@ -394,7 +403,7 @@ class core_Db extends core_BaseClass
             $rest = substr($res->type, $bc);
             $rest = trim($rest, '()');
             
-            // В часта до скобата имаме името на типа
+            // В частта до скобата имаме името на типа
             $res->type = strtoupper(substr($res->type, 0, $bc));
             
             // Ако типа е ENUM или SET то след скобите имаме options
@@ -405,7 +414,7 @@ class core_Db extends core_BaseClass
                 $optInd = 0;
                 $len = strlen($rest);
                 
-                for($i=0; $i<$len; $i++) {
+                for($i = 0; $i<$len; $i++) {
                     $c = $rest{$i};
                     
                     if($part == 'out') {
@@ -415,11 +424,12 @@ class core_Db extends core_BaseClass
                             $optInd++;
                         }
                     } elseif ($part == 'in') {
-                        if( $c == "'" ) {
-                            if($rest{$i+1} == "'") {
-                                $i = $i+1;
+                        if($c == "'") {
+                            if($rest{$i + 1} == "'") {
+                                $i = $i + 1;
                                 $res->options[$optInd] .= $c;
                             } else {
+                                $res->options[$optInd] .= '';
                                 $part = 'out';
                             }
                         } else {
@@ -456,51 +466,53 @@ class core_Db extends core_BaseClass
         $types['can_be_unsigned'] = arr::make('TINYINT,SMALLINT,MEDIUMINT,INT,INTEGER,BIGINT,FLOAT,DOUBLE,DOUBLE PRECISION,REAL,DECIMAL');
         $types['have_options'] = arr::make('ENUM,SET');
         $types['have_len'] = arr::make('CHAR,VARCHAR');
+        $types['have_collation'] = arr::make('TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT,CHAR,VARCHAR,ENUM');
         
-        if(!$types[$param]) error('Wrong param for isType', $param);
+        expect($types[$param], 'Wrong param for isType', $param);
         
         return in_array($type, $types[$param]);
     }
     
     
     /**
-     * Създава, ъпдейтва поле с посочените параметри
+     * Създава, актуализира поле с посочените параметри
      */
     function forceField($tableName, $field)
     {
         // всички параметри на полето, трябва да са с големи букви
+        
         
         if ($this->isType($field->type, 'have_options')) {
             foreach ($field->options as $opt) {
                 $typeInfo .= ($typeInfo ? ',' : '') . "'" . str_replace("'", "\\" . "'", $opt) . "'";
             }
             $typeInfo = "($typeInfo)";
-        } elseif( $this->isType($field->type, 'have_len') ) {
+        } elseif($this->isType($field->type, 'have_len')) {
             $typeInfo = "({$field->size})";
+        }
+        
+        $default = $notNull = $unsigned = $collation = '';
+        
+        if($field->collation) {
+            $collation = " COLLATE {$field->collation}";
         }
         
         if ($field->unsigned) {
             $unsigned = ' UNSIGNED';
-        } else {
-            $unsigned = '';
         }
         
         if ($field->notNull) {
             $notNull = ' NOT NULL';
-        } else {
-            $notNull = '';
         }
         
         if ($field->default !== NULL) {
             $default = " DEFAULT '{$field->default}'";
-        } else {
-            $default = "";
         }
         
         if ($field->field) {
-            return $this->query("ALTER TABLE `{$tableName}` CHANGE `{$field->field}` `{$field->name}` {$field->type}{$typeInfo}{$unsigned}{$notNull}{$default}");
+            return $this->query("ALTER TABLE `{$tableName}` CHANGE `{$field->field}` `{$field->name}` {$field->type}{$typeInfo}{$collation}{$unsigned}{$notNull}{$default}");
         } else {
-            return $this->query("ALTER TABLE `{$tableName}` ADD `{$field->name}` {$field->type}{$typeInfo}{$unsigned}{$notNull}{$default}");
+            return $this->query("ALTER TABLE `{$tableName}` ADD `{$field->name}` {$field->type}{$typeInfo}{$collation}{$unsigned}{$notNull}{$default}");
         }
     }
     
@@ -523,8 +535,8 @@ class core_Db extends core_BaseClass
         }
         
         // Ако типът е DROP - не създаваме нов индекс
-        if($type == 'DROP')  return;
-
+        if($type == 'DROP') return;
+        
         if (count($fieldsList)) {
             foreach ($fieldsList as $f) {
                 $f = str::phpToMysqlName($f);
@@ -563,7 +575,7 @@ class core_Db extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getIndexes($tableName)
     {
@@ -609,6 +621,8 @@ class core_Db extends core_BaseClass
             static $flagSetup;
             
             if(!$flagSetup) {
+                
+                
                 /**
                  * Липсваща таблица
                  */
@@ -616,8 +630,8 @@ class core_Db extends core_BaseClass
                 
                 $errno = mysql_errno($this->link);
                 $eeror = mysql_error($this->link);
-
-                 // Ако таблицата липсва, предлагаме на Pack->Setup да провери
+                
+                // Ако таблицата липсва, предлагаме на Pack->Setup да провери
                 // да не би да трябва да се прави начално установяване
                 if($errno == MYSQL_MISSING_TABLE) {
                     $Packs = cls::get('core_Packs');
@@ -627,15 +641,15 @@ class core_Db extends core_BaseClass
                     $Packs = cls::get('core_Packs');
                     $flagSetup = TRUE;
                     $res = $Packs->setupPack('core');
-
+                    
                     redirect(array('core_Packs'), FALSE, "Пакета `core` беше обновен");
                 }
             }
-
+            
             error("Грешка в БД при " . $action, array(
                     "query" => $this->query,
                     "error" => $eeror
-                    ), 'ГРЕШКА В БАЗАТА ДАННИ');
+                ), 'ГРЕШКА В БАЗАТА ДАННИ');
         }
         
         return mysql_errno();
@@ -654,6 +668,7 @@ class core_Db extends core_BaseClass
             $this->connect();
         }
         expect(is_scalar($value), $value);
+        
         return mysql_real_escape_string($value, $this->link);
     }
 }

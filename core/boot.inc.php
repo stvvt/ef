@@ -23,10 +23,12 @@
  *                                                                                          *
  ********************************************************************************************/
 
+expect(PHP_VERSION_ID >= 50300);
+
 /**
  * Осигурява автоматичното зареждане на класовете
  */
-function __autoload($className)
+function ef_autoload($className)
 {
     $aliases = array('arr' => 'core_Array',
         'dt' => 'core_DateTime',
@@ -41,20 +43,16 @@ function __autoload($className)
         'users' => 'core_Users',
     );
     
-    
-    cls::load($className);
-    
-    /*
-    if( $fullName = $aliases[strtolower($className)] ) {
+    if($fullName = $aliases[strtolower($className)]) {
         cls::load($fullName);
         class_alias($fullName, $className);
+        return TRUE;
     } else {
-        cls::load($className, FALSE);
+        return cls::load($className, TRUE);;
     }
-    */
-
 }
 
+spl_autoload_register('ef_autoload', true, true);
 
 /**
  * Изисква потребителят да има посочената роля
@@ -103,8 +101,8 @@ function error($errorInfo = NULL, $debug = NULL, $errorTitle = 'ГРЕШКА В 
         // Ако грешката е възникнала, преди да се зареди core_Message се използва 
         // дирекно оптечатване чрез echo
         echo "<head><meta http-equiv=\"Content-Type\" content=\"text/html;" .
-             "charset=UTF-8\" /><meta name=\"robots\" content=\"noindex,nofollow\" /></head>" .
-             "<H3 style='color:red'>Error: {$errotTitle}</H3>";
+        "charset=UTF-8\" /><meta name=\"robots\" content=\"noindex,nofollow\" /></head>" .
+        "<H3 style='color:red'>Error: {$errotTitle}</H3>";
         
         if (isDebug()) {
             echo "<H5 style='color:red'>Error: {$errorInfo}</H5>";
@@ -153,15 +151,19 @@ function setIfNot(&$p1, $p2)
 
 /**
  * Дефинира константа, ако преди това не е била дефинирана
+ * Ако се извика без 2-ри аргумент - прекъсва изпълнението с изискване за дефиниция на константата
  */
-function defIfNot($name, $value)
+function defIfNot($name, $value = NULL)
 {
+	if($value === NULL && !defined($name)) {
+		halt("Constant '{$name}' is not defined.");
+	}
     defined($name) || define($name, $value);
 }
 
 
 /**
- *  @todo Чака за документация...
+ * @todo Чака за документация...
  */
 function defineIfNot($name, $value)
 {
@@ -197,7 +199,7 @@ function isDebug()
             
             
             /**
-             *  @todo Чака за документация...
+             * Включен ли е дебъга? Той ще бъде включен и когато текущия потребител има роля 'tester'
              */
             DEFINE('EF_DEBUG', TRUE);
             ini_set("display_errors", isDebug());
@@ -298,7 +300,7 @@ function bp()
         }
         echo "</pre>";
     }
-
+    
     echo Debug::getLog();
     
     exit(-1);
@@ -323,9 +325,9 @@ function getFullPath($shortPath)
     expect(strpos($shortPath, '../') === FALSE);
     
     if(defined('EF_PRIVATE_PATH')) {
-        $pathsArr = array( EF_APP_PATH, EF_EF_PATH, EF_VENDORS_PATH, EF_PRIVATE_PATH);
+        $pathsArr = array(EF_APP_PATH, EF_EF_PATH, EF_VENDORS_PATH, EF_PRIVATE_PATH);
     } else {
-        $pathsArr = array( EF_APP_PATH, EF_EF_PATH, EF_VENDORS_PATH );
+        $pathsArr = array(EF_APP_PATH, EF_EF_PATH, EF_VENDORS_PATH);
     }
     
     foreach($pathsArr as $base) {
@@ -335,6 +337,18 @@ function getFullPath($shortPath)
     }
     
     return FALSE;
+}
+
+
+/**
+ * Връща съдържанието на файла, като стринг
+ * Пътя до файла може да е указан само от пакета нататък
+ */
+function getFileContent($shortPath)
+{
+    expect($fullPath = getFullPath($shortPath));
+    
+    return file_get_contents($fullPath);
 }
 
 
@@ -354,7 +368,7 @@ function sbf($rPath, $qt = '"', $absolute = FALSE)
             
             if(!file_exists($newPath)) {
                 if(!is_dir($dir = dirname($newPath))) {
-                    if( !mkdir($dir, 0777, TRUE) ) {
+                    if(!mkdir($dir, 0777, TRUE)) {
                         Debug::log("Не може да се създаде: {$dir}");
                     }
                 }
@@ -387,7 +401,7 @@ function toUrl($params = Array(), $type = 'relative')
     // Очакваме, че параметъра е масив
     expect(is_array($params), $params, 'toUrl($params) Очаква  масив');
     
-    $Request =& cls::get('core_Request');
+    $Request = & cls::get('core_Request');
     
     $Request->doProtect($params);
     
@@ -503,15 +517,15 @@ function toUrl($params = Array(), $type = 'relative')
     }
     
     switch($type) {
-        case 'local':
+        case 'local' :
             $url1 = ltrim($pre . $url, '/');
             break;
         
-        case 'relative':
+        case 'relative' :
             $url1 = rtrim(getBoot(FALSE), '/') . $pre . $url;
             break;
         
-        case 'absolute':
+        case 'absolute' :
             $url1 = rtrim(getBoot(TRUE), '/') . $pre . $url;
             break;
     }
@@ -525,7 +539,7 @@ function toUrl($params = Array(), $type = 'relative')
 
 
 /**
- *  @todo Чака за документация...
+ * @todo Чака за документация...
  */
 function toLocalUrl($arr)
 {
@@ -553,7 +567,7 @@ function toLocalUrl($arr)
     } else {
         return $arr;
     }
-
+    
     return $url;
 }
 
@@ -579,7 +593,7 @@ function getBoot($absolute = FALSE)
             
             $relativeWebRoot = str_replace('/index.php', '', $scriptName);
             
-            if( $relativeWebRoot == '/') $relativeWebRoot = '';
+            if($relativeWebRoot == '/') $relativeWebRoot = '';
         }
         
         return $relativeWebRoot;
@@ -588,7 +602,7 @@ function getBoot($absolute = FALSE)
 
 
 /**
- *  @todo Чака за документация...
+ * @todo Чака за документация...
  */
 function getCurrentUrl()
 {
@@ -649,7 +663,7 @@ function getRetUrl($retUrl = NULL)
 
 
 /**
- *  @todo Чака за документация...
+ * @todo Чака за документация...
  */
 function followRetUrl()
 {
@@ -668,19 +682,20 @@ function followRetUrl()
  * Добавя сесийния идентификатор, ако е необходимо
  */
 function redirect($url, $absolute = FALSE, $msg = NULL, $type = 'info')
-{
-    $url = toUrl($url, $absolute?'absolute':'relative');
+{   
+    expect(ob_get_length() == 0, ob_get_length());
+    $url = toUrl($url, $absolute ? 'absolute' : 'relative');
     
     if (class_exists('core_Session', FALSE)) {
         $url = core_Session::addSidToUrl($url);
     }
     
-	if (isset($msg)) {
-		$Nid = rand(1000000, 9999999);
+    if (isset($msg)) {
+        $Nid = rand(1000000, 9999999);
         Mode::setPermanent('Notification_' . $Nid, $msg);
         Mode::setPermanent('NotificationType_' . $Nid, $type);
-        $url = core_Url::addParams( toUrl($url), array('Nid' => $Nid));
-	}    
+        $url = core_Url::addParams(toUrl($url), array('Nid' => $Nid));
+    }
     
     header("Status: 302");
     header("Location: $url");
@@ -705,7 +720,7 @@ if (!function_exists('class_alias')) {
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function class_alias($original, $alias) {
         eval('abstract class ' . $alias . ' extends ' . $original . ' {}');
@@ -720,10 +735,10 @@ if (!function_exists('class_alias')) {
  */
 function shutdown($sendOutput = TRUE)
 {
-    if(!isDebug() && $sendOutput) { 
+    if(!isDebug() && $sendOutput) {
         // Изпращаме хедърите и казваме на браузъра да затвори връзката
         ob_end_flush();
-        $size = ob_get_length();  
+        $size = ob_get_length();
         header("Content-Length: {$size}");
         header('Connection: close');
         
@@ -744,7 +759,6 @@ function shutdown($sendOutput = TRUE)
     exit($status);
 }
 
-
 /********************************************************************************************
  *                                                                                          *
  *      Зареждане на класове с библиотечни функции                                          *
@@ -753,31 +767,6 @@ function shutdown($sendOutput = TRUE)
 
 // Зареждаме 'CLS' класа за работа с класове
 require_once(EF_EF_PATH . "/core/Cls.class.php");
-
-Loader::classAlias(
-	array(
-		'arr' => 'core_Array',
-        'dt' => 'core_DateTime',
-        'ht' => 'core_Html',
-        'et' => 'core_ET',
-        'ET' => 'core_ET',
-        'str' => 'core_String',
-        'debug' => 'core_Debug',
-        'DEBUG' => 'core_Debug',
-        'Debug' => 'core_Debug',
-        'mode' => 'core_Mode',
-        'Mode' => 'core_Mode',
-        'redirect' => 'core_Redirect',
-        'Redirect' => 'core_Redirect',
-        'request' => 'core_Request',
-        'Request' => 'core_Request',
-        'url' => 'core_Url',
-        'Url' => 'core_Url',
-        'users' => 'core_Users',
-        'Users' => 'core_Users',
-        'cls' => 'core_Cls',
-    )
-);
 
 /********************************************************************************************
  *                                                                                          *
@@ -800,7 +789,7 @@ defIfNot('EF_DEBUG_HOSTS', 'localhost,127.0.0.1');
 // Ако index.php стои в директория с име, за което съществува конфигурационен 
 // файл, приема се, че това име е името на приложението
 if (!defined('EF_APP_NAME') &&
-file_exists(EF_CONF_PATH . '/' . basename(EF_INDEX_PATH) . '.cfg.php')) {
+    file_exists(EF_CONF_PATH . '/' . basename(EF_INDEX_PATH) . '.cfg.php')) {
     
     
     /**
@@ -824,23 +813,25 @@ if (!defined('EF_APP_NAME')) {
         halt('Error: Unable to determinate application name (EF_APP_NAME)</b>');
     }
     
+    
     /**
-     *  @todo Чака за документация...
+     * Името на приложението. Използва се за определяне на други константи.
      */
     defIfNot('EF_APP_NAME', $_GET['App']);
-
+    
+    
     /**
      * Дали името на приложението е зададено фиксирано
      */
     DEFINE('EF_APP_NAME_FIXED', FALSE);
 } else {
-
+    
+    
     /**
-     *  @todo Чака за документация...
+     * Дали името на приложението е зададено фиксирано
      */
     DEFINE('EF_APP_NAME_FIXED', TRUE);
 }
-
 
 /**
  * Пътя до директорията за статичните браузърни файлове към приложението
@@ -852,7 +843,7 @@ defineIfNot('EF_SBF_PATH', EF_INDEX_PATH . "/" . EF_SBF . "/" . EF_APP_NAME);
 // Шаблон за този файл има в директорията [_docs]
 if ((@include EF_CONF_PATH . '/' . EF_APP_NAME . '.cfg.php') === FALSE) {
     halt('Error in boot.php: Missing configuration file: ' .
-    EF_CONF_PATH . '/' . EF_APP_NAME . '.cfg.php');
+        EF_CONF_PATH . '/' . EF_APP_NAME . '.cfg.php');
 }
 
 // Зареждаме общата за всички приложения конфигурация
@@ -882,7 +873,7 @@ ini_set("display_startup_errors", isDebug());
  * Времева зона
  */
 defIfNot('EF_TIMEZONE', function_exists("date_default_timezone_get") ?
-date_default_timezone_get() : 'Europe/Sofia');
+    date_default_timezone_get() : 'Europe/Sofia');
 
 // Сетваме времевата зона
 date_default_timezone_set(EF_TIMEZONE);
@@ -929,6 +920,7 @@ defIfNot('EF_TEMP_PATH', EF_TEMP_BASE_PATH . '/' . EF_APP_NAME);
  */
 defIfNot('EF_UPLOADS_BASE_PATH', EF_ROOT_PATH . '/uploads');
 
+
 /**
  * Директорията с качените и генерираните файлове
  */
@@ -939,8 +931,6 @@ defIfNot('EF_UPLOADS_PATH', EF_UPLOADS_BASE_PATH . '/' . EF_APP_NAME);
  *      Обработване на заявките за статични браузърни файлове                               *
  *                                                                                          *
  ********************************************************************************************/
-
-
 
 // Ако имаме заявка за статичен ресурс, веднага го сервираме и
 // приключване. Ако не - продъжаваме със зареждането на фреймуърка
@@ -955,7 +945,7 @@ if ($_GET[EF_SBF]) {
  ********************************************************************************************/
 
 // Зареждаме класа регистратор на плъгините
-$Plugins =& cls::get('core_Plugins');
+$Plugins = & cls::get('core_Plugins');
 
 /********************************************************************************************
  *                                                                                          *
@@ -976,7 +966,7 @@ $Wrapper = cls::get('tpl_Wrapper');
 
 $Wrapper->renderWrapping($content);
 
-shutdown(); // Край на работата на скрипта
+shutdown();   // Край на работата на скрипта
 
 /**
  * Функция, която проверява и ако се изисква, сервира
@@ -989,6 +979,7 @@ function _serveStaticBrowserResource($name)
     // Грешка. Файла липсва
     if (!$file) {
         error_log("EF Error: Mising file: {$name}");
+        
         if (isDebug()) {
             header('Content-Type: text/html; charset=UTF-8');
             header("Content-Encoding: none");
@@ -1052,6 +1043,7 @@ function _serveStaticBrowserResource($name)
         
         if ($gzip) {
             header("Content-Encoding: gzip");
+            
             // Търсим предварително компресиран файл
             if (file_exists($file . '.gz')) {
                 $file .= '.gz';

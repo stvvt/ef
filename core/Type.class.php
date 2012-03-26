@@ -1,40 +1,37 @@
 <?php
 
+
+
 /**
  * Клас 'core_Type' - Прототип на класовете за типове
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Type extends core_BaseClass
 {
     
+    
     /**
      * Конструктор. Дава възможност за инициализация
      */
-    function __construct($params = array())
+    function core_Type($params = array())
     {
         if(is_array($params) && count($params)) {
             $this->params = $params;
         }
     }
     
-    function core_Type($params = array())
-    {
-    	$this->__construct($params);
-    }
-    
     
     /**
      * Премахваме HTML елементите при визуализацията на всички типове,
-     * които не пре-дефинират тази функция
+     * които не предефинират тази функция
      */
     function toVerbal_($value)
     {
@@ -47,7 +44,7 @@ class core_Type extends core_BaseClass
             $value .= "...";
         }
         
-        if ($this->params['wordwrap']&& strlen($value))  {
+        if ($this->params['wordwrap'] && strlen($value)) {
             $value = wordwrap($value, $this->params['wordwrap'], "<br />\n");
         }
         
@@ -60,9 +57,9 @@ class core_Type extends core_BaseClass
      */
     static function escape($value)
     {
-    	$value = str_replace("<", "&lt;", $value);
-    	
-    	return $value;
+        $value = str_replace(array("&", "<"), array('&amp;', '&lt;'), $value);
+        
+        return $value;
     }
     
     
@@ -77,10 +74,10 @@ class core_Type extends core_BaseClass
     
     /**
      * Връща атрибутите на елемента TD необходими при таблично
-     *  представяне на стойността
+     * представяне на стойността
      */
     function getCellAttr()
-    { 
+    {
         return $this->params['cellAttr'] ? $this->params['cellAttr'] : ($this->cellAttr ? $this->cellAttr : '');
     }
     
@@ -97,7 +94,7 @@ class core_Type extends core_BaseClass
     
     /**
      * Този метод трябва генерира хHTML код, който да представлява
-     *  полето за въвеждане на конкретния формат информация
+     * полето за въвеждане на конкретния формат информация
      */
     function renderInput_($name, $value = '', $attr = array())
     {
@@ -123,13 +120,15 @@ class core_Type extends core_BaseClass
      */
     function getMysqlAttr()
     {
+        $res = new stdClass();
+
         $res->size = $this->getDbFieldSize();
         
         $res->type = strtoupper($this->dbFieldType);
         
-        // Ключовете на оциите на типа, са опциите в MySQL
+        // Ключовете на опциите на типа, са опциите в MySQL
         if(count($this->options)) {
-            foreach( $this->options as $key => $val) {
+            foreach($this->options as $key => $val) {
                 $res->options[] = $key;
             }
         }
@@ -138,13 +137,19 @@ class core_Type extends core_BaseClass
             $res->unsigned = TRUE;
         }
         
+        if($this->params['collate']) {
+            $res->collation = $this->params['collate'];
+        } elseif($this->params['ci']) {
+            $res->collation = 'utf8_general_ci';
+        }
+        
         return $res;
     }
     
     
     /**
-     * Връща MySQL-ската стойност на стоността, така обезопасена,
-     * че да може да учавства в заявки
+     * Връща MySQL-ската стойност на стойността, така обезопасена,
+     * че да може да участва в заявки
      */
     function toMysql($value, $db, $notNull, $defValue)
     {
@@ -160,14 +165,14 @@ class core_Type extends core_BaseClass
         } else {
             $mysqlVal = "'" . $db->escape($value) . "'";
         }
-
+        
         return $mysqlVal;
     }
     
     
     /**
      * Проверява зададената стойност дали е допустима за този тип.
-     * Стойноста е във вътрешен формат (MySQL)
+     * Стойността е във вътрешен формат (MySQL)
      * Връща масив с ключове 'warning', 'error' и 'value'.
      * Ако стойността е съмнителна 'warning' съдържа предупреждение
      * Ако стойността е невалидна 'error' съдържа съобщение за грешка
@@ -180,7 +185,7 @@ class core_Type extends core_BaseClass
             
             $res = array();
             
-            // Проверка за максинална дължина
+            // Проверка за максимална дължина
             $size = $this->getDbFieldSize();
             
             if ($size && mb_strlen($value) > $size) {
@@ -201,7 +206,7 @@ class core_Type extends core_BaseClass
             
             // Проверяваме дали не е под минималната стойност, ако е зададена
             if (!$res['error'] && isset($this->params['min'])) {
-                if( $value < $this->params['min'] ) {
+                if($value < $this->params['min']) {
                     $res['error'] = 'Под допустимото' . "|* - '" .
                     $this->toVerbal($this->params['min']) . "'";
                 }
@@ -224,7 +229,7 @@ class core_Type extends core_BaseClass
             }
             
             // Проверяваме дали е под недостижимия максимум, ако е зададен
-            if (!$res['error'] && isset($this->params['Max']) ) {
+            if (!$res['error'] && isset($this->params['Max'])) {
                 if($value >= $this->params['Max']) {
                     $res['error'] = 'Не е под' . "|* - '" .
                     $this->toVerbal($this->params['Max']) . "'";
@@ -255,7 +260,7 @@ class core_Type extends core_BaseClass
      * Метод-фабрика за създаване на обекти-форматъри. Освен името на класа-тип
      * '$name' може да съдържа в скоби и параметри на форматъра, като size,syntax,max,min
      */
-    function getByName($name)
+    static function getByName($name)
     {
         if (is_object($name) && cls::isSubclass($name, "core_Type"))
         return $name;
@@ -282,20 +287,21 @@ class core_Type extends core_BaseClass
             
             if ($rightBracketPos > $leftBracketPos) {
                 $params = substr($name, $leftBracketPos + 1,
-                $rightBracketPos - $leftBracketPos - 1);
+                    $rightBracketPos - $leftBracketPos - 1);
                 $params = explode(",", $params);
                 
                 foreach ($params as $index => $value) {
-                	$value = trim($value);
+                    $value = trim($value);
+                    
                     if (strpos($value, "=") > 0) {
                         list($key, $val) = explode("=", $value);
                         $p[trim($key)] = trim($val);
                     } else {
-                    	if (count($p) == 0 && is_numeric($value) && ($typeName != 'type_Enum')) {
-                    		$p[] = $value;
-                    	} else {
-							$p[trim($value)] = trim($value);
-                    	}
+                        if (count($p) == 0 && is_numeric($value) && ($typeName != 'type_Enum')) {
+                            $p[] = $value;
+                        } else {
+                            $p[trim($value)] = trim($value);
+                        }
                     }
                 }
             } else {
@@ -303,20 +309,18 @@ class core_Type extends core_BaseClass
             }
         }
         
- 
-        
         if ($typeName == 'type_Enum') {
             return cls::get($typeName, array(
-                'options' => $p
-            ));
+                    'options' => $p
+                ));
+        } elseif($typeName == 'type_Set') {
+            return cls::get($typeName, array(
+                    'suggestions' =>  $p
+                ));
         } else {
             return cls::get($typeName, array(
-                'params' => $p
-            ));
+                    'params' => $p
+                ));
         }
-        
-        
-   
     }
-
 }

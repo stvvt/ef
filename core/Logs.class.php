@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_Logs' - Мениджър за запис на действията на потребителите
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Logs extends core_Manager
 {
@@ -68,7 +69,7 @@ class core_Logs extends core_Manager
     /**
      * Добавяне на събитие в лога
      */
-    function add($className, $objectId, $detail, $lifeTime = 180)
+    static function add($className, $objectId, $detail, $lifeTime = 180)
     {
         if (is_object($className)) {
             $className = cls::getClassName($className);
@@ -76,14 +77,13 @@ class core_Logs extends core_Manager
         
         expect(is_string($className));
         
+        $rec = new stdClass();
         $rec->className = $className;
         $rec->objectId = $objectId;
         $rec->detail = $detail;
         $rec->lifeTime = $lifeTime;
         
-        $Log = cls::get('core_Logs');
-
-        return $Log->save($rec, NULL, 'delayed');
+        return core_Logs::save($rec, NULL, 'delayed');
     }
     
     
@@ -101,7 +101,7 @@ class core_Logs extends core_Manager
     /**
      * Подготвя заявката
      */
-    function on_BeforePrepareListRecs($mvc, $res, $data)
+    function on_BeforePrepareListRecs($mvc, &$res, $data)
     {
         $query = $data->query;
         $query->orderBy('#createdOn=DESC');
@@ -111,13 +111,12 @@ class core_Logs extends core_Manager
         $objectId = Request::get('objectId', 'int');
         
         if ($className) {
-            $ctr =& cls::get($className);
+            $ctr = & cls::get($className);
             
             if (method_exists($ctr, 'canViewLog')) {
                 $canView = $ctr->canViewLog($objectId);
             }
         }
-        
         
         /**
          * @todo: Да се добави възможност за сортиране по потребител
@@ -148,7 +147,7 @@ class core_Logs extends core_Manager
             
             foreach ($classes as $c) {
                 $mvc->info->append(' ');
-                $mvc->info->append(ht::createLink($c, array($c) ));
+                $mvc->info->append(ht::createLink($c, array($c)));
                 $c = strtolower($c);
                 $cond .= ($cond ? " OR " : "") . "(lower(#className) LIKE '%{$c}%')";
             }
@@ -159,12 +158,12 @@ class core_Logs extends core_Manager
     
     
     /**
-     *  Извиква се след конвертирането на реда ($rec) към вербални стойности ($row)
+     * Извиква се след конвертирането на реда ($rec) към вербални стойности ($row)
      */
     function on_AfterRecToVerbal($mvc, $row, $rec)
     {
-        if (FALSE && cls::load($rec->className, TRUE) ) {
-            $Class =& cls::get($rec->className);
+        if (FALSE && cls::load($rec->className, TRUE)) {
+            $Class = & cls::get($rec->className);
             
             if(is_object($Class)) {
                 if (method_exists($Class, 'logToVerbal')) {
@@ -182,10 +181,11 @@ class core_Logs extends core_Manager
     /**
      * Начално установяване на модела
      */
-    function on_AfterSetupMVC($mvc, $res)
+    function on_AfterSetupMVC($mvc, &$res)
     {
         $res .= "<p><i>Нагласяне на Cron</i></p>";
         
+        $rec = new stdClass();
         $rec->systemId = 'DeleteExpiredLogs';
         $rec->description = 'Изтрива старите логове в системата';
         $rec->controller = "{$this->className}";

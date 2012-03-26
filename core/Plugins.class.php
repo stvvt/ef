@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_Plugins' - Мениджър на плъгини
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Plugins extends core_Manager
 {
@@ -43,8 +44,8 @@ class core_Plugins extends core_Manager
     
     
     /**
-     * Изпълнява се след въвеждането на даните от формата
-     * Използва се обикновенно за проверка на входните параметри
+     * Изпълнява се след въвеждането на данните от формата
+     * Използва се обикновено за проверка на входните параметри
      */
     function on_AfterInputEditForm($mvc, $form)
     {
@@ -59,11 +60,13 @@ class core_Plugins extends core_Manager
     
     
     /**
-     * Инсталира нов плъгин, към определ клас
+     * Инсталира нов плъгин, към определен клас
      */
     function installPlugin($name, $plugin, $class, $cover = 'family', $state = 'active')
     {
         $this->delete("#plugin = '{$plugin}' AND #class = '{$class}'");
+
+        $rec = new stdClass();
         $rec->name = $name;
         $rec->plugin = $plugin;
         $rec->class = $class;
@@ -119,7 +122,7 @@ class core_Plugins extends core_Manager
                         if (cls::load($plugin, TRUE)) {
                             $obj->loadSingle($name, $plugin);
                         } else {
-                            DEBUG::log("Лишсващ плъгин: {$plugin}");
+                            DEBUG::log("Липсващ плъгин: {$plugin}");
                         }
                     }
                 }
@@ -142,7 +145,8 @@ class core_Plugins extends core_Manager
         $name = $name ? $name : $plugin;
         $this->attachedPlugins[$class][$cover][$name] = $plugin;
     }
-
+    
+    
     /**
      * Рутинен метод, премахва прикачанията, свързани с класове от посочения пакет
      */
@@ -150,7 +154,6 @@ class core_Plugins extends core_Manager
     {
         $query = self::getQuery();
         $preffix = $pack . "_";
-        $query->delete( array("#class LIKE '[#1#]%' OR #plugin LIKE '[#1#]%'", $preffix ));
+        $query->delete(array("#class LIKE '[#1#]%' OR #plugin LIKE '[#1#]%'", $preffix));
     }
-
 }

@@ -1,24 +1,28 @@
 <?php
 
+
+
 /**
  * Клас 'plg_Chart' - Показва графики, вместо таблични данни
  *
  *
- * @category   Experta Framework
- * @package    plg
- * @author     Milen Georgiev
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   plg
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class plg_Chart extends core_Plugin
 {
     
     
     /**
+     * Манипулации със заглавието
      *
+     * @param core_Mvc $mvc
+     * @param stdClass $data
      */
     function on_AfterPrepareListTitle($mvc, $data)
     {
@@ -123,7 +127,7 @@ class plg_Chart extends core_Plugin
     
     
     /**
-     *
+     * @todo Чака за документация...
      */
     function getChart($data, $chartName, $chartType, $chartCaption, $chartField = NULL)
     {
@@ -134,10 +138,10 @@ class plg_Chart extends core_Plugin
         // Добавяме началото на функцията
         $chart->appendOnce("\n google.load(\"visualization\", \"1\", {packages:[\"corechart\"]});", "SCRIPTS");
         
-        $chart->append( "\n google.setOnLoadCallback(draw{$chartName});" .
-        "\n function draw{$chartName}() {" .
-        "\n     var data = new google.visualization.DataTable();",
-        "SCRIPTS");
+        $chart->append("\n google.setOnLoadCallback(draw{$chartName});" .
+            "\n function draw{$chartName}() {" .
+            "\n     var data = new google.visualization.DataTable();",
+            "SCRIPTS");
         
         // Масив в който слагаме различните стойности по оста X
         $rows = array();
@@ -207,23 +211,23 @@ class plg_Chart extends core_Plugin
         
         // Добавяме завършека на функцията
         $chart->append("\n     var chart = new google.visualization.{$chartType}(document.getElementById('{$chartName}'));" .
-        "\n     chart.draw(data, " . json_encode(array('width' => 800, 'height' => 480, 'title' => $chartCaption )) . ");" .
-        "\n }", 'SCRIPTS');
+            "\n     chart.draw(data, " . json_encode(array('width' => 800, 'height' => 480, 'title' => $chartCaption)) . ");" .
+            "\n }", 'SCRIPTS');
         
         return $chart;
     }
     
     
     /**
-     *
+     * Извиква се след рендирането на таблицата от табличния изглед
      */
-    function on_BeforeRenderListTable($mvc, $table, $data)
+    function on_BeforeRenderListTable($mvc, &$table, $data)
     {
         if($chartType = Request::get('Chart')) {
             
             $chartId = 0;
             
-            if( count($data->charts)) {
+            if(count($data->charts)) {
                 
                 $table = new ET();
                 $chartField = $data->chartField;
@@ -245,12 +249,15 @@ class plg_Chart extends core_Plugin
     
     
     /**
+     * Манипулации със заглавието
      *
+     * @param core_Mvc $mvc
+     * @param stdClass $data
      */
-    function on_AfterRenderListTitle($mvc, $title, $data)
+    function on_AfterRenderListTitle($mvc, &$title, $data)
     {
-        if( count($data->chartTypes) ) {
-            $title = new ET($title);
+        if(count($data->chartTypes)) {
+            $title = new ET('[#1#]', $title);
             
             // $title->prepend("<div style='float:left;'>");
             // $title->append("</div>");
@@ -262,9 +269,9 @@ class plg_Chart extends core_Plugin
             if($chartType) {
                 $url = getCurrentUrl();
                 unset($url['Chart']);
-                $title->append( ht::createLink(tr('Tаблица'), $url) , 'ListSummary');
+                $title->append(ht::createLink(tr('Tаблица'), $url) , 'ListSummary');
             } else {
-                $title->append( tr('Tаблица') , 'ListSummary');
+                $title->append(tr('Tаблица') , 'ListSummary');
             }
             
             foreach($data->chartTypes as $type => $caption)
@@ -275,7 +282,7 @@ class plg_Chart extends core_Plugin
                 
                 if($url['Chart'] != $type) {
                     $url['Chart'] = $type;
-                    $title->append( ht::createLink(tr($caption), $url) , 'ListSummary');
+                    $title->append(ht::createLink(tr($caption), $url) , 'ListSummary');
                 } else {
                     $title->append(tr($caption), 'ListSummary');
                 }

@@ -1,24 +1,25 @@
 <?php
 
+
+
 /**
  * Клас 'core_Master' - Мениджър за единичните данни на бизнес обекти
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Master extends core_Manager
 {
     
     
     /**
-     * Мениджърите на детаилите записи към обекта
+     * Мениджърите на детайлите записи към обекта
      */
     var $details;
     
@@ -34,7 +35,7 @@ class core_Master extends core_Manager
      */
     function on_AfterDescription($mvc)
     {
-        // Списъка с детаилите става на масив
+        // Списъка с детайлите става на масив
         $this->details = arr::make($this->details, TRUE);
         
         // Зарежда mvc класовете
@@ -61,10 +62,10 @@ class core_Master extends core_Manager
         
         // Проверяваме дали потребителя може да вижда списък с тези записи
         $this->requireRightFor('single', $data->rec);
-
+        
         // Подготвяме данните за единичния изглед
         $this->prepareSingle($data);
-
+         
         // Рендираме изгледа
         $tpl = $this->renderSingle($data);
         
@@ -72,17 +73,17 @@ class core_Master extends core_Manager
         $tpl = $this->renderWrapping($tpl, $data);
         
         // Записваме, че потребителя е разглеждал този списък
-        $this->log('Single: ' . ($data->log?$data->log:tr($data->title)), $id);
+        $this->log('Single: ' . ($data->log ? $data->log : tr($data->title)), $id);
         
         return $tpl;
     }
-
-
+    
+    
     /**
      * Подготвя данните (в обекта $data) необходими за единичния изглед
      */
     function prepareSingle_($data)
-    {        
+    {
         // Подготвяме полетата за показване
         $this->prepareSingleFields($data);
         
@@ -92,10 +93,10 @@ class core_Master extends core_Manager
         // Подготвяме титлата
         $this->prepareSingleTitle($data);
         
-        // Подготвяме тулбара
+        // Подготвяме лентата с инструменти
         $this->prepareSingleToolbar($data);
         
-        // Подготвяме детаилите
+        // Подготвяме детайлите
         if(count($this->details)) {
             foreach($this->details as $var => $class) {
                 if($var == $class) {
@@ -104,23 +105,23 @@ class core_Master extends core_Manager
                     $method = 'prepare' . $var;
                 }
                 $detailData = $data->{$var} = new stdClass();
-                $detailData->masterMvc  = $this;
-                $detailData->masterId   = $data->rec->id;
+                $detailData->masterMvc = $this;
+                $detailData->masterId = $data->rec->id;
                 $detailData->masterData = $data;
                 $this->{$var}->$method($detailData);
             }
         }
-
+        
         return $data;
     }
-
+    
     
     /**
      * Подготвя списъка с полетата, които ще се показват в единичния изглед
      */
     function prepareSingleFields_($data)
-    { 
-        if( isset( $this->singleFields ) ) {
+    {
+        if(isset($this->singleFields)) {
             
             // Ако са зададени $this->listFields използваме ги тях за колони
             $data->singleFields = arr::make($this->singleFields, TRUE);
@@ -135,7 +136,7 @@ class core_Master extends core_Manager
                 }
             }
         }
-       
+        
         if (count($data->singleFields)) {
             
             // Ако титлата съвпада с името на полето, вадим името от caption
@@ -164,34 +165,34 @@ class core_Master extends core_Manager
     
     
     /**
-     * Подготвя тулбара за единичния изглед
+     * Подготвя лентата с инструменти за единичния изглед
      */
     function prepareSingleToolbar_($data)
     {
         $data->toolbar = cls::get('core_Toolbar');
         
         $data->toolbar->class = 'SingleToolbar';
-
+        
         if (isset($data->rec->id) && $this->haveRightFor('edit', $data->rec)) {
             $data->toolbar->addBtn('Редакция', array(
-                $this,
-                'edit',
-                $data->rec->id,
-                'ret_url' => TRUE
-            ),
-            'id=btnEdit,class=btn-edit');
+                    $this,
+                    'edit',
+                    $data->rec->id,
+                    'ret_url' => TRUE
+                ),
+                'id=btnEdit,class=btn-edit');
         }
         
         if (isset($data->rec->id) && $this->haveRightFor('delete', $data->rec)) {
             $data->toolbar->addBtn('Изтриване', array(
-                $this,
-                'delete',
-                $data->rec->id,
-                'ret_url' => toUrl(array($this), 'local') 
-            ),
-            'id=btnDelete,class=btn-delete,warning=Наистина ли желаете да изтриете документа?,order=31');
+                    $this,
+                    'delete',
+                    $data->rec->id,
+                    'ret_url' => toUrl(array($this), 'local')
+                ),
+                'id=btnDelete,class=btn-delete,warning=Наистина ли желаете да изтриете документа?,order=31');
         }
-       
+        
         return $data;
     }
     
@@ -204,29 +205,25 @@ class core_Master extends core_Manager
         // Рендираме общия лейаут
         $tpl = $this->renderSingleLayout($data);
         
+        // Рендираме заглавието
+        $data->row->SingleTitle = $this->renderSingleTitle($data);
+        
+        // Рендираме лентата с инструменти
+        $data->row->SingleToolbar = $this->renderSingleToolbar($data);
+        
         // Поставяме данните от реда
         $tpl->placeObject($data->row);
-
-        foreach($data->singleFields as $name => $caption) {
-            $tpl->replace(tr($caption), 'CAPTION_' . $name);
-        }
-
-        // Поставя титлата
-        $tpl->replace($this->renderSingleTitle($data), 'SingleTitle');
         
-        // Поставяме toolbar-а
-        $tpl->replace($this->renderSingleToolbar($data), 'SingleToolbar');
-        
-        // Поставяме детаилите
+        // Поставяме детайлите
         if(count($this->details)) {
             foreach($this->details as $var => $class) {
-
+                
                 if($var == $class) {
                     $method = 'renderDetail';
                 } else {
                     $method = 'render' . $var;
                 }
-
+                
                 if($tpl->isPlaceholderExists($var)) {
                     $tpl->replace($this->{$var}->$method($data->{$var}), $var);
                 } else {
@@ -246,26 +243,26 @@ class core_Master extends core_Manager
     {
         if(isset($this->singleLayoutFile)) {
             $layoutText = file_get_contents(getFullPath($this->singleLayoutFile));
-        } elseif( isset($this->singleLayoutTpl) ) {
+        } elseif(isset($this->singleLayoutTpl)) {
             $layoutText = $this->singleLayoutTpl;
         } else {
-            if( count($data->singleFields) ) {
+            if(count($data->singleFields)) {
                 foreach($data->singleFields as $field => $caption) {
-                    $fieldsHtml .= "<tr><td>[#CAPTION_{$field}#]</td><td>[#{$field}#]</td></tr>";
+                    $fieldsHtml .= "<tr><td>" . tr($caption) . "</td><td>[#{$field}#]</td></tr>";
                 }
             }
             
             $class = $this->cssClass ? $this->cssClass : $this->className;
-
+            
             $layoutText = "[#SingleToolbar#]<div class='{$class}'><h2>[#SingleTitle#]</h2>" .
-                          "<table class='listTable'>{$fieldsHtml}</table>" .
-                          "<!--ET_BEGIN DETAILS-->[#DETAILS#]<!--ET_END DETAILS--></div>";
+            "<table class='listTable'>{$fieldsHtml}</table>" .
+            "<!--ET_BEGIN DETAILS-->[#DETAILS#]<!--ET_END DETAILS--></div>";
         }
         
         if(is_string($layoutText)) {
             $layoutText = tr("|*" . $layoutText);
         }
-
+        
         return new ET($layoutText);
     }
     
@@ -275,12 +272,12 @@ class core_Master extends core_Manager
      */
     function renderSingleTitle_($data)
     {
-        return new ET(tr($data->title));
+        return new ET('[#1#]', tr($data->title));
     }
     
     
     /**
-     * Рендира тулбара на единичния изглед
+     * Рендира лентата с инструменти на единичния изглед
      */
     function renderSingleToolbar_($data)
     {
@@ -297,17 +294,17 @@ class core_Master extends core_Manager
     function getRequiredRoles_($action, $rec = NULL, $userId = NULL)
     {
         if($action == 'single') {
-            $action{0} = strtoupper($action{0});
-            $action = 'can' . $action;
             
-            if(!($requiredRoles = $this->{$action})) {
+            $action1 = 'can' . $action;
+            $action1{0} = strtoupper($action1{0});
+
+            if(!($this->{$action1})) {
                 $requiredRoles = $this->getRequiredRoles('read', $rec, $userId);
             }
         } else {
             $requiredRoles = parent::getRequiredRoles_($action, $rec, $userId);
         }
-        
+
         return $requiredRoles;
     }
-    
 }

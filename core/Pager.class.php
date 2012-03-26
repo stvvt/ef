@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_Pager' - Отговаря за странирането на резултати от заявка
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Pager extends core_BaseClass
 {
@@ -72,7 +73,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  Инициализиране на обекта
+     * Инициализиране на обекта
      */
     function init($params = array())
     {
@@ -123,7 +124,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getItemsCount()
     {
@@ -132,7 +133,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getPagesCount()
     {
@@ -141,7 +142,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getPage()
     {
@@ -150,7 +151,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getRangeStart()
     {
@@ -159,7 +160,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getRangeLength()
     {
@@ -168,7 +169,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getRangeEnd()
     {
@@ -177,7 +178,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function setLimit(&$query)
     {
@@ -193,7 +194,7 @@ class core_Pager extends core_BaseClass
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getHtml($link = NULL)
     {
@@ -265,7 +266,7 @@ class core_Pager extends core_BaseClass
             }
         }
         
-        $tpl = new ET($html?"<div style='margin:7px 0px 7px 0px;'>$html</div>":"");
+        $tpl = new ET($html ? "<div style='margin:7px 0px 7px 0px;'>$html</div>" : "");
         
         return $tpl;
     }

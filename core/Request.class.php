@@ -1,25 +1,27 @@
 <?php
 
+
+
 /**
  * Клас 'core_Request' ['Request'] - Достъп до данните от заявката
  *
  * Могат да се правят вътрешни заявки
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2010 Experta OOD
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Request
 {
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     var $vars = array();
     
@@ -33,20 +35,20 @@ class core_Request
     /**
      * Зарежда променливите от заявката в собствен стек
      */
-    function __construct()
+    function core_Request()
     {
         global $_GET, $_POST, $_COOKIE, $_REQUEST;
         
         // Избягваме кофти-ефекта на magic_quotes
         if (get_magic_quotes_gpc()) {
             $this->push(array_map(array(
-                $this,
-                '_stripSlashesDeep'
-            ), $_GET), '_GET');
+                        $this,
+                        '_stripSlashesDeep'
+                    ), $_GET), '_GET');
             $this->push(array_map(array(
-                $this,
-                '_stripSlashesDeep'
-            ), $_POST), '_POST');
+                        $this,
+                        '_stripSlashesDeep'
+                    ), $_POST), '_POST');
         } else {
             $this->push($_GET, '_GET');
             $this->push($_POST, '_POST');
@@ -77,21 +79,15 @@ class core_Request
     }
     
     
-    function core_Request()
-    {
-    	$this->__construct();
-    }
-    
-    
     /**
-     * Премахва ескепването с '\' в масив рекурсивно
+     * Премахва ескейпване с '\' в масив рекурсивно
      */
     function _stripSlashesDeep($value)
     {
         $value = is_array($value) ? array_map(array(
-            $this,
-            'stripSlashesDeep'
-        ), $value) : stripslashes($value);
+                $this,
+                'stripSlashesDeep'
+            ), $value) : stripslashes($value);
         
         return $value;
     }
@@ -106,7 +102,7 @@ class core_Request
      */
     function setProtected($protArr)
     {
-        $Request =& cls::get('core_Request');
+        $Request = & cls::get('core_Request');
         $Request->protected = arr::make($protArr, TRUE);
     }
     
@@ -117,7 +113,7 @@ class core_Request
      */
     function doProtect(&$arr)
     {
-        $Request =& cls::get('core_Request');
+        $Request = & cls::get('core_Request');
         
         if ($Request->protected) {
             foreach (arr::make($Request->protected) as $name) {
@@ -145,9 +141,9 @@ class core_Request
     function get($name, $type = NULL)
     {
         if (is_a($this, 'core_Request')) {
-            $Request =& $this;
+            $Request = & $this;
         } else {
-            $Request =& cls::get('core_Request');
+            $Request = & cls::get('core_Request');
         }
         
         if ($type) {
@@ -157,14 +153,14 @@ class core_Request
             
             if ($inputType->error) {
                 error("Некоректна стойност за входен параметър", array(
-                    'input' => $name,
-                    'error' => $inputType->error
-                ));
+                        'input' => $name,
+                        'error' => $inputType->error
+                    ));
             } else {
                 return $value;
             }
         }
-        
+
         foreach ($Request->vars as $arr) {
             if (isset($arr[$name])) {
                 return $arr[$name];
@@ -181,9 +177,9 @@ class core_Request
     function push($array, $name = NULL)
     {
         if (is_a($this, 'core_Request')) {
-            $Request =& $this;
+            $Request = & $this;
         } else {
-            $Request =& cls::get('core_Request');
+            $Request = & cls::get('core_Request');
         }
         
         if ($name) {
@@ -201,7 +197,7 @@ class core_Request
      */
     function pop($name = NULL)
     {
-        $Request =& cls::get('core_Request');
+        $Request = & cls::get('core_Request');
         
         if ($name) {
             unset($Request->vars[$name]);
@@ -216,7 +212,7 @@ class core_Request
      */
     function forward($vars = array(), $prefix = 'act_')
     {
-        $Request =& cls::get('core_Request');
+        $Request = & cls::get('core_Request');
         
         $vars = arr::make($vars, TRUE);
         
@@ -252,14 +248,14 @@ class core_Request
         
         if (cls::load($ctr, TRUE)) {
             
-            $mvc =& cls::get($ctr);
+            $mvc = & cls::get($ctr);
             $content = $mvc->action(strtolower($act));
         } else {
             error("Controller not found: {$ctr}", array(
-                'controller' => $ctr,
-                '$_GET' => $_GET,
-                '$_POST' => $_POST
-            ));
+                    'controller' => $ctr,
+                    '$_GET' => $_GET,
+                    '$_POST' => $_POST
+                ));
         }
         
         if ($mustPop) {

@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_Lg' - Мениджър за многоезичен превод на интерфейса
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Lg extends core_Manager
 {
@@ -61,7 +62,7 @@ class core_Lg extends core_Manager
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function act_Set()
     {
@@ -85,15 +86,33 @@ class core_Lg extends core_Manager
     
     
     /**
+     * Временно (до извикването на self::pop()) променя текущия език
+     */
+    static function push($lg)
+    {
+        Mode::push('lg', $lg);
+    }
+    
+    
+    /**
+     * Връща старата стойност на текущия език
+     */
+    static function pop()
+    {
+        Mode::pop('lg');
+    }
+    
+    
+    /**
      * Превежда зададения ключов стринг
      */
     function translate($kstring, $key = FALSE, $lg = NULL)
     {
         // Празните стрингове не се превеждат
-        if (is_Object($kstring) || !trim($kstring))  return $kstring;
+        if (is_Object($kstring) || !trim($kstring)) return $kstring;
         
         if (!$key) {
-            // Рабиваме стринга на участъци, който са разделени със символа '|'
+            // Разбиваме стринга на участъци, който са разделени със символа '|'
             $strArr = explode('|', $kstring);
             
             if (count($strArr) > 1) {
@@ -139,15 +158,28 @@ class core_Lg extends core_Manager
             $lg = core_LG::getCurrent();
         }
         
+        if(!count($this->dict)) {
+            $this->dict = core_Cache::get('translation', $lg, 2 * 60 * 24, array('core_Lg'));
+            
+            if(!$this->dict) {
+                $query = self::getQuery();
+                
+                while($rec = $query->fetch("#lg = '{$lg}'")) {
+                    $this->dict[$rec->kstring][$lg] = $rec->translated;
+                }
+                core_Cache::set('translation', $lg, $this->dict, 2 * 60 * 24, array('core_Lg'));
+            }
+        }
+        
         // Ако имаме превода в речника, го връщаме
         if (isset($this->dict[$key][$lg])) return $this->dict[$key][$lg];
         
         // Попълваме речника от базата
         $rec = $this->fetch(array(
-            "#kstring = '[#1#]' AND #lg = '[#2#]'",
-            $key,
-            $lg
-        ));
+                "#kstring = '[#1#]' AND #lg = '[#2#]'",
+                $key,
+                $lg
+            ));
         
         if ($rec) {
             $this->dict[$key][$lg] = $rec->translated;
@@ -158,6 +190,7 @@ class core_Lg extends core_Manager
                 $translated = $kstring;
             }
             
+            $rec = new stdClass();
             $rec->kstring = $key;
             $rec->translated = $translated;
             $rec->lg = $lg;
@@ -189,21 +222,21 @@ class core_Lg extends core_Manager
     
     
     /**
-     *  Извиква се преди подготовката на масивите $data->recs и $data->rows
+     * Извиква се преди подготовката на масивите $data->recs и $data->rows
      */
-    function on_BeforePrepareListRecs($invoker, $res, $data)
+    function on_BeforePrepareListRecs($invoker, &$res, $data)
     {
         // Подрежда словосъчетанията по обратен на постъпването им ред
         $data->query->orderBy(array(
-            'id' => 'DESC'
-        ));
+                'id' => 'DESC'
+            ));
         
         $data->listFilter->FNC('filter', 'varchar', 'caption=Филтър,input');
         
         $data->listFilter->setOptions('lg', array(
-            'bg' => 'Български',
-            'en' => 'Английски'
-        ));
+                'bg' => 'Български',
+                'en' => 'Английски'
+            ));
         
         $data->listFilter->showFields = 'filter,lg';
         
@@ -218,22 +251,20 @@ class core_Lg extends core_Manager
             
             if ($filterRec->filter) {
                 $data->query->where(array(
-                    "#kstring LIKE '%[#1#]%'",
-                    $filterRec->filter
-                ));
+                        "#kstring LIKE '%[#1#]%'",
+                        $filterRec->filter
+                    ));
             }
         }
         
         $data->listFilter->layout = new ET(
-        "\n<form style='margin:0px;'  method=\"[#FORM_METHOD#]\" action=\"[#FORM_ACTION#]\"" .
-        "<!--ET_BEGIN ON_SUBMIT-->onSubmit=\"[#ON_SUBMIT#]\"<!--ET_END ON_SUBMIT-->>" .
-        "\n<table cellspacing=0 >" .
-        "\n<tr>[#FORM_FIELDS#]<td>[#FORM_TOOLBAR#]</td></tr>" .
-        "\n</table></form>\n");
+            "\n<form style='margin:0px;'  method=\"[#FORM_METHOD#]\" action=\"[#FORM_ACTION#]\"" .
+            "<!--ET_BEGIN ON_SUBMIT-->onSubmit=\"[#ON_SUBMIT#]\"<!--ET_END ON_SUBMIT-->>" .
+            "\n<table cellspacing=0 >" .
+            "\n<tr>[#FORM_FIELDS#]<td>[#FORM_TOOLBAR#]</td></tr>" .
+            "\n</table></form>\n");
         
         $data->listFilter->fieldsLayout = "<td>[#filter#]</td><td>[#lg#]</td>";
-        
-        $data->listFilter->layout->setRemovableBlocks("ON_SUBMIT");
     }
     
     
@@ -250,11 +281,11 @@ class core_Lg extends core_Manager
                 if ($div)
                 $tpl->append(' | ');
                 $tpl->append(ht::createLink($title, array(
-                    'core_Lg',
-                    'Set',
-                    'lg' => $lg,
-                    'ret_url' => TRUE
-                )));
+                            'core_Lg',
+                            'Set',
+                            'lg' => $lg,
+                            'ret_url' => TRUE
+                        )));
                 $div = TRUE;
             }
         }

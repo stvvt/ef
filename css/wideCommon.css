@@ -1,4 +1,4 @@
-﻿/****************************************************************
+/****************************************************************
  *                                                              *
  *   Общи стилове на Experta Framework при рендиране върху      *
  *   клиенти с обичайно големи дисплеи (например PC)            *
@@ -16,6 +16,7 @@ Select.combo {
     vertical-align:top;
     visibility:hidden;
 }
+
  
 
 /* Стилове за елемента 'tab' */
@@ -68,22 +69,31 @@ div.tab-control div.tab-page {
 
 
 /* Стилове за елемента 'RichEdit' */
-div.richedit {
+span.richEdit div.richedit-toolbar {
     background: #ddc; 
-    border: 1px solid #888; 
+    border: 1px solid #9999ff; 
     border-top: none; 
     padding: 5px; 
     font-size: 0.85em; 
     text-align: left;
     padding-top:10px; 
-    vertical-align:middle;
+	font-family: Verdana, Geneva, sans-serif;
+	color:#333;
+    font-size:0.9em;
+	margin-top:-1px;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 
-div.richtext {
-    font-family: Verdana, Geneva, sans-serif;
-    line-height:1.2em;
-    color:#333;
-    font-size:0.9em;
+.richEdit TEXTAREA {
+	border-bottom: 1px solid white;
+	margin-bottom:0px;
+	overflow:auto;
+	width:100%;
 }
 
 p.richtext {
@@ -118,6 +128,7 @@ a.rtbutton {
 }
 
 a.rtbutton1 {
+	padding-right:3px;
     cursor: pointer;
 }
 
@@ -134,7 +145,7 @@ TABLE.listTable {
     border-collapse: collapse;
 }
 
-TABLE.listTable TR:hover  {
+TABLE.listTable>TBODY>TR:hover  {
     background-color:#ffc !important;
 }
 
@@ -326,7 +337,7 @@ input[type=radio]:checked + label {
     color:#000;
 }
 
-.checkbox {
+.checkbox, .radiobutton {
 	border: none !important;
 }
 
@@ -369,76 +380,91 @@ input[type=radio]:checked + label {
 }
 
 .linkWithIcon {
-    padding-left:24px;  
+    padding-left:22px;  
     background-repeat:no-repeat;
     background-position: 3px center;
 }
 
 
 /* BUTTONS */
-input[type=button], input[type=submit] {
-    margin-right:4px;
+INPUT[type=button], INPUT[type=submit] {
+    margin-right:3px;
     background-color:#ddd;
     color:#036;
     font-weight:bold;
     border:1px solid #bbb;
-    -moz-border-radius:4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+    -moz-border-radius:3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
     font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
     font-size:100%;
     text-decoration:none;
     cursor:pointer;
     width:auto;
     overflow:visible;
-    padding:2px 4px 3px 4px; /* IE6 */
+    padding:2px 3px 3px 3px; /* IE6 */
 }
 
- input:hover[type=button] , input:hover[type=submit]{
+
+INPUT:hover[type=button] , INPUT:hover[type=submit]{
     background-color:#ffb; 
- }
+}
+
+INPUT[type=button] {
+	padding-left:22px;  
+	background-repeat:no-repeat !important;;
+	background-position: 3px center;
+}
+
+
+INPUT[type=submit] { 
+	padding-left:22px;  
+	background-repeat:no-repeat !important;
+	background-position: 3px center;
+}
+
+FORM[method=post]  INPUT[type=button] { 
+	border:solid 1px #888;
+	background-color:#999;
+	color:white;
+}
+
+FORM[method=post] INPUT[type=submit] { 
+	border:solid 1px #888 !important;
+	background-color:#99f !important;
+	color:white;
+}
  
+.noicon {
+    padding:2px 3px 3px 3px !important; /* IE6 */
+}
+
 INPUT.print[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/printer.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-new-folder[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/folder_new.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-folder[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/folder.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-folder-y[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/folder-y.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-save[type=submit] {
-    padding-left:22px;  
     background-image:url('../img/16/disk.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
+}
+
+INPUT.btn-send[type=submit] {
+    background-image:url('../img/16/arrow_right.png');
 }
 
 INPUT.btn-save-n-new[type=submit] {
-    padding-left:22px;  
     background-image:url('../img/16/save_and_new.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
-    float: right;
 }
 
 INPUT.btn-next[type=submit],  INPUT.btn-prev[type=submit]{
@@ -446,37 +472,25 @@ INPUT.btn-next[type=submit],  INPUT.btn-prev[type=submit]{
 }
 
 INPUT.btn-disabled {
-	color:#999 !important;
+	color:#bbb !important;
 	cursor:default !important;
 }
 
 INPUT.btn-settings[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/testing.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-import[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/table-import-icon.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 
 INPUT.btn-checked[type=submit] {
-    padding-left:22px;  
     background-image:url('../img/16/checked.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-checked-disabled[type=submit] {
-    padding-left:22px;
     background-image:url('../img/16/unchecked.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 	color:#999 !important;
 	cursor:default !important;
 }
@@ -487,84 +501,51 @@ INPUT.btn-checked-disabled[type=submit]:hover {
 
 
 INPUT.btn-install[type=submit] {
-    padding-left:22px;  
     background-image:url('../img/16/install.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-filter[type=submit] {
-    padding-left:22px;  
     background-image:url('../img/16/funnel.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-bin[type=button] {
     float:right;
-    padding-left:22px;  
     background-image:url('../img/16/bin_closed.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-list[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/application_view_list.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 
 
 INPUT.btn-software-update[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/software-update.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-reject[type=button]{
-    padding-left:22px;  
     background-image:url('../img/16/delete.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 	float: right;
 }
 
 INPUT.btn-restore[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/restore.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-delete[type=button],  INPUT.btn-delete[type=submit]{
-    padding-left:22px;  
     background-image:url('../img/16/delete-icon.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
-INPUT.btn-cancel[type=button] {
-    padding-left:22px;  
+INPUT.btn-cancel  {
     background-image:url('../img/16/close16.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-edit[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/edit-icon.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 INPUT.btn-add[type=button] {
-    padding-left:22px;  
     background-image:url('../img/16/star_2.png');
-    background-repeat:no-repeat;
-    background-position: 3px center;
 }
 
 DIV.rowtools {
@@ -627,6 +608,10 @@ DIV.notification-info {
     background-color: #aaffbb;
 }
 
+.state-pending {
+    background-color: #cceeff;
+}
+
 .state-waiting {
     background-color: #cceeff;
 }
@@ -639,8 +624,12 @@ DIV.notification-info {
     background-color: #ffaa00;
 }
 
-.state-rejected {
+.state-rejected { 
     background-color: #cc6666;
+}
+
+.state-rejected TD {
+	color:#999;
 }
 
 .state-free {

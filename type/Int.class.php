@@ -1,6 +1,7 @@
 <?php
 
 
+
 /**
  * Кой символ да използваме за разделител на хилядите?
  */
@@ -11,44 +12,43 @@ defIfNot('EF_NUMBER_THOUSANDS_SEP', ' ');
  * Клас  'type_Int' - Тип за цели числа
  *
  *
- * @category   Experta Framework
- * @package    type
- * @author     Milen Georgiev
- * @copyright  2006-2010 Experta OOD
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   type
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class type_Int extends core_Type {
     
     
     /**
-     *  @todo Чака за документация...
+     * MySQL тип на полето в базата данни
      */
     var $dbFieldType = 'int';
     
     
     /**
-     *  @todo Чака за документация...
+     * Дължина на полето в mySql таблица
      */
     var $dbFieldLen = '11';
     
     
     /**
-     *  @todo Чака за документация...
+     * Стойност по подразбиране
      */
     var $defaultValue = 0;
     
     
     /**
-     *  @todo Чака за документация...
+     * Атрибути на елемента "<TD>" когато в него се записва стойност от този тип
      */
     var $cellAttr = 'align="right"';
     
     
     /**
-     *  @todo Чака за документация...
+     * Конвертира от вербална стойност
      */
     function fromVerbal_($val)
     {
@@ -56,11 +56,11 @@ class type_Int extends core_Type {
         
         $from = array(',', EF_TYPE_DOUBLE_DEC_POINT, ' ', "'", EF_TYPE_DOUBLE_THOUSANDS_SEP);
         
-        $to = array('.', '.', '','', '');
+        $to = array('.', '.', '', '', '');
         
         $val = str_replace($from, $to, trim($val));
         
-        if( $val === '') return NULL;
+        if($val === '') return NULL;
         
         // Превръщаме 16-тичните числа в десетични
         //$val = trim(preg_replace('/[^0123456789]{0,1}0x([a-fA-F0-9]*)/e', "substr('\\0',0,1).hexdec('\\0')", ' '.$val));
@@ -75,7 +75,7 @@ class type_Int extends core_Type {
         if(empty($val)) $val = '0';
         $code = "\$val = $val;";
         
-        if( @eval('return TRUE;' . $code) ) {
+        if(@eval('return TRUE;' . $code)) {
             eval($code);
             
             return (int) $val;
@@ -88,11 +88,11 @@ class type_Int extends core_Type {
     
     
     /**
-     *  @todo Чака за документация...
+     * Връща атрибутите на MySQL полето
      */
     function getMysqlAttr()
     {
-        $size = $this->params['size']?$this->params['size']:$this->params[0] ;
+        $size = $this->params['size'] ? $this->params['size'] : $this->params[0] ;
         
         if(!$size || $size <= 11) {
             $this->dbFieldType = "INT";
@@ -100,7 +100,7 @@ class type_Int extends core_Type {
             $this->dbFieldType = "BIGINT";
         }
         
-        if(isset($this->params['min']) && $this->params['min']>=0) {
+        if(isset($this->params['min']) && $this->params['min'] >= 0) {
             $this->params['unsigned'] = 'unsigned';
         }
         
@@ -109,20 +109,21 @@ class type_Int extends core_Type {
     
     
     /**
-     *  @todo Чака за документация...
+     * Рендира HTML инпут поле
      */
     function renderInput_($name, $value, $attr = array())
     {
         setIfNot($attr['size'],
-        $this->params[0],
-        $this->params['size'],
-        Mode::is('screenMode', 'narrow') ? 10 : 20
+            $this->params[0],
+            $this->params['size'],
+            Mode::is('screenMode', 'narrow') ? 10 : 20
         );
         
         setIfNot($attr['maxlen'], 16);
         
-        if (strpos($attr['style'], 'text-align:') === FALSE) {
-            $attr['style'] .= 'text-align:right;';
+        // В мобилен режим слагаме тип = number, за да форсираме цифрова клавиатура
+        if(Mode::is('screenMode', 'narrow') && empty($attr['type'])) {
+            $attr['type'] = 'number';
         }
         
         $tpl = $this->createInput($name, $value, $attr);
@@ -149,7 +150,7 @@ class type_Int extends core_Type {
     
     
     /**
-     *  @todo Чака за документация...
+     * Връща стойността по подразбиране за съответния тип
      */
     function defVal()
     {

@@ -1,39 +1,34 @@
 <?php
 
+
+
 /**
- * Клас 'core_Tabs' - Вюър за табове
+ * Клас 'core_Tabs' - Изглед за табове
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Tabs extends core_BaseClass
 {
     
     
     /**
-     *
+     * @todo Чака за документация...
      */
-    function __construct()
+    function core_Tabs()
     {
         $this->description();
     }
     
-
-    function core_Tabs()
-    {
-    	$this->__construct();
-    }
-    
     
     /**
-     * ()
+     * Описание на модела (таблицата)
      */
     function description()
     {
@@ -41,7 +36,7 @@ class core_Tabs extends core_BaseClass
     
     
     /**
-     *  Инициализиране на обекта
+     * Инициализиране на обекта
      */
     function init($params)
     {
@@ -52,7 +47,7 @@ class core_Tabs extends core_BaseClass
     
     
     /**
-     * -
+     * @todo Чака за документация...
      */
     function TAB($tab, $caption = NULL, $url = NULL)
     {
@@ -68,15 +63,15 @@ class core_Tabs extends core_BaseClass
             } else {
                 $url == FALSE;
             }
-        } 
-
+        }
+        
         $this->tabs[$tab] = $url;
         $this->captions[$tab] = $caption ? $caption : $tab;
     }
     
     
     /**
-     *
+     * Рендира табове-те
      */
     function renderHtml_($body, $selectedTab = NULL)
     {
@@ -96,8 +91,7 @@ class core_Tabs extends core_BaseClass
         }
         
         foreach ($this->tabs as $tab => $url) {
-
-
+            
             if ($tab == $selectedTab) {
                 $selectedUrl = $url;
                 $selected = 'selected';
@@ -124,18 +118,17 @@ class core_Tabs extends core_BaseClass
         }
         
         if (Mode::is('screenMode', 'narrow')) {
-             $head = new ET("<div class='tab selected'>[#1#]</div>\n", ht::createSelectMenu($options, $selectedUrl, FALSE, array('class' => "tab-control")));
-        } 
-            
+            $head = new ET("<div class='tab selected'>[#1#]</div>\n", ht::createSelectMenu($options, $selectedUrl, FALSE, array('class' => "tab-control")));
+        }
+        
         $html = "<div class='tab-control {$this->htmlClass}'>\n";
         $html .= "<div class='tab-row'>\n";
         $html .= "[#1#]\n";
         $html .= "</div>\n";
         $html .= "<div class=\"tab-page clearfix21\">[#2#]</div>\n";
         $html .= "</div>\n";
-       
-        $tabsTpl = new ET($html, $head, $body);
         
+        $tabsTpl = new ET($html, $head, $body);
         
         return $tabsTpl;
     }

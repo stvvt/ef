@@ -8,33 +8,47 @@
 
 
 /* Стилове за елемента 'combobox' */
-INPUT.combo {	border-spacing:28px;
-
+INPUT.combo {	
+	height:auto;;
  }
 
 SELECT.combo {  
 	position: absolute; 
     visibility:hidden;
-	-webkit-appearance: listbox;
-	background-image: url('../img/16/down_arrow.gif'); 
-	background-repeat: no-repeat;
-	background-position: right center;
+    overflow:hidden;
 }
 
 
  
 
 /* Стилове за елемента 'RichEdit' */
-DIV.richedit {
+span.richEdit div.richedit-toolbar {
     background: #ddc; 
-    border: 1px solid #888; 
+    border: 1px solid #9999ff; 
     border-top: none; 
     padding: 5px; 
     font-size: 0.85em; 
     text-align: left;
     padding-top:10px; 
-    vertical-align:middle;
+	font-family: Verdana, Geneva, sans-serif;
+	color:#333;
+    font-size:0.9em;
+	margin-top:0px;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
+
+.richEdit TEXTAREA {
+	border-bottom: 1px solid white;
+	margin-bottom:0px;
+	overflow:auto;
+	width:100%;
+}
+
 
 A.rtbutton {
     border: 1px solid #bba;
@@ -42,10 +56,7 @@ A.rtbutton {
     padding: 0.1em 0.3em;
     cursor: pointer;
 }
-
-A.rtbutton1 {
-    cursor: pointer;
-}
+ 
 
 A.rtbutton:hover {
     background: white;
@@ -64,23 +75,24 @@ INPUT, SELECT, TEXTAREA {
 
 
 /* Стилове за елемента 'list Table' */
-.listTable TABLE, TABLE.listTable { 
+TABLE.listTable { 
     margin:0px;
     border: 1px solid #999;
     border-collapse: collapse;
 }
 
-.listTable TR:hover  {
+TABLE.listTable>TBODY>TR:hover  {
     background-color:#ffc !important;
 }
 
-.listTable TD {
+TABLE.listTable>TBODY>TR>TD {
     border: 1px solid #999;
     padding: 3px; 
     font-family:Arial,Verdana;
+	vertical-align:middle;
 }
 
-.listTable TH {
+TABLE.listTable>THEAD>TR>TH {
     border: 1px solid #999;
     padding: 3px;
     background-color:#ddd;
@@ -93,7 +105,7 @@ INPUT, SELECT, TEXTAREA {
 	padding-bottom:5px;
 }
 
-.listToolbar{
+.listToolbar {
 	margin-top:10px;
 } 
 
@@ -117,9 +129,8 @@ INPUT, SELECT, TEXTAREA {
 	width:100%;
 }
 
-
 .linkWithIcon {
-    padding-left:24px;  
+    padding-left:22px;  
     background-repeat:no-repeat;
     background-position: 3px center;
 }
@@ -442,7 +453,7 @@ INPUT[type=radio]:checked + label {
 /* Стилове за елемента 'tab' */
 div.tab-control div.tab-row .tab {
     display:        table;
-    margin:         1px -15px 1px px;
+    margin:         1px -15px 1px 1px;
     float:          left; 
     padding:        3px 5px 5px 5px;
     background:     #cfcfcf;

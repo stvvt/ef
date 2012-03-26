@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_Manager' - Дефиниране и web-управление на таблица от db
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Manager extends core_Mvc
 {
@@ -21,12 +22,13 @@ class core_Manager extends core_Mvc
      *                                                                                      *
      ****************************************************************************************/
     
+    
     /**
      * Заглавие на мениджъра
      */
     var $title = '?Мениджър?';
     
-
+    
     /**
      * Заглавие на единичния обект
      */
@@ -38,16 +40,16 @@ class core_Manager extends core_Mvc
      */
     var $singleIcon = 'img/16/view.png';
     
+    
     /**
      * По подразбиране колко резултата да показва на страница
      */
     var $listItemsPerPage = 20;
     
-    
     /**
      * Колко дни да пазим логовете за този клас?
      */
-    var $logKeepDays = 1;
+    static $logKeepDays = 1;
     
     
     /**
@@ -89,6 +91,7 @@ class core_Manager extends core_Mvc
         if(Request::get('Print')) {
             Mode::set('printing');
         }
+        
         // Проверяваме дали потребителя може да вижда списък с тези записи
         $this->requireRightFor('list');
         
@@ -112,11 +115,11 @@ class core_Manager extends core_Mvc
         
         // Подготвяме редовете на таблицата
         $this->prepareListRows($data);
-       
+        
         // Подготвяме заглавието на таблицата
         $this->prepareListTitle($data);
         
-        // Подготвяме тулбара
+        // Подготвяме лентата с инструменти
         $this->prepareListToolbar($data);
         
         // Рендираме изгледа
@@ -126,7 +129,7 @@ class core_Manager extends core_Mvc
         $tpl = $this->renderWrapping($tpl);
         
         // Записваме, че потребителя е разглеждал този списък
-        $this->log('List: ' . ($data->log?$data->log:tr($data->title)));
+        $this->log('List: ' . ($data->log ? $data->log : tr($data->title)));
         
         return $tpl;
     }
@@ -173,20 +176,20 @@ class core_Manager extends core_Mvc
      * Изтрива записа с указаното id
      */
     function act_Delete()
-    {   
+    {
         $data = new stdClass();
         
         $data->cmd = 'delete';
-
+        
         $this->prepareRetUrl($data);
-
+        
         $this->requireRightFor($data->cmd, NULL, NULL, $data->retUrl);
         
         expect($data->id = Request::get('id', 'int'),
-        "Липсва id на записа за изтриване");
+            "Липсва id на записа за изтриване");
         
         expect($data->rec = $this->fetch($data->id),
-        "Некоректно id на записа за изтриване");
+            "Некоректно id на записа за изтриване");
         
         // Дали имаме права за това действие към този запис?
         $this->requireRightFor($data->cmd, $data->rec, NULL, $data->retUrl);
@@ -208,14 +211,14 @@ class core_Manager extends core_Mvc
         
         // Създаване и подготвяне на формата
         $this->prepareEditForm($data);
-        
+
         // Подготвяме адреса за връщане, ако потребителя не е логнат.
         // Ресурса, който ще се зареди след логване обикновено е страницата, 
-        // от която се извиква екшъна act_Manage
+        // от която се извиква екшън-а act_Manage
         $retUrl = getRetUrl();
         
         // Определяме, какво действие се опитваме да направим
-        $data->cmd = isset($data->form->rec->id)?'Edit':'Add';
+        $data->cmd = isset($data->form->rec->id) ? 'Edit' : 'Add';
         
         // Очакваме до този момент във формата да няма грешки
         expect(!$data->form->gotErrors(), 'Има грешки в silent полетата на формата', $data->form->errors);
@@ -235,12 +238,11 @@ class core_Manager extends core_Mvc
             }
         }
         
-        // Генерираме събитие в mvc, след въвеждането на формата, ако е именована
+        // Генерираме събитие в mvc, след въвеждането на формата, ако е именувана
         $this->invoke('AfterInputEditForm', array($data->form));
         
         // Дали имаме права за това действие към този запис?
         $this->requireRightFor($data->cmd, $rec, NULL, $retUrl);
-        
         
         // Ако формата е успешно изпратена - запис, лог, редирект
         if ($data->form->isSubmitted()) {
@@ -254,8 +256,8 @@ class core_Manager extends core_Mvc
             // Подготвяме адреса, към който трябва да редиректнем,  
             // при успешно записване на данните от формата
             $this->prepareRetUrl($data);
-
-            // Редиректваме към предваритлено установения адрес
+            
+            // Редиректваме към предварително установения адрес
             return new Redirect($data->retUrl);
         } else {
             // Подготвяме адреса, към който трябва да редиректнем,  
@@ -263,9 +265,9 @@ class core_Manager extends core_Mvc
             $this->prepareRetUrl($data);
         }
         
-        // Подготвяме тулбара на формата
+        // Подготвяме лентата с инструменти на формата
         $this->prepareEditToolbar($data);
-
+        
         // Получаваме изгледа на формата
         $tpl = $data->form->renderHtml();
         
@@ -301,10 +303,9 @@ class core_Manager extends core_Mvc
     function prepareListFields_(&$data)
     {
         if(isset($data->listFields)) {
- 
+            
             $data->listFields = arr::make($data->listFields, TRUE);
-
-        } elseif( isset( $this->listFields ) ) {
+        } elseif(isset($this->listFields)) {
             
             // Ако са зададени $this->listFields използваме ги тях за колони
             $data->listFields = arr::make($this->listFields, TRUE);
@@ -321,7 +322,7 @@ class core_Manager extends core_Mvc
         }
         
         if (count($data->listFields)) {
-           
+            
             // Ако титлата съвпада с името на полето, вадим името от caption
             foreach ($data->listFields as $field => $caption) {
                 if (($field == $caption) && $this->fields[$field]->caption) {
@@ -356,11 +357,11 @@ class core_Manager extends core_Mvc
      */
     function prepareListPager_(&$data)
     {
-        $perPage = (Request::get('PerPage', 'int') > 0 && Request::get('PerPage', 'int') <= 1000) ? 
-                    Request::get('PerPage', 'int') : $this->listItemsPerPage;
+        $perPage = (Request::get('PerPage', 'int') > 0 && Request::get('PerPage', 'int') <= 1000) ?
+        Request::get('PerPage', 'int') : $this->listItemsPerPage;
         
         if($perPage) {
-            $data->pager =& cls::get('core_Pager', array('pageVar' => 'P_' . $this->className));
+            $data->pager = & cls::get('core_Pager', array('pageVar' => 'P_' . $this->className));
             $data->pager->itemsPerPage = $perPage;
         }
         
@@ -377,10 +378,10 @@ class core_Manager extends core_Mvc
         
         if ($this->haveRightFor('add')) {
             $data->toolbar->addBtn('Нов запис', array(
-                $this,
-                'add'
-            ),
-            'id=btnAdd,class=btn-add');
+                    $this,
+                    'add'
+                ),
+                'id=btnAdd,class=btn-add');
         }
         
         return $data;
@@ -411,13 +412,12 @@ class core_Manager extends core_Mvc
         // Извличаме редовете
         while ($rec = $data->query->fetch()) {
             $data->recs[$rec->id] = $rec;
-           
-        } 
+        }
         
         return $data;
     }
-
-
+    
+    
     /**
      * Подготвя редовете във вербална форма
      */
@@ -446,11 +446,11 @@ class core_Manager extends core_Mvc
         
         // Създаване и подготвяне на формата за редактиране/добавяне
         $data->form = $this->getForm($params);
-       
+        
         // Добавяме id на формата според името на mvc-класа
-        $data->form->formAttr['id'] =  $this->className . "-EditForm";
-
-        // Задаваме екшъна "запис"
+        $data->form->formAttr['id'] = $this->className . "-EditForm";
+        
+        // Задаваме екшън-а "запис"
         $data->form->setAction($this, 'save');
         
         $data->form->FNC('ret_url', 'varchar(1024)', 'input=hidden,silent');
@@ -458,7 +458,7 @@ class core_Manager extends core_Mvc
         $data->form->input(NULL, 'silent');
         
         $data->form->title = ($data->form->rec->id ? 'Редактиране' : 'Добавяне') . ' на запис' .
-        "|*" . ($this->title ?  ' |в|* '  . '"' .  $this->title . '"' : '');
+        "|*" . ($this->title ? ' |в|* ' . '"' . $this->title . '"' : '');
         
         // Ако имаме 
         if($data->form->rec->id && $data->form->cmd != 'refresh') {
@@ -476,7 +476,7 @@ class core_Manager extends core_Mvc
     
     
     /**
-     * Подготвя тулбара на формата за редактиране
+     * Подготвя лентата с инструменти на формата за редактиране
      */
     function prepareEditToolbar_($data)
     {
@@ -495,13 +495,12 @@ class core_Manager extends core_Mvc
         if (getRetUrl()) {
             
             $data->retUrl = getRetUrl();
-            
         } else {
             if (method_exists($this, 'act_Single') && $data->form->rec->id && $data->cmd != 'delete') {
                 $data->retUrl = array(
                     $this,
                     'single',
-                    'id' =>  $data->form->rec->id
+                    'id' => $data->form->rec->id
                 );
             } else {
                 $data->retUrl = array($this, 'list');
@@ -555,25 +554,25 @@ class core_Manager extends core_Mvc
      * Създаване на шаблона за общия List-изглед
      */
     function renderListLayout_($data)
-    {   
+    {
         $className = cls::getClassName($this);
-
+        
         // Шаблон за листовия изглед
         $listLayout = new ET("
-            <div style='display:inline-block' class='clearfix21 {$className}'>
-            [#ListTitle#]
-            <div class='listTopContainer'>
-            [#ListFilter#]
-            [#ListSummary#]
-            </div>
-            [#ListPagerTop#]
-            [#ListTable#]
-            [#ListPagerBottom#]
-            [#ListToolbar#]
+            <div 1style='display:table' class='clearfix21 {$className}'>
+                [#ListTitle#]
+                <div class='listTopContainer'>
+                    [#ListFilter#]
+                    [#ListSummary#]
+                </div>
+                [#ListPagerTop#]
+                [#ListTable#]
+                [#ListPagerBottom#]
+                [#ListToolbar#]
             </div>
           ");
-
-         return $listLayout;
+        
+        return $listLayout;
     }
     
     
@@ -583,15 +582,14 @@ class core_Manager extends core_Mvc
     function renderListSummary_($data)
     {
         
-        
         /**
-         * @todo: Някакво стандарто обобщение?
+         * @todo: Някакво стандартно обобщение?
          */
     }
     
     
     /**
-     * Рендира формата за филтриране/селектиране на листовия изглед
+     * Рендира формата за филтриранена листовия изглед
      */
     function renderListFilter_($data)
     {
@@ -607,9 +605,9 @@ class core_Manager extends core_Mvc
      */
     function renderListPager_($data)
     {
-    	if ($data->pager) {
+        if ($data->pager) {
             return $data->pager->getHtml();
-    	}
+        }
     }
     
     
@@ -640,7 +638,7 @@ class core_Manager extends core_Mvc
     
     
     /**
-     * Рендира тоолбара за списъчния изглед
+     * Рендира тулбара за списъчния изглед
      */
     function renderListToolbar_($data)
     {
@@ -670,9 +668,10 @@ class core_Manager extends core_Mvc
     /**
      * Връща ролите, които могат да изпълняват посоченото действие
      */
-    function getRequiredRoles_($action, $rec = NULL, $userId = NULL)
-    { 
-
+    function getRequiredRoles_(&$action1, $rec = NULL, $userId = NULL)
+    {
+        $action = $action1;
+        
         $action{0} = strtoupper($action{0});
         $action = 'can' . $action;
         
@@ -680,19 +679,20 @@ class core_Manager extends core_Mvc
             $requiredRoles = $this->{$action};
         } else {
             switch($action) {
-                case 'canAdd' :
-                case 'canDelete' :
-                case 'canEdit' :
+                case 'canAdd':
+                case 'canDelete':
+                case 'canEdit':
                     
                     return $this->getRequiredRoles('write', $rec, $userId);
                 
-                case 'canList' :
-                    
-                    return $this->getRequiredRoles('read', $rec, $userId);
+                case 'canList':
+                case 'canSingle':
+
+                     return $this->getRequiredRoles('read', $rec, $userId);
                 
                 default :
                 
-                return $this->getRequiredRoles('admin', $rec, $userId);
+                    return $this->getRequiredRoles('admin', $rec, $userId);
             }
         }
         
@@ -707,14 +707,14 @@ class core_Manager extends core_Mvc
     static function haveRightFor($action, $rec = NULL, $userId = NULL)
     {
         $self = cls::get(get_called_class());
-
+        
         // Ако вместо $rec е зададено $id - зареждаме $rec
         if(!is_object($rec) && $rec > 0) {
             $rec = $self->fetch($rec);
         }
         
         $requiredRoles = $self->getRequiredRoles(strtolower($action), $rec, $userId);
-
+        
         return Users::haveRole($requiredRoles, $userId);
     }
     
@@ -725,14 +725,14 @@ class core_Manager extends core_Mvc
     static function requireRightFor($action, $rec = NULL, $userId = NULL, $retUrl = NULL)
     {
         $self = cls::get(get_called_class());
-
+        
         // Ако вместо $rec е зададено $id - зареждаме $rec
         if(!is_object($rec) && $rec > 0) {
             $rec = $self->fetch($rec);
         }
         
         $requiredRoles = $self->getRequiredRoles(strtolower($action), $rec, $userId);
-
+        
         return Users::requireRole($requiredRoles, $retUrl, $action);
     }
     
@@ -746,14 +746,13 @@ class core_Manager extends core_Mvc
     /**
      * Добавя запис в лога
      */
-    function log($detail, $objectId = NULL, $logKeepDays = NULL)
+    static function log($detail, $objectId = NULL, $logKeepDays = NULL)
     {
-        if (!$logKeepDays)
-        $logKeepDays = $this->logKeepDays;
+        if (!$logKeepDays) {
+            $logKeepDays = static::$logKeepDays;
+        }
         
-        $Logs = cls::get('core_Logs');
-        
-        $Logs->add($this, $objectId, $detail, $logKeepDays);
+        core_Logs::add(get_called_class(), $objectId, $detail, $logKeepDays);
     }
     
     
@@ -849,7 +848,7 @@ class core_Manager extends core_Mvc
     
     
     /**
-     *
+     * @todo Чака за документация...
      */
     function fetchOptions($q)
     {
@@ -897,7 +896,7 @@ class core_Manager extends core_Mvc
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function addVerbalOption(&$options, $rec)
     {
@@ -907,7 +906,7 @@ class core_Manager extends core_Mvc
     
     
     /**
-     *  @todo Чака за документация...
+     * Връща вербалната стойност на името
      */
     function getVerbalName($rec, $pad = 5)
     {

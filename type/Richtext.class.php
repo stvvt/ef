@@ -1,5 +1,7 @@
 <?php
 
+
+
 /**
  * Тип на записите в кеша
  */
@@ -10,24 +12,34 @@ defIfNot('RICHTEXT_CACHE_TYPE', 'RichText');
  * Клас  'type_Richtext' - Тип за форматиран (като BBCode) текст
  *
  *
- * @category   Experta Framework
- * @package    type
- * @author     Milen Georgiev
- * @copyright  2006-2010 Experta OOD
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   type
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class type_Richtext extends type_Text {
     
+    static $emoticons = array(
+        'smile' => ' :) ',
+        'bigsmile' => ' :D ',
+        'cool' => ' ;) ',
+        'beer' => ' [beer] ',
+        'question' => ' [?] ',
+        'heart' => ' [love] ',
+        'ok' => ' [ok] ',
+        'think' => ' :-? '
+    );
+    
     
     /**
-     *  @todo Чака за документация...
+     * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value="", &$attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
-        $tpl = new ET("[#TEXTAREA#]<div class='richedit'>[#LEFT_TOOLBAR#]&nbsp;[#RIGHT_TOOLBAR#]</div>");
+        $tpl = new ET("<span class='richEdit'>[#TEXTAREA#]<div class='richedit-toolbar'>[#TBL_GROUP1#]&nbsp;[#TBL_GROUP2#]&nbsp;[#TBL_GROUP3#]</div></span>");
         
         if(Mode::is('screenMode', 'narrow')) {
             setIfNot($attr['rows'], $this->params['rows'], 7);
@@ -38,9 +50,7 @@ class type_Richtext extends type_Text {
         // Атрибута 'id' се сетва с уникален такъв, ако не е зададен
         ht::setUniqId($attr);
         
-        $formId = $attr['id'];
         
-        $attr['style'] = ' border: 1px solid #888; border-bottom: 1px solid white;overflow:auto;' . $attr['style'];
         $attr['onselect'] = 'sc(this);';
         $attr['onclick'] = 'sc(this);';
         $attr['onkeyup'] = 'sc(this);';
@@ -48,139 +58,76 @@ class type_Richtext extends type_Text {
         
         $attr['style'] .= 'min-width:568px;';
         
-        $tpl->append(ht::createTextArea($name, str_replace("<", "&lt;", $value), $attr), 'TEXTAREA');
+        $tpl->append(ht::createTextArea($name, $value, $attr), 'TEXTAREA');
         
-        $tpl->prepend("
-            <a class='rtbutton1' title='Усмивка' onclick=\"rp('[em=smile]', document.getElementById('{$formId}'))\"><img src=" . sbf('img/em15/em.icon.smile.gif') . " height='15' width='15'  align='top' alt='smile'></a>
-            <a class='rtbutton1' title='Широка усмивка' onclick=\"rp('[em=bigsmile]', document.getElementById('{$formId}'))\"><img src=" . sbf('img/em15/em.icon.bigsmile.gif') . " height='15' width='15'  align='top' alt='bigsmile'></a>
-            <a class='rtbutton1' title='Супер!' onclick=\"rp('[em=cool]', document.getElementById('{$formId}'))\"><img src=" . sbf('img/em15/em.icon.cool.gif') . " height='15' width='15' align='top' alt='cool'></a>",
-        'LEFT_TOOLBAR');
+        $toolbarArr = type_Richtext::getToolbar($attr);
         
-        if(!Mode::is('screenMode', 'narrow')) {
-            
-            $tpl->prepend("
-                <a class='rtbutton1' title='Бира' onclick=\"rp('[em=beer]', document.getElementById('{$formId}'))\"><img alt='Бира' src=" . sbf('img/em15/em.icon.beer.gif') . " height='15' width='15'></a>
-                <a class='rtbutton1' title='Въпрос?' onclick=\"rp('[em=question]', document.getElementById('{$formId}'))\"><img alt='Въпрос?' src=" . sbf('img/em15/em.icon.question.gif') . " height='15' width='15' ></a>
-                <a class='rtbutton1' title='Сърце' onclick=\"rp('[em=heart]', document.getElementById('{$formId}'))\"><img alt='Сърце' src=" . sbf('img/em15/em.icon.heart.gif') . " height='15' width='15'></a>
-                <a class='rtbutton1' title='OK' onclick=\"rp('[em=ok]', document.getElementById('{$formId}'))\"><img alt='OK' src=" . sbf('img/em15/em.icon.ok.gif') . " height='15' width='15'></a>
-                <a class='rtbutton1' title='Мисля' onclick=\"rp('[em=think]', document.getElementById('{$formId}'))\"><img alt='Мисля' src=" . sbf('img/em15/em.icon.think.gif') . " height='15' width='15'></a>",
-            'LEFT_TOOLBAR');
-        }
+        $toolbarArr->order();
         
-        $tpl->append("
-            <a class=rtbutton title='Линия' onclick=\"rp('[hr]', document.getElementById('{$formId}'))\">-</a>
-            <a class=rtbutton style='font-weight:bold; color:blue' title='Сини букви' onclick=\"s('[color=blue]', '[/color]', document.getElementById('{$formId}'))\">A</a>
-            <a class=rtbutton style='font-weight:bold; color:red' title='Червени букви' onclick=\"s('[color=red]', '[/color]', document.getElementById('{$formId}'))\">A</a>
-            <a class=rtbutton style='font-weight:bold; background: yellow;' title='Жълт фон' onclick=\"s('[bg=yellow]', '[/bg]', document.getElementById('{$formId}'))\">A</a>
-            <a class=rtbutton style='font-weight:bold; background: white;' title='Код' onclick=\"s('[code=php]', '[/code]', document.getElementById('{$formId}'))\">Код</a>",
-        'RIGHT_TOOLBAR');
-        
-        if(Mode::is('screenMode', 'narrow')) {
-        //    $tpl->append("<p style='margin-top:5px'>", 'RIGHT_TOOLBAR');
-        }
-        
-        $id = $attr['id'];
-        
-        if($this->params['bucket']) {
-        
-
-            $callbackName = 'placeFile_' . $id;
-
-            $callback = "function {$callbackName}(fh, fName) { 
-                var ta = get$('{$id}');
-                rp(\"\\n\" + '[file=' + fh + ']' + fName + '[/file]', ta);
-                return true;
-            }";
-            
-            $tpl->appendOnce($callback, 'SCRIPTS');
-
-            if(Mode::is('screenMode', 'narrow')) {
-                $args = 'resizable=yes,scrollbars=yes,status=no,location=no,menubar=no,location=no';
-            } else {
-                $args = 'width=400,height=320,resizable=yes,scrollbars=yes,status=no,location=no,menubar=no,location=no';
-            }
-            
-            $bucketId = fileman_Buckets::fetchField("#name = '" . $this->params['bucket'] . "'", 'id');
-            $url =  fileman_Files::getUrLForAddFile($bucketId, $callbackName);
-            $js = "openWindow('{$url}', '{$windowName}', '{$args}'); return false;";
-
-            $fileUpload = "<a class=rtbutton title='Прикачен файл' onclick=\"{$js}\">файл</a>";
+        foreach($toolbarArr as $link) {
+            $tpl->append($link->html, $link->place);
         }
 
-        $tpl->append("
-            <a class=rtbutton style='font-weight:bold;' title='Удебелен текст' onclick=\"s('[b]', '[/b]', document.getElementById('{$formId}'))\">b</a>
-            <a class=rtbutton style='font-style:italic;' title='Наклонен текст' onclick=\"s('[i]', '[/i]', document.getElementById('{$formId}'))\">i</a>
-            <a class=rtbutton style='text-decoration:underline;' title='Подчертан текст' onclick=\"s('[u]', '[/u]', document.getElementById('{$formId}'))\">u</a> 
-            {$fileUpload}
-            <a class=rtbutton title='Линк' onclick=\"s('[link=http://]', '[/link]', document.getElementById('{$formId}'))\">линк</a>",
-        'RIGHT_TOOLBAR');
-        
-        if(!Mode::is('screenMode', 'narrow')) {
-            
-            $tpl->append("
-            <a class=rtbutton title='Заглавие 1' onclick=\"s('[h1]', '[/h1]', document.getElementById('{$formId}'))\">H1</a>
-            <a class=rtbutton title='Заглавие 2' onclick=\"s('[h2]', '[/h2]', document.getElementById('{$formId}'))\">H2</a>
-            <a class=rtbutton title='Заглавие 3' onclick=\"s('[h3]', '[/h3]', document.getElementById('{$formId}'))\">H3</a>
-            <a class=rtbutton title='Списък' onclick=\"rp('[li] ', document.getElementById('{$formId}'))\">LI</a>",
-            'RIGHT_TOOLBAR');
-        }
         
         return $tpl;
     }
     
     
     /**
-     *  @todo Чака за документация...
+     * Преобразуване от вътрешно представяне към вербална стойност
      */
-    function toVerbal($value) {
+    function toVerbal($value)
+    {
         if(!$value) return NULL;
         
         if (Mode::is('text', 'plain')) {
-        	return $this->richtext2text($value);
+            $res = strip_tags($this->toHtml($value));
+        } else {
+            $res = $this->toHtml($value);
         }
         
-        // TODO
-        return $this->toHtml($value);
+        return $res;
     }
     
     
     /**
-     * Преобразува текст, форматиран с метатагове (BB) в HTML
+     * Преобразува текст, форматиран с мета тагове (BB) в HTML
      *
      * Преобразованията са следните:
-     *    o Новите редове ("\n") се заменят с <br/>
-     *    o Интервалите в началото на реда се заменят с &nbsp;
-     *    o BB таговете се заменят според значението си
+     * o Новите редове ("\n") се заменят с <br/>
+     * o Интервалите в началото на реда се заменят с &nbsp;
+     * o BB таговете се заменят според значението си
      *
      * Таговете, които се поддържат са:
      *
-     *     o [b]...[/b],
-     [i]...[/i],
-     [u]...[/u],
-     [h1-4]...[/h1-4]
-     [hr] - както съответните HTML тагове
-     *     o [strike]...[/strike] - задраскан текст
-     *     o [color=#XXX]...[/color] - цвят на текста
-     *     o [bg=#XXX]...[/bg] - цвят на фона
-     *     o [img{=caption}]url[/img] - изображение с опционално заглавие
-     *     o [code{=syntax}]...[/code] - преформатиран текст с опционално езиково оцветяване
-     *     o [file=fileHandler]upload_name[/file] - хипервръзка сочеща прикачен файл
-     *     o [em={code}] - емотикони
+     * o [b]...[/b],
+     * [i]...[/i],
+     * [u]...[/u],
+     * [h1-4]...[/h1-4]
+     * [hr] - както съответните HTML тагове
+     * o [strike]...[/strike] - задраскан текст
+     * o [color=#XXX]...[/color] - цвят на текста
+     * o [bg=#XXX]...[/bg] - цвят на фона
+     * o [img{=caption}]url[/img] - изображение с опционално заглавие
+     * o [code{=syntax}]...[/code] - преформатиран текст с опционално езиково оцветяване
+     * o [em={code}] - емотикони
      *
      * @param string $richtext
      * @return string
      */
-    
     function toHtml($html)
     {
         if(!$html) return new ET("");
         
-        $md5 = md5($html);
+        $textMode = Mode::get('text');
+        
+        $md5 = md5($html) . $textMode;
         
         if($ret = core_Cache::get(RICHTEXT_CACHE_TYPE, $md5, 1000)) {
             
-            //return $ret;
+            //    return $ret;
         }
+        
         // Място, където съхраняваме нещата за субституция
         $this->htmlBoard = array();
         
@@ -188,19 +135,16 @@ class type_Richtext extends type_Text {
         $this->randMark = rand(1, 2000000000);
         
         // Задаваме достатъчно голям буфер за обработка на регулярните изрази
-        ini_set( 'pcre.backtrack_limit', '2M' );
+        ini_set('pcre.backtrack_limit', '2M');
         
         // Обработваме [html] ... [/html] елементите, които могат да съдържат чист HTML код
         $html = preg_replace_callback("/\[html](.*?)\[\/html\]/is", array($this, '_catchHtml'), $html);
         
         // Премахваме всичкото останало HTML форматиране
-        $html = str_replace("<", "&lt;", $html);
+        $html = str_replace(array("&", "<"), array("&amp;", "&lt;"), $html);
         
         // Обработваме [code=????] ... [/code] елементите, които трябва да съдържат програмен код
-        $html = preg_replace_callback("/\[code(=([^\]]*)|)\](.*?)\[\/code\]/is", array($this, '_catchCode'), $html);
-        
-        // Обработваме [file=?????] ... [/file] елементите, които  съдържат връзки към файлове
-        $html = preg_replace_callback("/\[file(=([^\]]*)|)\](.*?)\[\/file\]/is", array($this, '_catchFile'), $html);
+        $html = preg_replace_callback("/\[code(=([a-z0-9]{1,32})|)\](.*?)\[\/code\]/is", array($this, '_catchCode'), $html);
         
         // Обработваме [img=http://????] ... [/img] елементите, които представят картинки с надписи под тях
         $html = preg_replace_callback("/\[img(=([^\]]*)|)\](.*?)\[\/img\]/is", array($this, '_catchImage'), $html);
@@ -208,15 +152,30 @@ class type_Richtext extends type_Text {
         // Обработваме [link=http://????] ... [/link] елементите, които задават фон за буквите на текста между тях
         $html = preg_replace_callback("/\[link(=([^\]]*)|)\](.*?)\[\/link\]/is", array($this, '_catchLink'), $html);
         
-        // Даваме възможност други да правят обработки на текста
-        $this->invoke('catchRichElements', array($this, &$html));
+        // Обработваме [hide=caption] ... [/hide] елементите, които скриват/откриват текст
+        $html = preg_replace_callback("/\[hide(=([^\]]*)|)\](.*?)\[\/hide\]/is", array($this, '_catchHide'), $html);
         
-        // Обработваме хипервръзките, зададенив явен вид
+        // Даваме възможност други да правят обработки на текста
+        $this->invoke('AfterCatchRichElements', array(&$html));
+        
+        // Обработваме хипервръзките, зададени в явен вид
         $html = preg_replace_callback("#((?:https?|ftp|ftps|nntp)://[^\s<>()]+)#i", array($this, '_catchHyperlinks'), $html);
         
+        // H!..6
+        $html = preg_replace_callback("/\[h([1-6])\](.*?)\[\/h[1-6]\]/is", array($this, '_catchHeaders'), $html);
+        
+        // $html = preg_match_all("/\[([a-z]{2,9})(=([^\]]*)|)\](.*?)\[\/\\1\]/is", $html, $matches); bp($matches);
+        
+        
         // Нормализираме знаците за край на ред и обработваме елементите без параметри
-        $from = array("\r\n", "\n\r", "\r", "\n", "\t", '[/color]', '[/bg]', '[hr]', '[b]', '[/b]', '[u]', '[/u]', '[i]', '[/i]', '[h1]', '[h2]', '[h3]', '[h4]', '[/h1]', '[/h2]', '[/h3]', '[/h4]', '[/h5]', '[/h6]');
-        $to = array("\n", "\n", "\n", "<br>\n", "&nbsp;&nbsp;&nbsp;&nbsp;", '</span>', '</span>', '<hr>', '<b>', '</b>', '<u>', '</u>', '<i>', '</i>', '<h1>', '<h2>', '<h3>', '<h4>', '</h1>', '</h2>', '</h3>', '</h4>', '</h5>', '</h6>');
+        if($textMode != 'plain') {
+            $from = array("\r\n", "\n\r", "\r", "\n", "\t", '[/color]', '[/bg]', '[hr]', '[b]', '[/b]', '[u]', '[/u]', '[i]', '[/i]');
+            $to = array("\n", "\n", "\n", "<br>", "&nbsp;&nbsp;&nbsp;&nbsp;", '</span>', '</span>', '<hr>', '<b>', '</b>', '<u>', '</u>', '<i>', '</i>');
+        } else {
+            $from = array("\r\n", "\n\r", "\r",  "\t", '[/color]', '[/bg]', '[b]', '[/b]', '[u]', '[/u]', '[i]', '[/i]', '[hr]');
+            $to = array("\n", "\n", "\n", "    ", '', '', '*', '*', '', '', '', '', str_repeat('_', 84));
+        }
+        
         $html = str_replace($from, $to, $html);
         
         // Обработваме елементите [color=????]  
@@ -226,59 +185,66 @@ class type_Richtext extends type_Text {
         $html = preg_replace_callback("/\[bg(=([^\]]*)|)\]\s*/si", array($this, '_catchBg'), $html);
         
         // Обработваме елемента [li]
-        $html = preg_replace_callback("/\[li](.*?)<br>/is", array($this, '_catchLi'), $html);
-        $html = str_replace("[li]", "<li>", $html);
+        if(!Mode::is('text', 'plain')) {
+            $html = preg_replace_callback("/\[li](.*?)<br>/is", array($this, '_catchLi'), $html);
+            $html = str_replace("[li]", "<li>", $html);
+        } else {
+            $html = preg_replace_callback("/\[li](.*?)\n/is", array($this, '_catchLi'), $html);
+            $html = str_replace("[li]", "\n o ", $html);
+        }
         
         // Поставяме емотиконите на местата с елемента [em=????]
         $html = preg_replace_callback("/\[em(=([^\]]+)|)\]/is", array($this, '_catchEmoticons'), $html);
         
-        // Заменяме обикновените интервали в началото на всеки ред, с напрекъсваеми такива
-        $newLine = TRUE;
-        $sp = "";
-        
-        for($i=0; $i<strlen($html); $i++) {
-            $c = substr($html,$i,1);
+        if(!Mode::is('text', 'plain')) {
             
-            if ($c == "\n") {
-                $newLine = TRUE;
-            } else {
-                if ($c == " ") $c = $newLine?("&nbsp;"):(" ");
-                else $newLine = FALSE;
+            // Заменяме обикновените интервали в началото на всеки ред, с непрекъсваеми такива
+            $newLine = TRUE;
+            $sp = "";
+            
+            for($i = 0; $i<strlen($html); $i++) {
+                $c = substr($html, $i, 1);
+                
+                if ($c == "\n") {
+                    $newLine = TRUE;
+                } else {
+                    if ($c == " ") $c = $newLine ? ("&nbsp;") : (" ");
+                    else $newLine = FALSE;
+                }
+                $out .= $c;
             }
-            $out .= $c;
-        }
-        
-        $st1 = '';
-
-        $lines = explode("<br>", $out);
-        $empty = 0;
-        foreach($lines as $l) {
-            if(str::trim($l)) {
-                $empty = 0;
-            } else {
-                $empty++; 
+            
+            $st1 = '';
+            
+            $lines = explode("<br>", $out);
+            $empty = 0;
+            
+            foreach($lines as $l) {
+                if(str::trim($l)) {
+                    $empty = 0;
+                } else {
+                    $empty++;
+                }
+                
+                if($empty <2) {
+                    $st1 .= $l . "<br>\n";
+                }
             }
-            if($empty <2) {
-                $st1 .= $l . "<br>\n";
-            } 
-
-           
+            
+            $html = $st1;
         }
-        
-        $html = $st1;
         
         if(count($this->_htmlBoard)) {
             foreach($this->_htmlBoard as $place => $txt) {
                 $html = str_replace("__{$place}__", $txt, $html);
             }
         }
-
+        
         $html = new ET("<div class=\"richtext\">[#1#]</div>", $html);
         
-         
         //$html->push('css/richtext.css', 'CSS');
         
-        // core_Cache::set(RICHTEXT_CACHE_TYPE, $md5, $html, 1000);
+        core_Cache::set(RICHTEXT_CACHE_TYPE, $md5, $html, 1000);
         
         return $html;
     }
@@ -298,11 +264,15 @@ class type_Richtext extends type_Text {
      */
     function _catchHtml($match)
     {
-        $place = $this->getPlace();
+        if(Mode::is('text', 'plain')) {
+            $res = html2text_Converter::toRichText($match[1]);
+        } else {
+            $place = $this->getPlace();
+            $this->_htmlBoard[$place] = hclean_Purifier::clean($match[1], 'UTF-8');
+            $res = "__{$place}__";
+        }
         
-        $this->_htmlBoard[$place] = $match[1];
-        
-        return "__{$place}__";
+        return $res;
     }
     
     
@@ -313,7 +283,13 @@ class type_Richtext extends type_Text {
     {
         $text = $match[1];
         
-        return "<li>$text</li>\n";
+        if(!Mode::is('text', 'plain')) {
+            $res = "<li>$text</li>\n";
+        } else {
+            $res = "\n o {$text}";
+        }
+        
+        return $res;
     }
     
     
@@ -323,7 +299,7 @@ class type_Richtext extends type_Text {
     function _catchImage($match)
     {
         $place = $this->getPlace();
-        $url = $match[2];
+        $url = core_Type::escape($match[2]);
         
         $title = htmlentities($match[3], ENT_COMPAT, 'UTF-8');
         
@@ -340,15 +316,14 @@ class type_Richtext extends type_Text {
     {
         $place = $this->getPlace();
         $code = $match[3];
-        $lg = $match[2];
         
         if(!trim($code)) return "";
-
+        
         if($lg) {
             $Geshi = cls::get('geshi_Import');
             $code1 = $Geshi->renderHtml(html_entity_decode(trim($code)), $lg) ;
         } else {
-            $code1 = "<pre class='richtext'>" . trim($code) ."</pre>";;
+            $code1 = "<pre class='richtext'>" . trim($code) . "</pre>";;
         }
         
         $this->_htmlBoard[$place] = $code1;
@@ -370,40 +345,33 @@ class type_Richtext extends type_Text {
         
         return "<a href=__{$place}__>{$title}</a>";
     }
-   
-   /**
-     * Заменя елементите [file=?????]......[/link]
-     */
-    function _catchFile($match)
-    { 
-        $title = $match[3];
-        $fh = $match[2];
-
-        return fileman_Download::getDownloadLink($fh);
-    }
-   
+    
     
     /**
-     * Връща коректното шестнадесетично представяне на зададения цвят
+     * Заменя елементите [hide=?????]......[/hide]
      */
-    function toColor($color)
+    function _catchHide($match)
     {
-        $color = trim(mb_strtolower(str_replace(" ", "", $color)));
+        $place = $this->getPlace();
+        $text = trim($match[3]);
+        $title = $match[2];
         
-        if (!preg_match('/([a-f0-9]{3}|[a-f0-9]{6})$/i', $color)) {
-            // TO-DO
-        }
+        $id = 'hide' . rand(1, 1000000);
         
-        return $color;
+        $html = "<a href=\"javascript:toggleDisplay('{$id}')\"  style=\"font-weight:bold; background-image:url('http://www.unlimited-films.net/charte/plus.png');\" 
+                   class=\"linkWithIcon\">{$title}</a><div class='clearfix21' id='{$id}' style='display:none;margin-left:4px;border-left:dotted 1px #ccc; padding:10px; backgroud-color:#f0f0f0;'>";
+        
+        $this->_htmlBoard[$place] =  $html;
+        
+        return "__{$place}__{$text}</div>";
     }
-    
-    
+
     /**
      * Замества [color=????] елементите
      */
     function _catchColor($match)
     {
-        $color = $this->toColor($match[2]);
+        $color = core_Type::escape($match[2]);
         
         if(!$color) $color = 'black';
         
@@ -416,7 +384,7 @@ class type_Richtext extends type_Text {
      */
     function _catchBg($match)
     {
-        $color = $this->toColor($match[2]);
+        $color = core_Type::escape($match[2]);
         
         if(!$color) $color = 'black';
         
@@ -429,43 +397,115 @@ class type_Richtext extends type_Text {
      */
     function _catchEmoticons($match)
     {
-        $em = $match[2];
+        $em = core_Type::escape($match[2]);
         
-        $iconFile = sbf("img/em15/em.icon.{$em}.gif");
+        if(Mode::is('text', 'xhtml')) {
+            $iconFile = sbf("img/em15/em.icon.{$em}.gif", '"', TRUE);
+            $res = "<img src={$iconFile} style='margin-left:1px; margin-right:1px;' height=15 width=15/>";
+        } elseif(Mode::is('text', 'plain')) {
+            $res = self::$emoticons[$em];
+        } else {
+            $iconFile = sbf("img/em15/em.icon.{$em}.gif");
+            $res = "<img src={$iconFile} style='margin-left:1px; margin-right:1px;' height=15 width=15/>";
+        }
         
-        return "<img src={$iconFile} style='margin-left:1px; margin-right:1px;' height=15 width=15/>";
+        return $res;
     }
     
     
     /**
-     *  @todo Чака за документация...
+     * Обработва хедъри-те [h1..6] ... [/h..]
+     */
+    function _catchHeaders($matches)
+    {
+        $text  = $matches[2];
+        $level = $matches[1];
+        
+        if(!Mode::is('text', 'plain')) {
+            $res = "<h{$level}>{$text}</h{$level}>";
+        } else {
+            $res =   mb_strtoupper($text) . "\n" . str_repeat('=', mb_strlen($text)) . "\n";
+        }
+        
+        return $res;
+    }
+    
+    
+    /**
+     * Прави субституция на хипервръзките
      */
     function _catchHyperlinks($html)
     {
-        $url = $html[0];
+        $url = core_Type::escape($html[0]);
         
-        $tpl = ht::createLink($url, $url);
+        if(!Mode::is('text', 'plain')) {
+            $tpl = ht::createLink($url, $url);
+            $url = $tpl->getContent();
+        }
         
-        return $tpl->getContent();
+        return $url;
     }
-    
-    
+
+
     /**
-     *  @todo Чака за документация...
+     * Връща масив с html код, съответстващ на бутоните на Richedit компонента
      */
-    function _catchFiles($match) {
+    function getToolbar(&$attr)
+    {   
+        $formId = $attr['id'];
+
+        $toolbarArr = new core_ObjectCollection('html,place');
         
-        return $text;
+        $toolbarArr->add("<a class='rtbutton1' title='Усмивка' onclick=\"rp('[em=smile]', document.getElementById('{$formId}'))\"><img src=" . sbf('img/em15/em.icon.smile.gif') . " height='15' width='15'  align='top' alt='smile'></a>", 'TBL_GROUP1');
+
+ 
+        $toolbarArr->add("<a class='rtbutton1' title='Широка усмивка' onclick=\"rp('[em=bigsmile]', document.getElementById('{$formId}'))\"><img src=" . sbf('img/em15/em.icon.bigsmile.gif') . " height='15' width='15'  align='top' alt='bigsmile'></a>", 'TBL_GROUP1');
+
+        $toolbarArr->add("<a class='rtbutton1' title='Супер!' onclick=\"rp('[em=cool]', document.getElementById('{$formId}'))\"><img src=" . sbf('img/em15/em.icon.cool.gif') . " height='15' width='15' align='top' alt='cool'></a>", 'TBL_GROUP1');
+  
+        
+        if(!Mode::is('screenMode', 'narrow')) {
+            $toolbarArr->add("<a class='rtbutton1' title='Бира' onclick=\"rp('[em=beer]', document.getElementById('{$formId}'))\"><img alt='Бира' src=" . sbf('img/em15/em.icon.beer.gif') . " height='15' width='15'></a>", 'TBL_GROUP1');
+ 
+            $toolbarArr->add("<a class='rtbutton1' title='Въпрос?' onclick=\"rp('[em=question]', document.getElementById('{$formId}'))\"><img alt='Въпрос?' src=" . sbf('img/em15/em.icon.question.gif') . " height='15' width='15' ></a>", 'TBL_GROUP1');
+
+            $toolbarArr->add("<a class='rtbutton1' title='Сърце' onclick=\"rp('[em=heart]', document.getElementById('{$formId}'))\"><img alt='Сърце' src=" . sbf('img/em15/em.icon.heart.gif') . " height='15' width='15'></a>", 'TBL_GROUP1');
+
+            $toolbarArr->add("<a class='rtbutton1' title='OK' onclick=\"rp('[em=ok]', document.getElementById('{$formId}'))\"><img alt='OK' src=" . sbf('img/em15/em.icon.ok.gif') . " height='15' width='15'></a>", 'TBL_GROUP1');
+            
+            $toolbarArr->add("<a class='rtbutton1' title='Мисля' onclick=\"rp('[em=think]', document.getElementById('{$formId}'))\"><img alt='Мисля' src=" . sbf('img/em15/em.icon.think.gif') . " height='15' width='15'></a>", 'TBL_GROUP1');
+        }
+        
+         
+        $toolbarArr->add("<a class=rtbutton title='Линия' onclick=\"rp('[hr]', document.getElementById('{$formId}'))\">-</a>", 'TBL_GROUP2');
+
+        $toolbarArr->add("<a class=rtbutton style='font-weight:bold; color:blue' title='Сини букви' onclick=\"s('[color=blue]', '[/color]', document.getElementById('{$formId}'))\">A</a>", 'TBL_GROUP2');
+
+        $toolbarArr->add("<a class=rtbutton style='font-weight:bold; color:red' title='Червени букви' onclick=\"s('[color=red]', '[/color]', document.getElementById('{$formId}'))\">A</a>", 'TBL_GROUP2');
+
+        $toolbarArr->add("<a class=rtbutton style='font-weight:bold; background: yellow;' title='Жълт фон' onclick=\"s('[bg=yellow]', '[/bg]', document.getElementById('{$formId}'))\">A</a>", 'TBL_GROUP2');
+
+        $toolbarArr->add("<a class=rtbutton style='font-weight:bold; background: white;' title='Код' onclick=\"s('[code=php]', '[/code]', document.getElementById('{$formId}'))\">Код</a>", 'TBL_GROUP2');
+
+      
+        $toolbarArr->add("<a class=rtbutton style='font-weight:bold;' title='Удебелен текст' onclick=\"s('[b]', '[/b]', document.getElementById('{$formId}'))\">b</a>", 'TBL_GROUP2');
+
+        $toolbarArr->add("<a class=rtbutton style='font-style:italic;' title='Наклонен текст' onclick=\"s('[i]', '[/i]', document.getElementById('{$formId}'))\">i</a>", 'TBL_GROUP2');
+
+        $toolbarArr->add("<a class=rtbutton style='text-decoration:underline;' title='Подчертан текст' onclick=\"s('[u]', '[/u]', document.getElementById('{$formId}'))\">u</a>", 'TBL_GROUP2');
+        
+        $toolbarArr->add("<a class=rtbutton title='Линк' onclick=\"s('[link=http://]', '[/link]', document.getElementById('{$formId}'))\">линк</a>", 'TBL_GROUP2');
+        
+        if(!Mode::is('screenMode', 'narrow')) { 
+            $toolbarArr->add("<a class=rtbutton title='Заглавие 1' onclick=\"s('[h1]', '[/h1]', document.getElementById('{$formId}'))\">H1</a>", 'TBL_GROUP3');
+            $toolbarArr->add("<a class=rtbutton title='Заглавие 2' onclick=\"s('[h2]', '[/h2]', document.getElementById('{$formId}'))\">H2</a>", 'TBL_GROUP3');
+            $toolbarArr->add("<a class=rtbutton title='Заглавие 3' onclick=\"s('[h3]', '[/h3]', document.getElementById('{$formId}'))\">H3</a>", 'TBL_GROUP3');
+            $toolbarArr->add("<a class=rtbutton title='Списък' onclick=\"rp('[li] ', document.getElementById('{$formId}'))\">LI</a>", 'TBL_GROUP3');
+        }
+        
+        $this->invoke('AfterGetToolbar', array(&$toolbarArr, &$attr));
+
+        return $toolbarArr;
     }
-    
-    
-    /**
-     *  @todo Чака за документация...
-     */
-    function richtext2text($richtext)
-    {
-    	return strip_tags($this->toHtml($richtext));
-    	
-    	//return strip_tags(richtext2Html($richtext, TRUE));
-    }
+
 }

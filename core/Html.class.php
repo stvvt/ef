@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_Html' ['ht'] - Функции за генериране на html елементи
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Html
 {
@@ -20,15 +21,9 @@ class core_Html
     /**
      * Композира xHTML елемент
      */
-    function createElement($name, $attributes, $body = "", $closeTag = FALSE)
+    static function createElement($name, $attributes, $body = "", $closeTag = FALSE)
     {
         if ($name) {
-            if (empty($body) && !$closeTag) {
-                $element = new ET("<{$name}[#ATTRIBUTES#]>");
-            } else {
-                $element = new ET("<{$name}[#ATTRIBUTES#]>[#BODY#]</{$name}>");
-                $element->replace($body ? $body : '', 'BODY');
-            }
             
             if (count($attributes)) {
                 foreach ($attributes as $atr => $content) {
@@ -38,28 +33,31 @@ class core_Html
                     continue;
                     
                     if (is_string($content)) {
-                        $content = str_replace("\"", "&quot;", $content);
+                        $content = str_replace(array('&', "\""), array('&amp;', "&quot;"), $content);
                     }
-                    $element->append(" " . $atr . "=\"", 'ATTRIBUTES');
-                    $element->append($content, 'ATTRIBUTES');
-                    $element->append("\"", 'ATTRIBUTES');
+                    
+                    $attrStr .= " " . $atr . "=\"" . $content . "\"";
                 }
+            }
+            
+            if (empty($body) && !$closeTag) {
+                $element = "<{$name}{$attrStr}>";
+            } else {
+                $element = "<{$name}{$attrStr}>{$body}</{$name}>";
             }
         } else {
             // Ако нямаме елемент, т.е. елемента е празен, връщаме само тялото
             $element = $body;
         }
         
-        $element->append("", "ATTRIBUTES");
-        
-        return $element;
+        return new ET('[#1#]', $element);
     }
     
     
     /**
      * Създава редактируем комбо-бокс, съчетавайки SELECT с INPUT
      */
-    function createCombo($name, $value, $attr, $options)
+    static function createCombo($name, $value, $attr, $options)
     {
         $tpl = new ET();
         
@@ -108,11 +106,24 @@ class core_Html
     /**
      * Създава SELECT елемент
      */
-    function createSelect($name, $options, $selected = NULL, $selAttr = array())
+    static function createSelect($name, $options, $selected = NULL, $selAttr = array())
     {
         $selAttr['name'] = $name;
         
-        $select = ht::createElement('select', $selAttr, new ET("[#OPTIONS#]"));
+        foreach ($selAttr as $atr => $content) {
+            // Смятаме, че всички атрибути с имена, започващи със '#'
+            // са вътрешни и поради това не ги показваме в елемента
+            if ($atr{0} == '#')
+            continue;
+            
+            if (is_string($content)) {
+                $content = str_replace(array('&', "\""), array('&amp;', "&quot;"), $content);
+            }
+            
+            $attrStr .= " " . $atr . "=\"" . $content . "\"";
+        }
+        
+        $select = new ET("<select{$attrStr}>[#OPTIONS#]</select>");
         
         $select->append('', 'OPTIONS');
         
@@ -140,7 +151,7 @@ class core_Html
                         $title = $title->title;
                     }
                 }
-
+                
                 if (!isset($attr['value'])) {
                     $attr['value'] = $id;
                 }
@@ -151,7 +162,7 @@ class core_Html
                 
                 // Хак за добавяне на плейс-холдер
                 if($selAttr['placeholder'] &&
-                empty($attr['value']) && !trim($title)) {
+                    empty($attr['value']) && !trim($title)) {
                     $title = $selAttr['placeholder'];
                     $attr['style'] .= 'color:#666;';
                 }
@@ -175,7 +186,7 @@ class core_Html
      * Преброява колко са действителните опции,
      * без да брои групите
      */
-    function countOptions($options)
+    static function countOptions($options)
     {
         $cnt = 0;
         
@@ -194,15 +205,15 @@ class core_Html
     /**
      * Прави SELECT, radio или disabled INPUT в зависимост от броя на опциите
      *
-     * @param $maxRadio максимален брой опции, при които се създава радиогрупа
+     * @param $maxRadio максимален брой опции, при които се създава радио група
      */
-    function createSmartSelect($options, $name, $value=NULL, $attr=array(),
-    $maxRadio=0,
-    $maxColumns = 4,
-    $columns = NULL)
+    static function createSmartSelect($options, $name, $value = NULL, $attr = array(),
+        $maxRadio = 0,
+        $maxColumns = 4,
+        $columns = NULL)
     {
         $optionsCnt = ht::countOptions($options);
-
+        
         if($optionsCnt <= 1) {
             // Когато имаме само една опция, правим readOnly <input>
             
@@ -219,32 +230,32 @@ class core_Html
             }
             
             $input = ht::createElement('select', array(
-                'readonly' => 'readonly',
-                'style' => 'background:#ddd;border:solid 1px #aaa;' .
-                $attr['style']
-            ), "<option>$value</option>", TRUE);
+                    'readonly' => 'readonly',
+                    'style' => 'background:#ddd;border:solid 1px #aaa;' .
+                    $attr['style']
+                ), "<option>$value</option>", TRUE);
             
             $input->append(ht::createElement('input', array(
-                'type' => 'hidden',
-                'name' => $name,
-                'value' => $id
-            )));
+                        'type' => 'hidden',
+                        'name' => $name,
+                        'value' => $id
+                    )));
         } elseif($optionsCnt <= $maxRadio) {
-            // Когато броя на оциите са по-малко
+            // Когато броя на опциите са по-малко
             
             // Определяме броя на колоните, ако не са зададени.
-            if( count($options) != $optionsCnt) {
+            if(count($options) != $optionsCnt) {
                 $col = 1;
             } else {
                 $col = $columns ? $columns :
                 min(max(4, $maxColumns),
-                round(sqrt(max(0, $optionsCnt+1))));
+                    round(sqrt(max(0, $optionsCnt + 1))));
             }
-
-            if( $col > 1 ) {
+            
+            if($col > 1) {
                 $tpl = "<table class='keylist'><tr>";
                 
-                for($i = 1; $i<=$col; $i++) {
+                for($i = 1; $i <= $col; $i++) {
                     $tpl .= "<td valign=top>[#OPT" . ($i-1) . "#]</td>";
                 }
                 
@@ -279,6 +290,8 @@ class core_Html
                         unset($radioAttr['checked']);
                     }
                     
+                    $radioAttr['class'] .= ' radiobutton';
+                    
                     $input->append($indent);
                     
                     $input->append(ht::createElement('input', $radioAttr));
@@ -290,7 +303,7 @@ class core_Html
                     $input->append("<br>");
                 }
                 
-                $tpl->append($input, 'OPT'.($i%$col));
+                $tpl->append($input, 'OPT' . ($i % $col));
                 
                 $i++;
             }
@@ -307,7 +320,7 @@ class core_Html
     /**
      * Създава скрити полета
      */
-    function createHidden($variables)
+    static function createHidden($variables)
     {
         $hiddens = arr::make($variables);
         
@@ -332,9 +345,9 @@ class core_Html
     
     
     /**
-     * Създава тектов INPUT
+     * Създава текстов INPUT
      */
-    function createTextInput($name, $value = NULL, $attr = array())
+    static function createTextInput($name, $value = NULL, $attr = array())
     {
         if ($name) {
             $attr['name'] = $name;
@@ -359,7 +372,7 @@ class core_Html
     /**
      * Създава текстово поле
      */
-    function createTextArea($name, $value = "", $attr = array())
+    static function createTextArea($name, $value = "", $attr = array())
     {
         if (!$attr['cols']) {
             // $attr['cols'] = 40;
@@ -370,6 +383,8 @@ class core_Html
         }
         $attr['name'] = $name;
         
+        $value = str_replace(array('&', "<" . ">"), array('&amp;', "&gt;", "&lt;"), $value);
+        
         return ht::createElement('textarea', $attr, $value, TRUE);
     }
     
@@ -377,14 +392,14 @@ class core_Html
     /**
      * Създава бутон - хиперлинк
      */
-    function createBtn($title, $url = array(), $warning = FALSE, $newWindow = FALSE, $attr = array())
+    static function createBtn($title, $url = array(), $warning = FALSE, $newWindow = FALSE, $attr = array())
     {
         $title = tr($title);
         
         $attr = arr::make($attr);
         
         // Ако URL-то е празно - забраняваме бутона
-        if( (is_array($url) && count($url) == 0) || !$url ) {
+        if((is_array($url) && count($url) == 0) || !$url) {
             $attr['disabled'] = "disabled";
         }
         
@@ -442,7 +457,7 @@ class core_Html
     /**
      * Създава submit бутон
      */
-    function createSbBtn($title, $cmd = 'default', $warning = NULL, $newWindow = NULL, $attr = array())
+    static function createSbBtn($title, $cmd = 'default', $warning = NULL, $newWindow = NULL, $attr = array())
     {
         $title = tr($title);
         
@@ -485,7 +500,7 @@ class core_Html
         $btn = ht::createElement('input', $attr);
         
         $btn->appendOnce("<input type=\"hidden\" name=\"Cmd[default]\" value=1>",
-        'FORM_HIDDEN');
+            'FORM_HIDDEN');
         
         return $btn;
     }
@@ -494,7 +509,7 @@ class core_Html
     /**
      * Създава бутон, който стартира javascript функция
      */
-    function createFnBtn($title, $function, $warning = NULL, $attr = array())
+    static function createFnBtn($title, $function, $warning = NULL, $attr = array())
     {
         // Вкарваме предупреждението, ако има такова
         if ($warning) {
@@ -524,10 +539,10 @@ class core_Html
     /**
      * Създава хипервръзка
      */
-    function createLink($title, $url = FALSE, $warning = FALSE, $attr = array())
+    static function createLink($title, $url = FALSE, $warning = FALSE, $attr = array())
     {
         $attr = arr::make($attr);
-
+        
         if ($warning) {
             $attr['onclick'] = "if (!confirm('" . str_replace("'", "\'", $warning) .
             "')) return false; " . $attr['onclick'];
@@ -554,7 +569,7 @@ class core_Html
     /**
      * Създава меню, чрез SELECT елемент
      */
-    function createSelectMenu($options, $selected, $button = FALSE, $attr = array())
+    static function createSelectMenu($options, $selected, $button = FALSE, $attr = array())
     {
         if (!Mode::is('screenMode', 'narrow') && count($options) < 10) {
             $selectMenu = new ET('');
@@ -578,9 +593,9 @@ class core_Html
             
             if ($button) {
                 $selectMenu->append("<input type=\"button\" " .
-                "onclick=\"sm = document.getElementById('{$name}');" .
-                "document.location = sm.value;\" value=\"»\" " .
-                "class=\"button\">\n");
+                    "onclick=\"sm = document.getElementById('{$name}');" .
+                    "document.location = sm.value;\" value=\"»\" " .
+                    "class=\"button\">\n");
             }
         }
         
@@ -589,11 +604,11 @@ class core_Html
     
     
     /**
-     * Създава лейаут, по зададени блокове, като плейсхолдъри
+     * Създава лейаут, по зададени блокове, като плейсхолдери
      */
-    function createLayout($blocks)
+    static function createLayout($blocks)
     {
-        preg_match_all('/\[#([a-zA-Z0-9_]{1,})#\]/', $blocks, &$matches);
+        preg_match_all('/\[#([a-zA-Z0-9_]{1,})#\]/', $blocks, $matches);
         
         $blocksArr = $matches[1];
         
@@ -612,7 +627,7 @@ class core_Html
     /**
      * Прави html представяне на структурата на обекта, масива или променливата
      */
-    function mixedToHtml($o)
+    static function mixedToHtml($o)
     {
         static $i;
         
@@ -637,7 +652,7 @@ class core_Html
             if (count($o)) {
                 foreach ($o as $name => $value) {
                     if($name === 'dbPass') {
-                       $r .= "$name : ******<br>";
+                        $r .= "$name : ******<br>";
                     } else {
                         $r .= "$name : " . ht::mixedToHtml($value) . "<br>";
                     }
@@ -660,7 +675,7 @@ class core_Html
     /**
      * Задава уникално значение на атрибута $attr['id'] (в текущия хит)
      */
-    function setUniqId(&$attr)
+    static function setUniqId(&$attr)
     {
         if ($attr['id'])
         return;

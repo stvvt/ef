@@ -1,17 +1,18 @@
 <?php
 
+
+
 /**
  * Клас 'core_SpellNumber' - Вербално представяне на числа
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_SpellNumber
 {
@@ -39,11 +40,10 @@ class core_SpellNumber
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function dig2Text($d2, $d1, $d0, $g = "n")
     {
-        
         
         /**
          * @access private
@@ -51,112 +51,112 @@ class core_SpellNumber
          * @param int $d2 десетична цифра
          * @param int $d3 десетична цифра
          * @param string $G род
-         * @return string Словната форма за числото образувувано от цифрите в указания род
+         * @return string Словесната форма за числото образувано от цифрите в указания род
          */
         switch ($d2) {
-            case 1: {
+            case 1 : {
                     $text .= "сто";
                     break;
                 }
-            case 2: {
+            case 2 : {
                     $text .= "двеста";
                     break;
                 }
-            case 3: {
+            case 3 : {
                     $text .= "триста";
                     break;
                 }
-            case 4: {
+            case 4 : {
                     $text .= "четиристотин";
                     break;
                 }
-            case 5: {
+            case 5 : {
                     $text .= "петстотин";
                     break;
                 }
-            case 6: {
+            case 6 : {
                     $text .= "шестстотин";
                     break;
                 }
-            case 7: {
+            case 7 : {
                     $text .= "седемстотин";
                     break;
                 }
-            case 8: {
+            case 8 : {
                     $text .= "осемстотин";
                     break;
                 }
-            case 9: {
+            case 9 : {
                     $text .= "деветстотин";
                     break;
                 }
         }
         
         switch ($d1) {
-            case 1: {
+            case 1 : {
                     switch ($d0) {
-                        case 1:
+                        case 1 :
                             $text .= " единадесет";
                             break;
-                        case 2:
+                        case 2 :
                             $text .= " дванадесет";
                             break;
-                        case 3:
+                        case 3 :
                             $text .= " тринадесет";
                             break;
-                        case 4:
+                        case 4 :
                             $text .= " четиринадесет";
                             break;
-                        case 5:
+                        case 5 :
                             $text .= " петнадесет";
                             break;
-                        case 6:
+                        case 6 :
                             $text .= " шестнадесет";
                             break;
-                        case 7:
+                        case 7 :
                             $text .= " седемнадесет";
                             break;
-                        case 8:
+                        case 8 :
                             $text .= " осемнадесет";
                             break;
-                        case 9:
+                        case 9 :
                             $text .= " деветнадесет";
                             break;
-                        case 0:
+                        case 0 :
                             $text .= " десет";
                             break;
                     }
                     break;
                 }
-            case 2:
+            case 2 :
                 $text .= " двадесет";
                 break;
-            case 3:
+            case 3 :
                 $text .= " тридесет";
                 break;
-            case 4:
+            case 4 :
                 $text .= " четиридесет";
                 break;
-            case 5:
+            case 5 :
                 $text .= " петдесет";
                 break;
-            case 6:
+            case 6 :
                 $text .= " шестдесет";
                 break;
-            case 7:
+            case 7 :
                 $text .= " седемдесет";
                 break;
-            case 8:
+            case 8 :
                 $text .= " осемдесет";
                 break;
-            case 9:
+            case 9 :
                 $text .= " деветдесет";
                 break;
         }
         
         if ($d1 != 1 && $d0 > 0) {
             switch ($d0) {
-                case 1:
+                case 1 :
                     if ($g == "m") {
                         $text .= " един";
                         break;
@@ -168,32 +168,32 @@ class core_SpellNumber
                     }
                     $text .= " едно";
                     break;
-                case 2:
+                case 2 :
                     if ($g == "m") {
                         $text .= " два";
                         break;
                     }
                     $text .= " две";
                     break;
-                case 3:
+                case 3 :
                     $text .= " три";
                     break;
-                case 4:
+                case 4 :
                     $text .= " четири";
                     break;
-                case 5:
+                case 5 :
                     $text .= " пет";
                     break;
-                case 6:
+                case 6 :
                     $text .= " шест";
                     break;
-                case 7:
+                case 7 :
                     $text .= " седем";
                     break;
-                case 8:
+                case 8 :
                     $text .= " осем";
                     break;
-                case 9:
+                case 9 :
                     $text .= " девет";
                     break;
             }
@@ -204,11 +204,11 @@ class core_SpellNumber
     
     
     /**
-     * Превръща цяло неотрицателно число от цифрова в словесна форма.
+     * Превръща цяло не отрицателно число от цифрова в словесна форма.
      *
      * @param int $NUMBER положително число, с максимум 12 цифри
      * @param string $G определя граматическия род: m - мъжки, f - женски, n - среден
-     * @return string Словната форма за числото  в указания род.
+     * @return string Словесната форма за числото  в указания род.
      */
     function num2Text($NUMBER, $g = 'n')
     {
@@ -247,7 +247,7 @@ class core_SpellNumber
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function int_to_words($x)
     {

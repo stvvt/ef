@@ -1,18 +1,20 @@
 <?php
 
+
+
 /**
  * Клас 'core_Os' - Стартиране на процеси на OS
  *
  * PHP versions 4 and 5
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2009 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ *
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Os
 {
@@ -21,28 +23,23 @@ class core_Os
     /**
      * Конструктор
      */
-    function __construct()
+    function core_Os()
     {
         if ($this->isWindows()) {
             $this->wshShell = @new COM("WScript.Shell");
             
             if (!$this->wshShell)
-            error('Невъзможност да се иницаиализира WScript.Shell', TRUE);
+            error('Невъзможност да се инициализира WScript.Shell', TRUE);
             $this->wmi = @new COM("winmgmts://./root/cimv2");
             
             if (!$this->wmi)
-            error('Невъзможност да се иницаиализира winmgmts://./root/cimv2', TRUE);
+            error('Невъзможност да се инициализира winmgmts://./root/cimv2', TRUE);
         }
     }
     
-    function core_Os()
-    {
-    	$this->__construct();	
-    }   
-
     
     /**
-     * Връща TRUE ако операзионната система е Win
+     * Връща TRUE ако операционната система е Windows
      */
     function isWindows()
     {
@@ -60,12 +57,9 @@ class core_Os
      * При mode == 'execSync' - изпълнява и връща кода
      * При mode == 'getOutput' - изпълнява и връща изхода
      * При mode == 'execBkg' - стартира във фонов режим и връща pid
-     *
-     *
-     *
      */
-    function exec($cmd, $mode = 'exec', $dir = NULL, $timeout = 0)
-    {
+    function exec($cmd, $mode = 'execSync', $dir = NULL, $timeout = 0)
+    { 
         // Ескейпваме аргументите
         if (is_array($cmd)) {
             foreach ($cmd as $id => $arg) {
@@ -76,7 +70,7 @@ class core_Os
             $cmd = $cmd[0];
         }
         
-        // Синхронно ли ще изпъляваме процеса?
+        // Синхронно ли ще изпълняваме процеса?
         $sync = ($mode == 'execSync' || $mode == 'getOutput') && (!$timeout);
         
         $uniqId = $this->getUniqId();
@@ -86,6 +80,7 @@ class core_Os
             // преди това я запазваме
             if ($dir) {
                 $curDir = $this->wshShell->CurrentDirectory;
+                $dir = str_replace('/', DIRECTORY_SEPARATOR, $dir);  
                 $this->wshShell->CurrentDirectory = $dir;
             }
             
@@ -93,16 +88,20 @@ class core_Os
                 $tempOutputFile = $this->getTempFile($uniqId);
                 $osCmd = $cmd . " >\"{$tempOutputFile}\"";
             }
+
+            if($mode == 'execSync') {
+                $osCmd = $cmd;
+            }
             
             if (!$sync) {
                 $tempErrorFile = $this->getErrorFile($uniqId);
                 $osCmd = $cmd . " 2>\"{$tempErrorFile}\"";
             }
             
-            $osCmd = "cmd /c \"" . $osCmd . "\"";
+           // $osCmd = "cmd /c \"" . $osCmd . "\"";
             
             // Изпълняваме командата
-            $res = $this->wshShell->run($osCmd, 0, $sync);
+            $res = exec($osCmd);
             
             // Логваме каква команда сме изпълнили
             Debug::log($osCmd . "($res)");
@@ -110,6 +109,7 @@ class core_Os
             // Ако изпълняваме а-синхронно процеса, тогава опитваме се да намерим PID-то 
             if (!$sync) {
                 $pid = $this->_getPidByCommand($cmd);
+                
                 // Ако не сме намерили pid, връщаме грешка. Процесът трябва да е стартиран. 
                 // А дали не е завършил бързо?
                 if (!$pid)
@@ -138,7 +138,7 @@ class core_Os
                         break;
                     }
                     
-                    // Изчакваме 1 сек.
+                    // Изчакваме 1 секунди
                     sleep(1);
                     
                     //Проверка за прекъсване по таймаут
@@ -251,7 +251,7 @@ class core_Os
     function isRunning($pHnd)
     {
         // първият елемент трябва да е id-то на процеса в ОС, а втория 
-        // уникланото ид, използвано за името на файловете
+        // уникалното ид, използвано за името на файловете
         list($pid, $unicId) = explode('_', $pHnd);
         
         // Windows
@@ -288,6 +288,7 @@ class core_Os
         if (file_exists($fName)) {
             if (@filesize($fName)) {
                 $errorMsg = file_get_contents($fName);
+                
                 // Премахва изходящия файл. Дали така трябва?
                 unlink($this->getTempFile($uniqId));
             }
@@ -335,7 +336,7 @@ class core_Os
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getTempFile($uniqId)
     {
@@ -344,10 +345,51 @@ class core_Os
     
     
     /**
-     *  @todo Чака за документация...
+     * @todo Чака за документация...
      */
     function getErrorFile($uniqId)
     {
         return EF_TEMP_PATH . "\\" . $uniqId . ".err";
+    }
+    
+    
+    /**
+     * Изтрива директорията
+     */
+    function deleteDir($dir)
+    {
+        //Проверяваме дали е подадена директория
+        if ((!$dir) || (!is_dir($dir) && (!is_file($dir)))) return FALSE;
+        
+        if (substr($dir, strlen($dir)-1, 1) != '/') {
+            $dir .= '/';
+        }
+        
+        if ($handle = opendir($dir)) {
+            while ($obj = readdir($handle)) {
+                if ($obj != '.' && $obj != '..') {
+                    if (is_dir($dir . $obj)) {
+                        if (!$this->deleteDir($dir . $obj))
+                        
+                        return false;
+                    } else {
+                        if (!unlink($dir . $obj)) {
+                            
+                            return false;
+                        }
+                    }
+                }
+            }
+            closedir($handle);
+            
+            if (!@rmdir($dir)) {
+                
+                return false;
+            }
+            
+            return true;
+        }
+        
+        return false;
     }
 }

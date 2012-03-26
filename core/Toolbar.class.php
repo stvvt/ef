@@ -1,24 +1,25 @@
 <?php
 
+
+
 /**
- * Клас 'core_Toolbar' - Вюър за лента с бутони
+ * Клас 'core_Toolbar' - Изглед за лента с бутони
  *
  *
- * @category   Experta Framework
- * @package    core
- * @author     Milen Georgiev <milen@download.bg>
- * @copyright  2006-2011 Experta Ltd.
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   core
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class core_Toolbar extends core_BaseClass
 {
     
     
     /**
-     * Масив с бутоните на тулбара
+     * Масив с бутоните на лентата с инструменти
      */
     var $buttons = array();
     
@@ -28,7 +29,8 @@ class core_Toolbar extends core_BaseClass
      */
     function addBtn($title, $url, $params = array(), $moreParams = array())
     {
-        $btn->url   = $url;
+        $btn = new stdClass();
+        $btn->url = $url;
         $btn->title = $title;
         $this->add($btn, $params, $moreParams);
     }
@@ -39,25 +41,30 @@ class core_Toolbar extends core_BaseClass
      */
     function addSbBtn($title, $cmd = 'default', $params = array(), $moreParams = array())
     {
-        $btn->type  = 'submit';
+        $btn = new stdClass();
+
+        $btn->type = 'submit';
         $btn->title = $title;
-        $btn->cmd   = $cmd;
+        $btn->cmd = $cmd;
         $this->add($btn, $params, $moreParams);
     }
     
     
     /**
-     * Добавя бутон, който здейства js функция
+     * Добавя бутон, който задейства js функция
      */
     function addFnBtn($title, $function, $params = array(), $moreParams = array())
     {
-        $btn->type  = 'function';
+        $btn->type = 'function';
         $btn->title = $title;
-        $btn->fn    = $function;
+        $btn->fn = $function;
         $this->add($btn, $params, $moreParams);
-        
     }
     
+    
+    /**
+     * @todo Чака за документация...
+     */
     function add(&$btn, &$params, &$moreParams)
     {
         $params = arr::combine($params, $moreParams);
@@ -71,7 +78,7 @@ class core_Toolbar extends core_BaseClass
             $btn->warning = $params['warning'];
             unset($params['warning']);
         }
-
+        
         if($params['order']) {
             $btn->order = $params['order'];
             unset($params['order']);
@@ -82,21 +89,22 @@ class core_Toolbar extends core_BaseClass
         } else {
             $btn->order = 10;
         }
-        $btn->order += count($this->buttons)/10000;
+        
+        $btn->order += count($this->buttons) / 10000;
         
         $btn->attr = $params;
-
-        $id = $params['id']?$params['id']:$btn->title;
-
+        
+        $id = $params['id'] ? $params['id'] : $btn->title;
+        
         $this->buttons[$id] = $btn;
     }
-
-
+    
+    
     /**
      * Премахва посочения бутон. Ако не е посочен бутон, премахва всичките
      */
     function removeBtn($id)
-    { 
+    {
         if(isset($this->buttons[$id])) {
             unset($this->buttons[$id]);
         } elseif ($id == '*') {
@@ -104,19 +112,19 @@ class core_Toolbar extends core_BaseClass
         } else {
             return FALSE;
         }
-
+        
         return TRUE;
     }
     
     
     /**
-     * Добавя hidden input полета до тулбара
+     * Добавя hidden input полета до лентата с инструменти
      */
     function setHidden($arr)
     {
         $this->hidden = $arr;
     }
-
+    
     
     /**
      * Сравняваща функция, за подредба на бутоните
@@ -126,12 +134,13 @@ class core_Toolbar extends core_BaseClass
         if ($a->order == $b->order) {
             return 0;
         }
+        
         return ($a->order < $b->order) ? -1 : 1;
     }
     
     
     /**
-     * Връща html - съдържанието на тулбара
+     * Връща html - съдържанието на лентата с инструменти
      */
     function renderHtml_()
     {
@@ -141,16 +150,14 @@ class core_Toolbar extends core_BaseClass
         
         if (Mode::is('printing')) return $toolbar;
         
-        // Какъв ще бъде изгледа на тулбара?
+        // Какъв ще бъде изгледа на лентата с инструменти?
         if ((!Mode::is('screenMode', 'narrow') && count($this->buttons) < 5) || count($this->buttons) <= 10) {
             // Показваме бутони 
             $btnCnt = 0;
-
+            
             // Сортираме бутоните
-
-
-            uasort ( $this->buttons , 'core_Toolbar::cmp' );
-
+            arr::order($this->buttons);
+            
             foreach ($this->buttons as $id => $btn) {
                 
                 $attr = $btn->attr;

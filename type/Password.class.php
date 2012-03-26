@@ -1,41 +1,46 @@
 <?php
 
+
+/**
+ * @todo Чака за документация...
+ */
 defIfNot('EF_PASS_NO_CHANGE', 'no_change');
+
+
 /**
  * Клас  'type_Password' - Тип за парола
  *
  *
- * @category   Experta Framework
- * @package    type
- * @author     Milen Georgiev
- * @copyright  2006-2010 Experta OOD
- * @license    GPL 2
- * @version    CVS: $Id:$
+ * @category  all
+ * @package   type
+ * @author    Milen Georgiev <milen@download.bg>
+ * @copyright 2006 - 2012 Experta OOD
+ * @license   GPL 3
+ * @since     v 0.1
  * @link
- * @since      v 0.1
  */
 class type_Password extends type_Varchar {
     
     
     /**
-     *  @todo Чака за документация...
+     * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value="", $attr = array())
+    function renderInput_($name, $value = "", $attr = array())
     {
         $attr['type'] = 'password';
         
         if($value) $value = EF_PASS_NO_CHANGE;
         
-        if(! ($this->params['autocomplete'] == 'autocomplete' || $this->params['autocomplete'] == 'on') || !isDebug() ) {
+        if(! ($this->params['autocomplete'] == 'autocomplete' || $this->params['autocomplete'] == 'on') || !isDebug()) {
             $attr['autocomplete'] = 'off';
         }
-
+        
         $attr['onfocus'] = "this.select();";
-       
+        
         return parent::renderInput_($name, $value, $attr);
     }
-
-
+    
+    
     /**
      * Конвертира от вербална стойност
      */
@@ -43,29 +48,29 @@ class type_Password extends type_Varchar {
     {
         if(!isset($value) || $value == EF_PASS_NO_CHANGE) return NULL;
         
-//        if(strpos($value, substr(EF_PASS_NO_CHANGE, 0, 1)) !== FALSE) {
-//            $this->error = 'Недопустими символи в паролата. Въведете я пак';
-//
-//            return FALSE;;
-//        }
-
+        //        if(strpos($value, substr(EF_PASS_NO_CHANGE, 0, 1)) !== FALSE) {
+        //            $this->error = 'Недопустими символи в паролата. Въведете я пак';
+        //
+        //            return FALSE;;
+        //        }
+        
         return $value;
     }
     
-
-    /**
-     * Превръща в mySQL тойност, подходяща за insert/update заявка
-     */
-    function toMysql($value, $db, $notNull, $defValue)
-    { 
-        if($value === NULL) return NULL;
-
-        return parent::toMysql($value, $db, $notNull, $defValue);
-    }
-
     
     /**
-     *  @todo Чака за документация...
+     * Превръща в mySQL подходяща за insert/update заявка
+     */
+    function toMysql($value, $db, $notNull, $defValue)
+    {
+        if($value === NULL) return NULL;
+        
+        return parent::toMysql($value, $db, $notNull, $defValue);
+    }
+    
+    
+    /**
+     * Преобразуване от вътрешно представяне към вербална стойност
      */
     function toVerbal($value)
     {
