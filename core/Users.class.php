@@ -452,7 +452,7 @@ class core_Users extends core_Manager
     /**
      * Връща id-то (или друга зададена част) от записа за текущия потребител
      */
-    function getCurrent($part = 'id')
+    static function getCurrent($part = 'id')
     {
         $Users = cls::get('core_Users');
         
@@ -473,7 +473,7 @@ class core_Users extends core_Manager
     /**
      * Форсира системния потребител да бъде текущ, преди реалния текущ или анонимния
      */
-    function forceSystemUser()
+    static function forceSystemUser()
     {
         $Users = cls::get('core_Users');
         
@@ -611,7 +611,7 @@ class core_Users extends core_Manager
     /**
      * Ако потребителя не е логнат - караме го да го направи
      */
-    function forceLogin($retUrl)
+    static function forceLogin($retUrl)
     {
         $state = Users::getCurrent('state');
         
@@ -635,7 +635,7 @@ class core_Users extends core_Manager
      * Ако имаме логнат потребител, но сесията му не е
      * обновявана достатъчно дълго време - обновяваме я
      */
-    function refreshSession()
+    static function refreshSession()
     {
         $currentUserRec = core_Session::get('currentUserRec');
         
@@ -679,7 +679,7 @@ class core_Users extends core_Manager
     /**
      * Връща масив от роли, които са от посочения тип, за посочения потребител
      */
-    function getUserRolesByType($userId = NULL, $type = NULL)
+    static function getUserRolesByType($userId = NULL, $type = NULL)
     {
         $roles = core_Users::getRoles($userId);
         
@@ -706,7 +706,7 @@ class core_Users extends core_Manager
     /**
      * Връща всички членове на екипите, в които участва потребителя
      */
-    function getTeammates($userId)
+    static function getTeammates($userId)
     {
         static $teamMates;
         
@@ -784,7 +784,7 @@ class core_Users extends core_Manager
     /**
      * Проверка дали потребителя има посочената роля/роли
      */
-    function haveRole($roles, $userId = NULL)
+    static function haveRole($roles, $userId = NULL)
     {
         $userRoles = core_Users::getRoles($userId);
         
@@ -820,7 +820,7 @@ class core_Users extends core_Manager
      * Генерира грешка, ако указания потребител няма нито една от посочените роли
      * Ако не е логнат, потребителя се подканва да се логне
      */
-    function requireRole($requiredRoles, $retUrl = NULL, $action = NULL)
+    static function requireRole($requiredRoles, $retUrl = NULL, $action = NULL)
     {
         Users::refreshSession();
         
@@ -934,7 +934,7 @@ class core_Users extends core_Manager
     /**
      * Функция, с която паролата се кодира еднопосочно
      */
-    function encodePwd($password)
+    static function encodePwd($password)
     {
         return md5($password . md5($password) . EF_USERS_PASS_SALT);
     }

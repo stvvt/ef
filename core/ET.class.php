@@ -377,7 +377,7 @@ class core_ET extends core_BaseClass
      * Замества контролните символи в текста (начало на плейсхолдер)
      * с други символи, които не могат да се разчетат като контролни
      */
-    private function escape($str)
+    private static function escape($str)
     {
         return str_replace('[#', '&#91;#', $str);
     }

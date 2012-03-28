@@ -209,7 +209,7 @@ class core_Lg extends core_Manager
     /**
      * Връща текущия език
      */
-    function getCurrent()
+    static function getCurrent()
     {
         $lg = Mode::get('lg');
         
@@ -272,7 +272,7 @@ class core_Lg extends core_Manager
      * Връща последователност от хипервръзки (<а>) за установяване
      * на езиците, посочени в аргумента array ('language' => 'title')
      */
-    function getLink($lgArr)
+    static function getLink($lgArr)
     {
         $tpl = new ET();
         
