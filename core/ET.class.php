@@ -89,65 +89,32 @@ class core_ET extends core_BaseClass
      * 
      * @param mixed $content core_ET или стринг
      */
-    function __construct($content = "")
+    function __construct($content = '')
     {
         static $cache;
         
-        if ($content instanceof core_ET) {
-            $this->content = $content->content;
-            $this->places = $content->places;
-            $this->once = $content->once;
-            $this->pending = $content->pending;
-            $this->blocks = $content->blocks;
-            $this->removableBlocks = $content->removableBlocks;
-            $this->removablePlaces = $content->removablePlaces;
+        if (empty($content)) {
+            return;
+        }
+        
+        if ($content instanceof self) {
+            $this->initFromObject($content);
         } else {
             $md5 = md5($content);
             
-            if($c = $cache[$md5]) {
-                $this->content = $c->content;
-                $this->removableBlocks = $c->removableBlocks;
-                $this->removablePlaces = $c->removablePlaces;
+            if (isset($cache[$md5])) {
+                $this->initFromObject($cache[$md5]);
             } else {
-                $this->content = $content;
-                $rmPlaces = $this->getPlaceHolders();
-                $this->setRemovableBlocks($rmPlaces);
-                
-                // Взема началните плейсхолдери, за да могат непопълнените да бъдат изтрити
-                
-                if(count($rmPlaces)) {
-                    foreach($rmPlaces as $place) {
-                        $this->removablePlaces[$place] = $place;
-                    }
-                }
-                $cache[$md5] = new stdClass();
-                $cache[$md5]->content = $this->content;
-                $cache[$md5]->removableBlocks = $this->removableBlocks;
-                $cache[$md5]->removablePlaces = $this->removablePlaces;
+                $this->initFromString($content);
+                $cache[$md5] = clone($this);
             }
         }
         
         // Всички следващи аргументи, ако има такива се заместват на 
         // плейсхолдери с имена [#1#], [#2#] ...
         $args = func_get_args();
-        
-        if (($n = count($args)) > 1) {
-            for ($i = 1; $i < $n; $i++) {
-                $this->replace($args[$i], $i);
-            }
-        }
-    }
-    
-    
-    /**
-     * Конструктор в PHP4 стил
-     * 
-     * @param mixed $content core_ET или string
-     * @deprecated използва се само от наследените класове. Може да се махне, когато те се модернизират
-     */
-    protected function core_ET($content = "")
-    {
-        $this->__construct($content);
+        unset($args[0]);
+        $this->placeArray($args);
     }
     
     
@@ -223,7 +190,7 @@ class core_ET extends core_BaseClass
         
         expect(is_object($mp), 'Не може да бъде открит блока ' . $blockName, $this->content);
         
-        $newTemplate = new ET(substr($this->content, $mp->beginStop,
+        $newTemplate = new self(substr($this->content, $mp->beginStop,
                 $mp->endStart - $mp->beginStop));
         $newTemplate->master = & $this;
         $newTemplate->detailName = $blockName;
@@ -467,7 +434,7 @@ class core_ET extends core_BaseClass
             //   
             foreach ($content->pending as $sub) {
                 if(!($sub->str instanceof core_Et)) {
-                    $s = new ET($sub->str);
+                    $s = new self($sub->str);
                 } else {
                     $s = $sub->str;
                 }
@@ -749,7 +716,7 @@ class core_ET extends core_BaseClass
         
         if (count($data)) {
             foreach ($data as $name => $object) {
-                if(is_array($object) || (is_object($object) && !($object instanceof core_ET))) {
+                if(is_array($object) || (is_object($object) && !($object instanceof self))) {
                     $tpl->placeArray($object, NULL, $prefix . $name);
                 } else {
                     $tpl->replace($object, $prefix . $name, FALSE, FALSE);
@@ -810,5 +777,56 @@ class core_ET extends core_BaseClass
     public function __toString()
     {
         return $this->getContent();
+    }
+    
+    
+    /**
+     * Инициализира обект с данните на друг обект от същия клас
+     * 
+     * @param core_ET $src
+     */
+    private function initFromObject($src)
+    {
+        $this->content         = $src->content;
+        $this->removableBlocks = $src->removableBlocks;
+        $this->removablePlaces = $src->removablePlaces;
+        $this->places          = $src->places;
+        $this->once            = $src->once;
+        $this->pending         = $src->pending;
+        $this->blocks          = $src->blocks;
+    }
+    
+    
+    /**
+     * Инициализира обекта от стринг
+     * 
+     * @param string $src
+     */
+    private function initFromString($content)
+    {
+        $this->content = $content;
+        $rmPlaces = $this->getPlaceHolders();
+        $this->setRemovableBlocks($rmPlaces);
+        
+        // Взема началните плейсхолдери, за да могат непопълнените да бъдат изтрити
+        
+        if(count($rmPlaces)) {
+            foreach($rmPlaces as $place) {
+                $this->removablePlaces[$place] = $place;
+            }
+        }
+    }
+    
+    
+    /**
+     * Конструктор в PHP4 стил
+     * 
+     * @param mixed $content core_ET или string
+     * @deprecated използва се само от наследените класове. Може да се махне, когато те се модернизират
+     */
+    protected function core_ET()
+    {
+        $args = func_get_args();
+        call_user_func_array(array($this, '__construct'), $args);
     }
 }
