@@ -152,19 +152,23 @@ class core_ET extends core_BaseClass
     private function getMarkerPos($blockName)
     {
         $beginMark = $this->toBeginMark($blockName);
-
-        $markerPos = new stdClass();
-
-        $markerPos->beginStart = strpos($this->content, $beginMark);
+        $endMark   = $this->toEndMark($blockName);
         
-        if ($markerPos->beginStart === FALSE) return FALSE;
-        
-        $endMark = $this->toEndMark($blockName);
+        $markerPos = (object)array(
+            'beginStart' => NULL,
+            'beginStop'  => NULL,
+            'endStart'   => NULL,
+            'endStop'    => NULL,
+        );
+
+        if (($markerPos->beginStart = strpos($this->content, $beginMark)) === FALSE) {
+            return FALSE;
+        }
         $markerPos->beginStop = $markerPos->beginStart + strlen($beginMark);
-        $markerPos->endStart = strpos($this->content, $endMark, $markerPos->beginStop);
-        
-        if ($markerPos->endStart === FALSE) return FALSE;
-        
+
+        if (($markerPos->endStart = strpos($this->content, $endMark, $markerPos->beginStop)) === FALSE) {
+            return FALSE;
+        }
         $markerPos->endStop = $markerPos->endStart + strlen($endMark);
         
         return $markerPos;
@@ -179,31 +183,25 @@ class core_ET extends core_BaseClass
      */
     public function getBlock($blockName)
     {
-        if (is_object($this->blocks[$blockName])) {
+        if (!is_object($this->blocks[$blockName])) {
+            $mp   = NULL;
+            $body = $this->getBlockBody($blockName, $mp);
+            expect($body !== FALSE, 'Не може да бъде открит блока ' . $blockName, $this->content);
             
-            return $this->blocks[$blockName];
+            $this->blocks[$blockName] = $newTemplate = new self($body);
+            
+            $newTemplate->master      = $this;
+            $newTemplate->detailName  = $blockName;
+            
+            $newTemplate->backup();
+            
+            $this->places[$blockName] = 1;
+            
+            // Заместваме блока с [#името_му#]
+            $this->setContent($this->toPlace($blockName), $mp);
         }
         
-        $placeHolder = $this->toPlace($blockName);
-        
-        $mp = $this->getMarkerPos($blockName);
-        
-        expect(is_object($mp), 'Не може да бъде открит блока ' . $blockName, $this->content);
-        
-        $newTemplate = new self(substr($this->content, $mp->beginStop,
-                $mp->endStart - $mp->beginStop));
-        $newTemplate->master = & $this;
-        $newTemplate->detailName = $blockName;
-        
-        $this->content = substr($this->content, 0, $mp->beginStart) .
-        $placeHolder .
-        substr($this->content, $mp->endStop, strlen($this->content) - $mp->endStop);
-        
-        $this->places[$blockName] = 1;
-        $this->blocks[$blockName] = $newTemplate;
-        $newTemplate->backup();
-        
-        return $newTemplate;
+        return $this->blocks[$blockName];
     }
     
     
@@ -216,15 +214,9 @@ class core_ET extends core_BaseClass
     {
         if(count($places)) {
             foreach($places as $b) {
-                
-                $mp = $this->getMarkerPos($b);
-                
-                if(is_object($mp)) {
-                    $content = substr($this->content, $mp->beginStop, $mp->endStart - $mp->beginStop);
-                    
+                if (($content = $this->getBlockBody($b)) !== FALSE) {
                     // Премахване всички плейсхолдери
                     $content = preg_replace('/\[#([a-zA-Z0-9_]{1,})#\]/', '', $content);
-                    
                     $this->removableBlocks[$b] = md5($content);
                 }
             }
@@ -239,24 +231,17 @@ class core_ET extends core_BaseClass
     {
         if (count($this->removableBlocks)) {
             foreach ($this->removableBlocks as $blockName => $md5) {
-                $mp = $this->getMarkerPos($blockName);
+                $mp = NULL;
                 
-                if ($mp) {
-                    $content = substr($this->content, $mp->beginStop,
-                        $mp->endStart - $mp->beginStop);
-                    
+                if (($content = $this->getBlockBody($blockName, $mp)) !== FALSE) {
                     // Премахване всички плейсхолдери
                     $content = preg_replace('/\[#([a-zA-Z0-9_]{1,})#\]/', '', $content);
                     
                     if ($md5 == md5($content)) {
-                        
                         $content = '';
                     }
                     
-                    $this->content = substr($this->content, 0, $mp->beginStart) .
-                    $content .
-                    substr($this->content, $mp->endStop,
-                        strlen($this->content) - $mp->endStop);
+                    $this->setContent($content, $mp);
                 }
             }
         }
@@ -828,5 +813,31 @@ class core_ET extends core_BaseClass
     {
         $args = func_get_args();
         call_user_func_array(array($this, '__construct'), $args);
+    }
+    
+    
+    private function getBlockBody($blockName, &$pos = NULL)
+    {
+        if (!isset($pos)) {
+            $pos = $this->getMarkerPos($blockName);
+        }
+        if ($pos === FALSE) {
+            return FALSE;
+        }
+        
+        return substr($this->content, $pos->beginStop, $pos->endStart - $pos->beginStop);
+    }
+    
+    
+    private function setContent($newContent, $mp = NULL)
+    {
+        if (isset($mp)) {
+            $newContent = 
+                substr($this->content, 0, $mp->beginStart) .
+                $newContent .
+                substr($this->content, $mp->endStop, strlen($this->content) - $mp->endStop);
+        }
+        
+        $this->content = $newContent;
     }
 }
