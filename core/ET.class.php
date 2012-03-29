@@ -86,8 +86,10 @@ class core_ET extends core_BaseClass
     
     /**
      * Конструктор на шаблона
+     * 
+     * @param mixed $content core_ET или стринг
      */
-    function core_ET($content = "")
+    function __construct($content = "")
     {
         static $cache;
         
@@ -134,6 +136,18 @@ class core_ET extends core_BaseClass
                 $this->replace($args[$i], $i);
             }
         }
+    }
+    
+    
+    /**
+     * Конструктор в PHP4 стил
+     * 
+     * @param mixed $content core_ET или string
+     * @deprecated използва се само от наследените класове. Може да се махне, когато те се модернизират
+     */
+    protected function core_ET($content = "")
+    {
+        $this->__construct($content);
     }
     
     
