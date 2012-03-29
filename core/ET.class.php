@@ -67,6 +67,12 @@ class core_ET extends core_BaseClass
     
     
     /**
+     * 'Изчезваеми' плейсхолдъри
+     */
+    private $removablePlaces = array();
+    
+    
+    /**
      * Указател към 'мастер' шаблона
      */
     private $master;
@@ -186,6 +192,9 @@ class core_ET extends core_BaseClass
     
     /**
      * Връща даден блок
+     * 
+     * @param string $blockName
+     * @return core_ET
      */
     public function getBlock($blockName)
     {
@@ -194,7 +203,7 @@ class core_ET extends core_BaseClass
             return $this->blocks[$blockName];
         }
         
-        $placeHolder = $this->toPlace(strtoupper($blockName));
+        $placeHolder = $this->toPlace($blockName);
         
         $mp = $this->getMarkerPos($blockName);
         
@@ -209,7 +218,7 @@ class core_ET extends core_BaseClass
         $placeHolder .
         substr($this->content, $mp->endStop, strlen($this->content) - $mp->endStop);
         
-        $this->places[strtoupper($blockName)] = 1;
+        $this->places[$blockName] = 1;
         $this->blocks[$blockName] = $newTemplate;
         $newTemplate->backup();
         
@@ -630,6 +639,12 @@ class core_ET extends core_BaseClass
     
     /**
      * Връща текстовото представяне на шаблона, след всички възможни субституции
+     * 
+     * @param core_ET $content
+     * @param string $place
+     * @param boolean $output
+     * @param boolean $removeBlocks
+     * @return string
      */
     public function getContent($content = NULL, $place = "CONTENT", $output = FALSE, $removeBlocks = TRUE)
     {
@@ -701,7 +716,7 @@ class core_ET extends core_BaseClass
      * с посочения префикс. Ако е посочен блок-държач, субституцията се
      * прави само в неговите рамки.
      */
-    private function placeArray($data, $holderBlock = NULL, $prefix = '')
+    public function placeArray($data, $holderBlock = NULL, $prefix = '')
     {
         // Ако данните са обект - конвертираме ги до масив
         if (is_object($data)) {
@@ -738,7 +753,7 @@ class core_ET extends core_BaseClass
      * Прави субституция на променливите на обект в плейсхолдери започващи
      * с посочения префикс
      */
-    private function placeObject($data, $holderBlock = NULL, $prefix = NULL)
+    public function placeObject($data, $holderBlock = NULL, $prefix = NULL)
     {
         $this->placeArray($data, $holderBlock, $prefix);
     }
