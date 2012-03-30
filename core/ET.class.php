@@ -695,6 +695,8 @@ class core_ET extends core_BaseClass
 
     /**
      * Връща плейсхолдерите на шаблона
+     * 
+     * @return array
      */
     private function getPlaceholders()
     {
@@ -745,16 +747,12 @@ class core_ET extends core_BaseClass
     private function initFromString($content)
     {
         $this->content = $content;
-        $rmPlaces = $this->getPlaceHolders();
-        $this->setRemovableBlocks($rmPlaces);
         
-        // Взема началните плейсхолдери, за да могат непопълнените да бъдат изтрити
-        
-
-        if (count($rmPlaces)) {
-            foreach ($rmPlaces as $place) {
-                $this->removablePlaces[$place] = $place;
-            }
+        if (count($rmPlaces = $this->getPlaceholders()) > 0) {
+            $this->setRemovableBlocks($rmPlaces);
+            
+            // Взема началните плейсхолдери, за да могат непопълнените да бъдат изтрити
+            $this->removablePlaces = array_combine($rmPlaces, $rmPlaces);
         }
     }
 
@@ -811,5 +809,15 @@ class core_ET extends core_BaseClass
                     $this->content);
             }
         }
+    }
+    
+    
+    public function __get($name)
+    {
+        if (!isset($this->{$name})) {
+            return NULL;
+        }
+        
+        return $this->{$name};
     }
 }
