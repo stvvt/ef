@@ -384,67 +384,36 @@ class core_ET extends core_BaseClass
     }
 
     /**
-     * @todo Чака за документация...
+     * Прилага масив от инструкции за субституции. Някои ще се случат сега, други пак ще бъдат отложени
      * 
-     * @param core_ET $content 
+     * @param array $pending
      */
-    private function processContent($content)
+    private function applyPendingSubst($pending)
     {
-        if (is_a($content, "et") || is_a($content, "core_Et")) {
-            //   
-            foreach ($content->pending as $sub) {
-                if (!($sub->str instanceof core_Et)) {
-                    $s = new self(
-                        $sub->str);
-                } else {
-                    $s = $sub->str;
-                }
-                
-                switch ($sub->mode) {
-                    case "append" :
-                        $this->append($s, $sub->place, $sub->once);
-                        break;
-                    case "prepend" :
-                        $this->prepend($s, $sub->place, $sub->once);
-                        break;
-                    case "replace" :
-                        $this->replace($s, $sub->place, $sub->once);
-                        break;
-                    case "push" :
-                        $this->push($sub->str, $sub->place, $sub->once);
-                        break;
-                }
+        foreach ($pending as $sub) {
+            if (!($sub->str instanceof core_Et)) {
+                $s = new self($sub->str);
+            } else {
+                $s = $sub->str;
             }
             
-            // Прехвърля в Master шаблона всички appendOnce хешове
-            if (count($content->once)) {
-                foreach ($content->once as $md5 => $true) {
-                    $this->once[$md5] = TRUE;
-                }
+            switch ($sub->mode) {
+                case "append" :
+                    $this->append($s, $sub->place, $sub->once);
+                    break;
+                case "prepend" :
+                    $this->prepend($s, $sub->place, $sub->once);
+                    break;
+                case "replace" :
+                    $this->replace($s, $sub->place, $sub->once);
+                    break;
+                case "push" :
+                    $this->push($sub->str, $sub->place, $sub->once);
+                    break;
             }
-            
-            // Прехвърля в мастер шаблона всички плейсхолдери, които трябва да се заличават
-            $this->removablePlaces += $content->removablePlaces;
-            
-            return $content->getContent(NULL, 'CONTENT', FALSE, FALSE);
-        } else {
-            return $this->escape($content);
         }
     }
 
-    /**
-     * @todo Чака за документация...
-     */
-    private function importRemovableBlocks($content)
-    {
-        if (is_a($content, "et") || is_a($content, "core_Et")) {
-            if (count($content->removableBlocks)) {
-                foreach ($content->removableBlocks as $name => $md5) {
-                    $this->removableBlocks[$name] = $md5;
-                }
-            }
-        }
-    }
 
     /**
      * @todo Чака за документация...
@@ -469,23 +438,26 @@ class core_ET extends core_BaseClass
             }
         }
         
-        // DEBUG::startTimer("SUB1");
-        $this->importRemovableBlocks($content);
+        if ($content instanceof self) {
+            // Прехвърля в Master шаблона всички removableBlocks хешове
+            $this->removableBlocks += $content->removableBlocks;
+            
+            // Прехвърля в Master шаблона всички appendOnce хешове
+            $this->once += $content->once;
+            
+            // Прехвърля в мастер шаблона всички плейсхолдери, които трябва да се заличават
+            $this->removablePlaces += $content->removablePlaces;
+            
+            $this->applyPendingSubst($content->pending);
+            
+            $str = $content->_getContent(array('removeBlocks'=>FALSE));
+        } else {
+            $str = $this->escape($content);
+        }
         
-        //DEBUG::stopTimer("SUB1");
-        
-
-        //DEBUG::startTimer("SUB2");
-        $str = $this->processContent($content);
-        
-        //DEBUG::stopTimer("SUB2");
-        
-
-        // DEBUG::startTimer("SUB3");
+        // Маркира, че $placeHolder вече е заместван поне веднъж. Тези плейсхолдъри се изчистват
+        // от крайния резултат.
         $place = $this->preparePlace($placeHolder);
-        
-        // DEBUG::stopTimer("SUB3");
-        
 
         if (strpos($this->content, $place) !== FALSE) {
             
@@ -506,24 +478,20 @@ class core_ET extends core_BaseClass
             }
             
             $this->content = str_replace($place, $new, $this->content);
-        } else {
-            if ($placeHolder == NULL) {
-                switch ($mode) {
-                    case "append" :
-                        $this->content = $this->content . $str;
-                        break;
-                    case "prepend" :
-                        $this->content = $str . $this->content;
-                        break;
-                    case "replace" :
-                        $this->content = $str;
-                        break;
-                }
-            } else {
-                if ($global) {
-                    $this->addSubstitution($str, $placeHolder, $once, $mode);
-                }
+        } elseif ($placeHolder == NULL) {
+            switch ($mode) {
+                case "append" :
+                    $this->content = $this->content . $str;
+                    break;
+                case "prepend" :
+                    $this->content = $str . $this->content;
+                    break;
+                case "replace" :
+                    $this->content = $str;
+                    break;
             }
+        } elseif ($global) {
+            $this->addSubstitution($str, $placeHolder, $once, $mode);
         }
     }
 
@@ -573,9 +541,28 @@ class core_ET extends core_BaseClass
         
         $this->invoke('output');
         
-        echo $this->getContent($content, $place, TRUE, TRUE);
+        echo $this->getContent();
     }
 
+    
+    private function _getContent($args)
+    {
+        extract($args);
+        
+        $redirectArr = $this->getArray('_REDIRECT_');
+        
+        if ($redirectArr[0]) redirect($redirectArr[0]);
+        
+        //   -
+        $this->deletePlaces($this->places);
+        
+        if ($removeBlocks) {
+            $this->removeBlocks();
+        }
+        
+        return $this->content;
+    }
+    
     /**
      * Връща текстовото представяне на шаблона, след всички възможни субституции
      * 
@@ -587,18 +574,7 @@ class core_ET extends core_BaseClass
      */
     public function getContent($content = NULL, $place = "CONTENT", $output = FALSE, $removeBlocks = TRUE)
     {
-        $redirectArr = $this->getArray('_REDIRECT_');
-        
-        if ($redirectArr[0]) redirect($redirectArr[0]);
-        
-        //   -
-        $this->deletePlaces($this->places);
-        
-        if ($removeBlocks) {
-            $this->removeBlocks($removeBlocks);
-        }
-        
-        return $this->content;
+        return $this->_getContent(compact('content', 'place', '$output', 'removeBlocks'));
     }
 
     /**
