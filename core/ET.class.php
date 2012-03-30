@@ -200,24 +200,6 @@ class core_ET extends core_BaseClass
     }
 
     /**
-     * ,
-     * removeBlocks()
-     * ,
-     */
-    private function setRemovableBlocks($places)
-    {
-        if (count($places)) {
-            foreach ($places as $b) {
-                if (($content = $this->getBlockBody($b)) !== FALSE) {
-                    // Премахване всички плейсхолдери
-                    $this->removePlaces($content);
-                    $this->removableBlocks[$b] = md5($content);
-                }
-            }
-        }
-    }
-
-    /**
      * @todo Чака за документация...
      */
     public function removeBlocks()
@@ -423,22 +405,17 @@ class core_ET extends core_BaseClass
         
         if ($content === NULL) return;
         
+        if ($once && $this->once[$md5 = $this->getHash($content)]) {
+            return FALSE;
+        }
+        
         if ($once) {
-            if ($content instanceof core_Et) {
-                $str = serialize($content);
-            } else {
-                $str = $content;
-            }
-            
-            $md5 = md5($str);
-            
-            if ($this->once[$md5]) {
-                
-                return FALSE;
-            }
+            $this->once[$md5] = TRUE;
         }
         
         if ($content instanceof self) {
+            $str = $content->_getContent(array('removeBlocks'=>FALSE));
+            
             // Прехвърля в Master шаблона всички removableBlocks хешове
             $this->removableBlocks += $content->removableBlocks;
             
@@ -449,8 +426,6 @@ class core_ET extends core_BaseClass
             $this->removablePlaces += $content->removablePlaces;
             
             $this->applyPendingSubst($content->pending);
-            
-            $str = $content->_getContent(array('removeBlocks'=>FALSE));
         } else {
             $str = $this->escape($content);
         }
@@ -460,10 +435,6 @@ class core_ET extends core_BaseClass
         $place = $this->preparePlace($placeHolder);
 
         if (strpos($this->content, $place) !== FALSE) {
-            
-            if ($once) {
-                $this->once[$md5] = TRUE;
-            }
             
             switch ($mode) {
                 case "append" :
@@ -574,7 +545,7 @@ class core_ET extends core_BaseClass
      */
     public function getContent($content = NULL, $place = "CONTENT", $output = FALSE, $removeBlocks = TRUE)
     {
-        return $this->_getContent(compact('content', 'place', '$output', 'removeBlocks'));
+        return $this->_getContent(compact('content', 'place', 'output', 'removeBlocks'));
     }
 
     /**
@@ -725,7 +696,13 @@ class core_ET extends core_BaseClass
             $this->removablePlaces = array_combine($this->removablePlaces, $this->removablePlaces);
             
             // Задава самоизчезващите блокове - онези за които има едноименен плейсхолдър
-            $this->setRemovableBlocks($this->removablePlaces);
+            foreach ($this->removablePlaces as $b) {
+                if (($content = $this->getBlockBody($b)) !== FALSE) {
+                    // Премахване всички плейсхолдери
+                    $this->removePlaces($content);
+                    $this->removableBlocks[$b] = md5($content);
+                }
+            }
         }
     }
 
@@ -794,5 +771,11 @@ class core_ET extends core_BaseClass
         }
         
         return $this->{$name};
+    }
+    
+    
+    private function getHash($content)
+    {
+        return md5(serialize($content)); 
     }
 }
