@@ -424,11 +424,7 @@ class core_ET extends core_BaseClass
             }
             
             // Прехвърля в мастер шаблона всички плейсхолдери, които трябва да се заличават
-            if (count($content->removablePlaces)) {
-                foreach ($content->removablePlaces as $place) {
-                    $this->removablePlaces[$place] = $place;
-                }
-            }
+            $this->removablePlaces += $content->removablePlaces;
             
             return $content->getContent(NULL, 'CONTENT', FALSE, FALSE);
         } else {
@@ -748,11 +744,12 @@ class core_ET extends core_BaseClass
     {
         $this->content = $content;
         
-        if (count($rmPlaces = $this->getPlaceholders()) > 0) {
-            $this->setRemovableBlocks($rmPlaces);
+        // Взема началните плейсхолдери, за да могат непопълнените да бъдат изтрити
+        if (count($this->removablePlaces = $this->getPlaceholders()) > 0) {
+            $this->removablePlaces = array_combine($this->removablePlaces, $this->removablePlaces);
             
-            // Взема началните плейсхолдери, за да могат непопълнените да бъдат изтрити
-            $this->removablePlaces = array_combine($rmPlaces, $rmPlaces);
+            // Задава самоизчезващите блокове - онези за които има едноименен плейсхолдър
+            $this->setRemovableBlocks($this->removablePlaces);
         }
     }
 
@@ -798,16 +795,18 @@ class core_ET extends core_BaseClass
         $this->content = $newContent;
     }
     
-    
+    /**
+     * Премахва от всички плейсхолдъри, чиито имена се срещат в ключовете на масив
+     * 
+     * @param array $places
+     */
     private function deletePlaces($places)
     {
-        if (is_array($places)) {
-            foreach ($places as $place => $dummy) {
-                $this->content = str_replace(
-                    $this->toPlace($place), 
-                    '', 
-                    $this->content);
-            }
+        foreach (array_keys($places) as $place) {
+            $this->content = str_replace(
+                $this->toPlace($place), 
+                '', 
+                $this->content);
         }
     }
     
