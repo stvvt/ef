@@ -314,34 +314,6 @@ class core_ET extends core_BaseClass
     /**
      * @todo Чака за документация...
      */
-    function addSubstitution($str, $place, $once, $mode)
-    {
-        $this->pending[] = (object) array(
-            'str' => $str,
-            'place' => $place,
-            'once' => $once,
-            'mode' => $mode);
-    }
-    
-    
-    /**
-     * @todo Чака за документация...
-     */
-    function push($value, $place, $once = FALSE)
-    {
-        if (is_array($value)) {
-            foreach ($value as $v) {
-                $this->addSubstitution($v, $place, $once, 'push');
-            }
-        } else {
-            $this->addSubstitution($value, $place, $once, 'push');
-        }
-    }
-    
-    
-    /**
-     * @todo Чака за документация...
-     */
     private function addSubstitution($str, $place, $once, $mode)
     {
         $this->pending[] = (object)array(
