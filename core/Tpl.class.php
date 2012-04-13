@@ -55,37 +55,7 @@ class core_Tpl extends core_BaseClass
     
     public function __toString()
     {
-        $places = $values = array();
-        
-        if ($this->isReplaced($this->globalPlace)) {
-            return $this->vars[$this->globalPlace]['replace'];
-        }
-        
-        $masterAppend = $masterPrepend = '';
-        
-        foreach ($this->vars as $place=>$val) {
-            $prepend = $replace = $append = '';
-        
-            if (isset($val['prepend'])) {
-                $prepend = static::escape(array_reverse($val['prepend']));
-            }
-            if (isset($val['append'])) {
-                $append = static::escape($val['append']);
-            }
-            if (isset($val['replace'])) {
-                $replace = static::escape($val['replace']);
-            }
-
-            if ($place === $this->globalPlace) {
-                $masterPrepend = $prepend;
-                $masterAppend  = $append;
-            } else {
-                $places[] = $this->toPlace($place);
-                $values[] = $prepend . $replace . $append;
-            }
-        }
-        
-        return $masterPrepend . str_replace($places, $values, $this->content) . $masterAppend;
+        return $this->getContent();
     }
     
     
@@ -96,20 +66,7 @@ class core_Tpl extends core_BaseClass
      */
     public function append($content, $place = NULL, $once = FALSE)
     {
-        if (!isset($place)) {
-            $place = $this->globalPlace;
-        }
-
-        if (!$this->isReplaced($place)) {
-            if ($once) {
-                $hash = $this->getHash($content);
-                if (!$this->contentUsed($hash, $place)) {
-                    $this->vars[$place]['append'][$hash] = $content;
-                }
-            } else {
-                $this->vars[$place]['append'][] = $content;
-            }
-        }
+        $this->sub('append', $content, $place, $once);
     }
     
     
@@ -137,19 +94,7 @@ class core_Tpl extends core_BaseClass
      */
     public function prepend($content, $place = NULL, $once = FALSE)
     {
-        if (!isset($place)) {
-            $place = $this->globalPlace;
-        }
-        if (!$this->isReplaced($place)) {
-            if ($once) {
-                $hash = $this->getHash($content);
-                if (!$this->contentUsed($hash, $place)) {
-                    $this->vars[$place]['prepend'][$hash] = $content;
-                }
-            } else {
-                $this->vars[$place]['prepend'][] = $content;
-            }
-        }
+        $this->sub('prepend', $content, $place, $once);
     }
     
     
@@ -161,12 +106,7 @@ class core_Tpl extends core_BaseClass
      */
     public function replace($content, $place = NULL, $once = FALSE, $global = TRUE)
     {
-        if (!isset($place)) {
-            $place = $this->globalPlace;
-        }
-        if (!$this->isReplaced($place)) {
-            $this->vars[$place]['replace'] = $content;
-        }
+        $this->sub('replace', $content, $place, $once, $global);
     }
 
     
@@ -178,6 +118,24 @@ class core_Tpl extends core_BaseClass
     public function push($content, $place, $once = FALSE)
     {
         
+    }
+    
+    
+    private function sub($position, $content, $place = NULL, $once = FALSE, $global = TRUE)
+    {
+        if (!isset($place)) {
+        	$place = $this->globalPlace;
+        }
+        if (!$this->isReplaced($place)) {
+        	if ($once) {
+        		$hash = $this->getHash($content);
+        		if (!$this->isContentUsed($hash, $place)) {
+        			$this->vars[$place][$position][$hash] = $content;
+        		}
+        	} else {
+        		$this->vars[$place][$position][] = $content;
+        	}
+        }
     }
     
 
@@ -204,19 +162,103 @@ class core_Tpl extends core_BaseClass
      */
     public function getContent($content = NULL, $place = "CONTENT", $output = FALSE, $removeBlocks = TRUE)
     {
+        $context = array();
+        $content = $this->getRawContent($context);
         
+        do {
+            $again = FALSE;
+            foreach ($context as $place=>$val) {
+                if ($this->isPlaceholderExists($place, $content)) {
+                    $prepend = isset($val['prepend']) ? implode('', array_reverse($val['prepend'])) : NULL;
+                    $replace = isset($val['replace']) ? $val['replace'][0] : NULL;
+                    $append  = isset($val['append']) ? implode('', $val['append']) : NULL;
+                    $content = str_replace($this->toPlace($place), $prepend . $replace . $append, $content);
+                    $again = TRUE;
+                }
+            }
+        } while ($again);
+        
+        if ($removeBlocks) {
+            $content = $this->clearPlaceholders($content);
+            $content = $this->clearBlocks($content);
+        }
+        
+        return $content;
+    }
+    
+    private function buildContext()
+    {
+        $context = array();
+        
+        foreach ($this->vars as $place=>$val) {
+            foreach ($val as $pos=>$data) {
+                foreach ($data as $s) {
+                    if (static::isTemplate($s)) {
+                        $x = $s->getRawContent($context);
+                    } else {
+                        $x = static::escape($s);
+                    }
+                    $context[$place][$pos][] = $x;
+                }
+            }
+        }
+        
+        return $context;
+    }
+    
+    private function mergeContext(&$context, $import)
+    {
+        foreach ($import as $place=>$val) {
+            foreach (array_keys($val) as $pos) {
+                if (isset($context[$place][$pos])) {
+                    $context[$place][$pos] = array_merge($context[$place][$pos], $import[$place][$pos]);
+                } else {
+                    $context[$place][$pos] = $import[$place][$pos];
+                }
+            }
+        }
+    }
+    
+    
+    private function getRawContent(&$context)
+    {
+        $result       = $this->content;
+        $localContext = $this->buildContext();
+        
+        if (isset($localContext[$this->globalPlace])) {
+        	$val = $localContext[$this->globalPlace];
+        	unset($localContext[$this->globalPlace]);
+        	
+        	$prepend = isset($val['prepend']) ? implode('', array_reverse($val['prepend'])) : NULL;
+        	$replace = isset($val['replace']) ? $val['replace'][0] : NULL;
+        	$append  = isset($val['append']) ? implode('', $val['append']) : NULL;
+        	
+        	if (isset($replace)) {
+        	    $result = $replace;
+        	}
+        	
+        	$result = $prepend . $result . $append;
+        }
+        
+        $this->mergeContext($context, $localContext);
+        
+        return $result;
     }
 
-
+    
     /**
      * Има ли плейсхолдър с това име?
      * 
      * @param string $place
      * @return boolean
      */
-    public function isPlaceholderExists($placeholder)
+    public function isPlaceholderExists($place, $str = NULL)
     {
-
+        if (!isset($str)) {
+            $str = $this->content;
+        }
+        
+        return strpos($str, $this->toPlace($place)) !== FALSE;
     }
     
     
@@ -229,7 +271,7 @@ class core_Tpl extends core_BaseClass
      */
     public function output($content = '', $place = NULL)
     {
-
+        echo (string)$this;
     }
     
     
@@ -311,15 +353,21 @@ class core_Tpl extends core_BaseClass
     {
         $this->content = $str;
         
-        if (preg_match_all($this->placesRegex, $this->content, $matches)) {
-            foreach ($matches[1] as $place) {
-                if ($place == $this->globalPlace) {
-                    throw new Exception("Невалиден плейсхолдър: {$place}");
-                }
-                $this->vars[$place]['prepend'] = array();
-                $this->vars[$place]['append'] = array();
-            }
-        }
+//         if (preg_match_all($this->placesRegex, $this->content, $matches)) {
+//             foreach ($matches[1] as $place) {
+//                 if ($place == $this->globalPlace) {
+//                     throw new Exception("Невалиден плейсхолдър: {$place}");
+//                 }
+//                 $this->vars[$place]['prepend'] = array();
+//                 $this->vars[$place]['append'] = array();
+//             }
+//         }
+    }
+    
+    
+    private function clearPlaceholders($str)
+    {
+        return preg_replace($this->placesRegex, '', $str);
     }
     
     
@@ -329,7 +377,7 @@ class core_Tpl extends core_BaseClass
     }
     
 
-    private function contentUsed($hash, $place)
+    private function isContentUsed($hash, $place)
     {
         return 
             isset($this->vars[$place]['prepend'][$hash]) || 
@@ -341,12 +389,25 @@ class core_Tpl extends core_BaseClass
      * Замества контролните символи в текста (начало на плейсхолдер)
      * с други символи, които не могат да се разчетат като контролни
      */
-    private static function escape($str)
+    private static function escape($content)
     {
-        if (is_array($str)) {
-            $str = implode('', $str);
+        if (is_string($content)) {
+            $content = str_replace('[#', '&#91;#', $content);
         }
         
-        return str_replace('[#', '&#91;#', $str);
+        return $content;
+    }
+}
+
+
+class core_TplReplacement
+{
+    var $prepend = array();
+    var $replace = array();
+    var $append = array();
+    
+    public function flatten(&$unused)
+    {
+        
     }
 }
