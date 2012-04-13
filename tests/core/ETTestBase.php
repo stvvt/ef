@@ -424,6 +424,17 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     }
     
     
+    public function testRecursiveReplace()
+    {
+        $t1 = new static::$tested('<t1:a>[#a#]</t1:a>');
+        $t2 = new static::$tested('<t2:a>[#a#]</t2:a>');
+        
+        $t1->replace($t2, 'a');
+        
+        $this->assertEquals('<t1:a><t2:a></t2:a></t1:a>', (string)$t1);
+    }
+    
+    
     /**
      * @param string $method
      * @return ReflectionMethod

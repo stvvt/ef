@@ -78,6 +78,22 @@ class core_Tpl extends core_BaseClass
             $this->placeArray($args);
         }
     }
+
+    
+    /**
+     * Конструктор в PHP4 стил
+     *
+     * @param mixed $content core_ET или string
+     * @deprecated използва се само от наследените класове. Може да се махне, когато те се модернизират
+     */
+    protected function core_ET()
+    {
+    	$args = func_get_args();
+    	call_user_func_array(array(
+    	$this,
+    	'__construct'
+    	), $args);
+    }
     
     
     public function __toString()
@@ -193,6 +209,7 @@ class core_Tpl extends core_BaseClass
                     $append  = isset($val['append']) ? implode('', $val['append']) : NULL;
                     $content = str_replace($this->toPlace($place), $prepend . $replace . $append, $content);
                     $again = TRUE;
+                    unset($context[$place]);
                 }
             }
         } while ($again);
