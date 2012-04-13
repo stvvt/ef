@@ -4,7 +4,7 @@
  * Клас  'core_ET' ['ET'] - Система от текстови шаблони
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -138,34 +138,28 @@ class core_ET extends core_BaseClass
     /**
      * Намира позициите на маркерите за начало и край на блок
      */
-    private function getMarkerPos($blockName)
+    function getMarkerPos($blockName)
     {
         $beginMark = $this->toBeginMark($blockName);
+        
+        $markerPos = new stdClass();
+        
+        $markerPos->beginStart = strpos($this->content, $beginMark);
+        
+        if ($markerPos->beginStart === FALSE) return FALSE;
+        
         $endMark = $this->toEndMark($blockName);
-        
-        $markerPos = (object)array(
-            'beginStart' => NULL, 
-            'beginStop' => NULL, 
-            'endStart' => NULL, 
-            'endStop' => NULL
-        );
-        
-        if (($markerPos->beginStart = strpos($this->content, $beginMark)) === FALSE) {
-            return FALSE;
-        }
         $markerPos->beginStop = $markerPos->beginStart + strlen($beginMark);
+        $markerPos->endStart = strpos($this->content, $endMark, $markerPos->beginStop);
         
-        if (($markerPos->endStart = strpos(
-            $this->content, 
-            $endMark, 
-            $markerPos->beginStop)) === FALSE) {
-            return FALSE;
-        }
+        if ($markerPos->endStart === FALSE) return FALSE;
+        
         $markerPos->endStop = $markerPos->endStart + strlen($endMark);
         
         return $markerPos;
     }
-
+    
+    
     /**
      * Връща даден блок
      * 
@@ -311,11 +305,40 @@ class core_ET extends core_BaseClass
      * Замества контролните символи в текста (начало на плейсхолдер)
      * с други символи, които не могат да се разчетат като контролни
      */
-    private static function escape($str)
+    static function escape($str)
     {
         return str_replace('[#', '&#91;#', $str);
     }
-
+    
+    
+    /**
+     * @todo Чака за документация...
+     */
+    function addSubstitution($str, $place, $once, $mode)
+    {
+        $this->pending[] = (object) array(
+            'str' => $str,
+            'place' => $place,
+            'once' => $once,
+            'mode' => $mode);
+    }
+    
+    
+    /**
+     * @todo Чака за документация...
+     */
+    function push($value, $place, $once = FALSE)
+    {
+        if (is_array($value)) {
+            foreach ($value as $v) {
+                $this->addSubstitution($v, $place, $once, 'push');
+            }
+        } else {
+            $this->addSubstitution($value, $place, $once, 'push');
+        }
+    }
+    
+    
     /**
      * @todo Чака за документация...
      */

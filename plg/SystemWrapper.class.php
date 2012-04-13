@@ -6,7 +6,7 @@
  * Клас 'plg_SystemWrapper' - Поддържа системното меню и табове-те на пакета 'Core'
  *
  *
- * @category  all
+ * @category  ef
  * @package   plg
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -41,6 +41,6 @@ class plg_SystemWrapper extends core_Plugin
         
         $tpl = $tabs->renderHtml($tpl, $invoker->className);
         
-        $tpl->append(tr($invoker->title) . ' » ' . tr('Ядро') . ' » ', 'PAGE_TITLE');
+        $tpl->append(tr($invoker->title) . ' « ' . tr('Ядро') . ' « ', 'PAGE_TITLE');
     }
 }

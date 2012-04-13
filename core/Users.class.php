@@ -1,7 +1,6 @@
 <?php
 
 
-
 /**
  * Дефинира, ако не е, колко време записът
  * за текущия потребител да е валиден в сесията
@@ -22,7 +21,7 @@ defIfNot('EF_USERS_LOGIN_DELAY', 20);
 /**
  * 'Подправка' за кодиране на паролите
  */
-defIfNot('EF_USERS_PASS_SALT', EF_SALT);
+defIfNot('EF_USERS_PASS_SALT', '');
 
 
 /**
@@ -58,7 +57,7 @@ defIfNot('USERS_DRAFT_MAX_DAYS', 3);
  * дел-логване на потребители на системата
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -111,8 +110,8 @@ class core_Users extends core_Manager
         $this->FLD('ps5Enc', 'varchar(32)', 'caption=Ключ,column=none,input=none');
         $this->FNC('password', 'password(autocomplete=on)', 'caption=Парола,column=none,input');
         
-        $this->FLD('email', 'email(64)', 'caption=Имейл,mandatory');
-        $this->FLD('names', 'varchar', 'caption=Имена,mandatory');
+        $this->FLD('email', 'email(64)', 'caption=Имейл,mandatory,width=100%');
+        $this->FLD('names', 'varchar', 'caption=Имена,mandatory,width=100%');
         $this->FLD('roles', 'keylist(mvc=core_Roles,select=role,groupBy=type)', 'caption=Роли,oldFieldName=Role');
         
         $this->FLD('state', 'enum(active=Активен,draft=Неактивиран,blocked=Блокиран,deleted=Изтрит)',
@@ -138,7 +137,7 @@ class core_Users extends core_Manager
     /**
      * Изпълнява се след създаване на формата за добавяне/редактиране
      */
-    function on_AfterPrepareEditForm($mvc, $data)
+    static function on_AfterPrepareEditForm($mvc, $data)
     {
         // Ако няма регистрирани потребители, първият задължително е администратор
         if(!$mvc->fetch('1=1')) {
@@ -154,7 +153,7 @@ class core_Users extends core_Manager
     /**
      * Извиква се след въвеждането на данните от Request във формата ($form->rec)
      */
-    function on_AfterInputEditForm($mvc, $form)
+    static function on_AfterInputEditForm($mvc, $form)
     {
         //Ако не сме субмитнали формата връщаме управлението
         if (!$form->isSubmitted()) return ;
@@ -210,7 +209,7 @@ class core_Users extends core_Manager
         }
         
         // Проверяваме дали сме логнати
-        $currentUserRec = core_Session::get('currentUserRec');
+        $currentUserRec = Mode::get('currentUserRec');
         $retUrl = getRetUrl();
         $form = $this->getForm(array(
                 'title' => "|*<img src=" . sbf('img/signin.png') . " align='top'>&nbsp;|Вход в|* " . EF_APP_TITLE,
@@ -357,7 +356,7 @@ class core_Users extends core_Manager
     /**
      * Изпълнява се след преобразуване на един запис към вербални стойности
      */
-    function on_AfterRecToVerbal($mvc, $row, $rec)
+    static function on_AfterRecToVerbal($mvc, $row, $rec)
     {
         $row->lastLoginTime = $mvc->getVerbal($rec, 'lastLoginTime');
         $row->lastLoginIp = $mvc->getVerbal($rec, 'lastLoginIp');
@@ -389,7 +388,7 @@ class core_Users extends core_Manager
     /**
      * Изпълнява се преди запис на ред в таблицата
      */
-    function on_BeforeSave($mvc, &$id, &$rec)
+    static function on_BeforeSave($mvc, &$id, &$rec)
     {
         $haveUsers = !!$mvc->fetch('1=1');
         
@@ -439,7 +438,7 @@ class core_Users extends core_Manager
     /**
      * Изпълнява се след получаването на необходимите роли
      */
-    function on_AfterGetRequiredRoles(&$invoker, &$requiredRoles)
+    static function on_AfterGetRequiredRoles(&$invoker, &$requiredRoles)
     {
         $query = $invoker->getQuery();
         
@@ -463,7 +462,8 @@ class core_Users extends core_Manager
             $rec->state = 'active';
             $res = $rec->{$part};
         } else {
-            $res = core_Session::get('currentUserRec', $part);
+            $cRec = Mode::get('currentUserRec');
+            $res = $cRec->{$part};
         }
         
         return $res;
@@ -484,7 +484,7 @@ class core_Users extends core_Manager
     /**
      * Форсира системния потребител да бъде текущ, преди реалния текущ или анонимния
      */
-    function cancelSystemUser()
+    static function cancelSystemUser()
     {
         $Users = cls::get('core_Users');
         
@@ -495,18 +495,21 @@ class core_Users extends core_Manager
     /**
      * Зарежда записа за текущия потребител в сесията
      */
-    function loginUser($id)
+    static function loginUser($id)
     {
         $Users = cls::get('core_Users');
         
         $Users->invoke('beforeLogin', array(&$id));
         
         $userRec = $Users->fetch($id);
+        
+        if(!$userRec) $userRec = new stdClass();
+        
         $now = dt::verbal2mysql();
         
         // Ако потребителят досега не е бил логнат, записваме
         // от къде е
-        if (!($sessUserRec = core_Session::get('currentUserRec'))) {
+        if (!($sessUserRec = Mode::get('currentUserRec'))) {
             $rec = new stdClass();
             $rec->lastLoginTime = $now;
             $rec->lastLoginIp = $Users->getRealIpAddr();
@@ -562,7 +565,7 @@ class core_Users extends core_Manager
         
         $userRec->refreshTime = $now;
         
-        core_Session::set('currentUserRec', $userRec);
+        Mode::setPermanent('currentUserRec', $userRec);
         
         // Ако не е дефинирана константата EF_DEBUG и потребителя
         // има роля 'admin', то дефинираме EF_DEBUG = TRUE
@@ -587,7 +590,7 @@ class core_Users extends core_Manager
     function act_Add()
     {
         // Ако правим първо въвеждане и имаме логнат потребител - махаме го;
-        if(core_Session::get('currentUserRec')) {
+        if(Mode::get('currentUserRec')) {
             if(!$this->fetch('1=1')) {
                 $this->logout();
             }
@@ -637,7 +640,7 @@ class core_Users extends core_Manager
      */
     static function refreshSession()
     {
-        $currentUserRec = core_Session::get('currentUserRec');
+        $currentUserRec = Mode::get('currentUserRec');
         
         if (!$currentUserRec) return;
         
@@ -652,9 +655,9 @@ class core_Users extends core_Manager
     /**
      * Де-логва потребителя
      */
-    function logout()
+    static function logout()
     {
-        core_Session::set('currentUserRec', NULL);
+        Mode::setPermanent('currentUserRec', NULL);
         Mode::destroy();
     }
     
@@ -662,7 +665,7 @@ class core_Users extends core_Manager
     /**
      * Връща ролите на посочения потребител
      */
-    function getRoles($userId = NULL, $type = NULL)
+    static function getRoles($userId = NULL, $type = NULL)
     {
         $Users = cls::get('core_Users');
         
@@ -673,6 +676,27 @@ class core_Users extends core_Manager
             
             return $Users->getCurrent('roles');
         }
+    }
+    
+    
+    /**
+     * Добавя роля на посочения потребител
+     */
+    static function addRole($userId, $roleId)
+    {
+        if(!is_numeric($role)) {
+            $roleId = core_Roles::fetchByName($roleId);
+        }
+        
+        expect($roleId > 0, roleId);
+        expect($userId > 0, $userId);
+        
+        $uRec = core_Users::fetch($userId, 'roles');
+        $rolesArr = type_Keylist::toArray($uRec->roles);
+        $rolesArr[$roleId] = $roleId;
+        $uRec->roles = type_Keylist::fromArray($rolesArr);
+        
+        core_Users::save($uRec);
     }
     
     
@@ -760,6 +784,12 @@ class core_Users extends core_Manager
     {
         $users = array();
         
+        expect($roleId);
+        
+        if(!is_numeric($roleId)) {
+            $roleId   = core_Roles::fetchByName($roleId);
+        }
+        
         if (!$strict) {
             $roles = core_Roles::expand($roleId);
         } elseif (!is_array($roleId)) {
@@ -840,7 +870,7 @@ class core_Users extends core_Manager
     /**
      * Заглавието на потребителя в този запис
      */
-    static function getRecTitle(&$rec, $escaped = TRUE)
+    static function getRecTitle($rec, $escaped = TRUE)
     {
         if($rec->id > 0) {
             
@@ -890,7 +920,7 @@ class core_Users extends core_Manager
     /**
      * Начално инсталиране в системата
      */
-    function on_AfterSetupMVC($mvc, &$res)
+    static function on_AfterSetupMVC($mvc, &$res)
     {
         
         // Правим конверсия на полето roles
@@ -912,7 +942,7 @@ class core_Users extends core_Manager
         $rec = new stdClass();
         $rec->systemId = 'DeleteDraftUsers';
         $rec->description = 'Изтрива неактивните потребители';
-        $rec->controller = $this->className;
+        $rec->controller = $mvc->className;
         $rec->action = 'DeleteDraftUsers';
         $rec->period = 24 * 60;
         $rec->offset = 5 * 60;

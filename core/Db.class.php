@@ -24,7 +24,7 @@ defIfNot('EF_DB_CHARSET_CLIENT', 'utf8');
  * Клас 'core_Db' - Манипулиране на MySQL-ски бази данни
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -75,6 +75,17 @@ class core_Db extends core_BaseClass
      * @var mySQL result
      */
     var $lastRes;
+    
+    /**
+     * Флаг, предотвратяващ автоматичното инсталиране при грешка в базата данни
+     */
+    static  $noAutoSetup;
+    
+    
+    /**
+     * Номер на mySQL код за грешка при липсваща таблица
+     */
+    const MYSQL_MISSING_TABLE = 1146;
     
     
     /**
@@ -389,7 +400,7 @@ class core_Db extends core_BaseClass
         if (!$arr) return FALSE;
         
         $res = new stdClass();
-
+        
         // Правим всички имена на атрибути с малки букви
         foreach($arr as $key => $val) {
             $key = strtolower($key);
@@ -616,30 +627,25 @@ class core_Db extends core_BaseClass
      */
     function checkForErrors($action, $silent)
     {
+        global $_GET;
+        
         if (!$silent && mysql_errno($this->link) > 0) {
             
-            static $flagSetup;
-            
-            if(!$flagSetup) {
-                
-                
-                /**
-                 * Липсваща таблица
-                 */
-                DEFINE('MYSQL_MISSING_TABLE', 1146);
+            if((!self::$noAutoSetup) &&
+                ($_GET['Ctr'] != 'core_Cron' || $_GET['Act'] != 'cron')) {
                 
                 $errno = mysql_errno($this->link);
                 $eeror = mysql_error($this->link);
                 
                 // Ако таблицата липсва, предлагаме на Pack->Setup да провери
                 // да не би да трябва да се прави начално установяване
-                if($errno == MYSQL_MISSING_TABLE) {
+                if($errno == self::MYSQL_MISSING_TABLE) {
                     $Packs = cls::get('core_Packs');
-                    $flagSetup = TRUE;
+                    self::$noAutoSetup = TRUE;
                     $Packs->checkSetup();
                 } elseif(strpos($eeror, "Unknown column 'core_") !== FALSE) {
                     $Packs = cls::get('core_Packs');
-                    $flagSetup = TRUE;
+                    self::$noAutoSetup = TRUE;
                     $res = $Packs->setupPack('core');
                     
                     redirect(array('core_Packs'), FALSE, "Пакета `core` беше обновен");

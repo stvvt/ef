@@ -1,11 +1,12 @@
 <?php
 
 
+
 /**
  * Клас  'type_Minutes' - Тип за продължителност от време в минути
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -73,7 +74,7 @@ class type_Minutes extends type_Int {
             $minutes = $matches[2];
         }
         
-        if( strlen($minutes) || strlen($hours) || strlen($days) || strlen($weeks)) {
+        if(strlen($minutes) || strlen($hours) || strlen($days) || strlen($weeks)) {
             
             $duration = $minutes + 60 * $hours + 24 * 60 * $days + 7 * 24 * 60 * $weeks;
             
@@ -87,7 +88,7 @@ class type_Minutes extends type_Int {
     /**
      * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value, $attr = array())
+    function renderInput_($name, $value = '', &$attr = array())
     {
         if (!$this->suggestions) {
             $this->suggestions = array('' => '',

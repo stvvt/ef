@@ -6,7 +6,7 @@
  * Клас 'core_Lock' - Мениджър за заключване на обекти
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -67,8 +67,8 @@ class core_Locks extends core_Manager
         
         $this->setDbEngine = 'memory';
     }
-
-
+    
+    
     /**
      * Заключва обект с посоченото $objectId за максимално време $maxDuration,
      * като за това прави $maxTrays опити, през интервал от 1 секунда
@@ -102,6 +102,11 @@ class core_Locks extends core_Manager
         // Извличаме записа съответстващ на заключването, от модела
         $rec = $Locks->fetch(array("#objectId = '[#1#]'", $objectId));
         
+        // Създаваме празен запис, ако не съществува такъв за обекта
+        if(!$rec) {
+            $rec = new stdClass();
+        }
+        
         // Ако няма запис за този обект или заключването е преминало крайния си срок 
         // - записваме го и излизаме с успех
         if (empty($rec->id) || ($rec->lockExpire <= time())) {
@@ -110,7 +115,7 @@ class core_Locks extends core_Manager
             $rec->user = core_Users::getCurrent();
             $Locks->save($rec);
             $Locks->locks[$objectId] = $rec;
-
+            
             return TRUE;
         }
         
@@ -120,23 +125,21 @@ class core_Locks extends core_Manager
             sleep(1);
             
             if(static::get($objectId, $maxDuration, 0)) {
-
+                
                 return TRUE;
             }
-
+            
             $maxTrays--;
         }
         
-        
         return FALSE;
     }
-
-
-
+    
+    
     /**
      * Форматира в по-вербални данни реда от листовата таблица
      */
-    function on_AfterRecToVerbal($mvc, $row, $rec)
+    static function on_AfterRecToVerbal($mvc, $row, $rec)
     {
         $row->lockExpire = dt::mysql2verbal(dt::timestamp2Mysql($rec->lockExpire), 'd-M-Y G:i:s');
     }
@@ -156,7 +159,7 @@ class core_Locks extends core_Manager
     /**
      * Преди излизане от хита, изтриваме всички негови локове
      */
-    function on_Shutdown($mvc)
+    static function on_Shutdown($mvc)
     {
         if(count($mvc->locks)) {
             foreach($mvc->locks as $rec) {

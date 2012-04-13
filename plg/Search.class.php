@@ -9,7 +9,7 @@
  * searchFields = "field1,field2,..." в които да са описани полетата за търсене
  *
  *
- * @category  all
+ * @category  ef
  * @package   plg
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -42,7 +42,9 @@ class plg_Search extends core_Plugin
         $rec->searchKeywords = static::getKeywords($mvc, $rec);
     }
     
-    
+    /**
+     * @todo Чака за документация...
+     */
     static function getKeywords($mvc, $rec)
     {
         $searchKeywords = '';
@@ -57,6 +59,7 @@ class plg_Search extends core_Plugin
         
         return $searchKeywords;
     }
+    
     
     /**
      * Изпълнява се след подготовката на формата за филтриране
@@ -86,39 +89,42 @@ class plg_Search extends core_Plugin
         
         $filterRec = $data->listFilter->rec;
         
-        if($filterRec->search) {
-            
-            $words = $this->parseQuery($filterRec->search);
-            
-            if($words) {
-                foreach($words as $w) {
-                    
-                    $w = trim($w);
+        if ($filterRec->search) {
+            static::applySearch($filterRec->search, $data->query);
+        }
+    }
+    
+    
+    static function applySearch($search, $query, $field = 'searchKeywords')
+    {
+        if ($words = static::parseQuery($search)) {
+            foreach($words as $w) {
+                
+                $w = trim($w);
+                
+                if(!$w) continue;
+                
+                if($w{0} == '"') {
+                    $exact = ' ';
+                    $w = substr($w, 1);
                     
                     if(!$w) continue;
-                    
-                    if($w{0} == '"') {
-                        $exact = ' ';
-                        $w = substr($w, 1);
-                        
-                        if(!$w) continue;
-                    } else {
-                        $exact = '';
-                    }
-                    
-                    if($w{0} == '-') {
-                        $w = substr($w, 1);
-                        
-                        if(!$w) continue;
-                        $like = "NOT LIKE";
-                    } else {
-                        $like = "LIKE";
-                    }
-                    
-                    $w = $this->normalizeText($w);
-                    
-                    $data->query->where("#searchKeywords {$like} '% {$w}{$exact}%'");
+                } else {
+                    $exact = '';
                 }
+                
+                if($w{0} == '-') {
+                    $w = substr($w, 1);
+                    
+                    if(!$w) continue;
+                    $like = "NOT LIKE";
+                } else {
+                    $like = "LIKE";
+                }
+                
+                $w = static::normalizeText($w);
+                
+                $query->where("#{$field} {$like} '% {$w}{$exact}%'");
             }
         }
     }
@@ -146,7 +152,7 @@ class plg_Search extends core_Plugin
     /**
      * @todo Чака за документация...
      */
-    function parseQuery($str)
+    static function parseQuery($str)
     {
         $str = trim($str);
         

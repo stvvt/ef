@@ -12,7 +12,7 @@ defIfNot('EF_DB_TABLE_PREFIX', '');
  * Клас 'core_Mvc' - Манипулации на модела (таблица в db)
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -55,11 +55,11 @@ class core_Mvc extends core_FieldSet
      * адаптор за база данни на име "db". Разчита, че адапторът
      * е вече свързан към базата.
      */
-    function init()
+    function init($params = array())
     {
         // Задаваме името на класа
         if (!$this->className) {
-            $this->className = & cls::getClassName($this);
+            $this->className = cls::getClassName($this);
         }
         
         // Задаваме базата данни по подразбиране, ако в description() тя не е установена
@@ -396,12 +396,13 @@ class core_Mvc extends core_FieldSet
         }
         
         $row = new stdClass();
-
+        
         if (count($fields) > 0) {
             foreach ($fields as $name => $caption) {
                 if (!$row->{$name} && $modelFields[$name]) {
                     //DEBUG::startTimer("GetVerbal");
                     $row->{$name} = $this->getVerbal($rec, $name);
+                    
                     //DEBUG::stopTimer("GetVerbal");
                 }
             }
@@ -437,7 +438,7 @@ class core_Mvc extends core_FieldSet
     /**
      * Връща разбираемо за човека заглавие, отговарящо на записа
      */
-    static function getRecTitle(&$rec, $escaped = TRUE)
+    static function getRecTitle($rec, $escaped = TRUE)
     {
         $me = cls::get(get_called_class());
         
@@ -482,6 +483,7 @@ class core_Mvc extends core_FieldSet
         $me = cls::get(get_called_class());
         
         $rec = new stdClass();
+        
         if ($id > 0) {
             $rec = $me->fetch($id);
         } else {
@@ -559,6 +561,7 @@ class core_Mvc extends core_FieldSet
      */
     function setupMVC()
     {
+        // echo "<li> $this->className"; flush();
         $html .= "<h3>" . ('Начално установяване на модела') .
         ": <i>" . $this->className . "</i></h3><ol style='margin-bottom:10px;'>";
         
@@ -586,7 +589,7 @@ class core_Mvc extends core_FieldSet
             
             $tableName = $this->dbTableName;
             
-            $db = $this->db;    // За краткост
+            $db = $this->db;     // За краткост
             // Създаваме таблицата, ако не е създадена
             $action = $db->forceTable($tableName) ?
             '<li style="color:green">Създаване на таблица:  ' :
@@ -646,11 +649,11 @@ class core_Mvc extends core_FieldSet
                 
                 //bp($mfAttr, $dfAttr);
                 
-                $green = " style='color:green;'";    // Стил за маркиране
-                $info = '';    // Тук ще записваме текущия ред с информация какво правим
+                $green = " style='color:green;'";     // Стил за маркиране
+                $info = '';     // Тук ще записваме текущия ред с информация какво правим
                 // Дали ще създаваме или променяме името на полето
                 if ($mfAttr->name != $mfAttr->field) {
-                    $updateName = TRUE;    // Ще се прави UPDATE на името
+                    $updateName = TRUE;     // Ще се прави UPDATE на името
                 }
                 
                 // Обновяване на типа
@@ -722,7 +725,7 @@ class core_Mvc extends core_FieldSet
                 if($this->db->isType($mfAttr->type, 'have_collation')) {
                     setIfNot($mfAttr->collation, EF_DB_COLLATION);
                     $mfAttr->collation = strtolower($mfAttr->collation);
-                    $updateCollation = $mfAttr->collation != $dfAttr->collation;  //bp($mfAttr, $dfAttr);
+                    $updateCollation = $mfAttr->collation != $dfAttr->collation;   //bp($mfAttr, $dfAttr);
                     $style = $updateCollation ? $green : "";
                     $info .= ", <span{$style}>" .
                     ($mfAttr->collation) . "</span>";
@@ -829,5 +832,18 @@ class core_Mvc extends core_FieldSet
         Debug::log("Finish $class->{$method}");
         
         return $res;
+    }
+    
+    
+    /**
+     * Името на ДБ таблицата, в която се пазят данните на този модел
+     *
+     * @return string
+     */
+    static function getDbTableName()
+    {
+        $self = cls::get(get_called_class());
+        
+        return $self->dbTableName;
     }
 }

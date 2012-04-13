@@ -6,7 +6,7 @@
  * Клас 'core_Tabs' - Изглед за табове
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -38,7 +38,7 @@ class core_Tabs extends core_BaseClass
     /**
      * Инициализиране на обекта
      */
-    function init($params)
+    function init($params = array())
     {
         parent::init($params);
         

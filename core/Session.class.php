@@ -6,7 +6,7 @@
  * Клас 'core_Session' - Клас-манипулатор на потребителска сесия
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Stefan Stefanov <stefan.bg@gmail.com>, Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -64,10 +64,10 @@ class core_Session {
     function core_Session($name = "SID")
     {
         // HTTP header-и непозволяващи кеширането на документ-а
-        $this->_headers["Expires"] = "Mon, 26 Jul 1997 05:00:00 GMT";    // Date in the past
-        $this->_headers["Last-Modified"] = gmdate("D, d M Y H:i:s") . " GMT";    // always modified
-        $this->_headers["Cache-Control"] = "no-cache, must-revalidate";    // HTTP/1.1
-        $this->_headers["Pragma"] = "no-cache";    // HTTP/1.0
+        $this->_headers["Expires"] = "Mon, 26 Jul 1997 05:00:00 GMT";     // Date in the past
+        $this->_headers["Last-Modified"] = gmdate("D, d M Y H:i:s") . " GMT";     // always modified
+        $this->_headers["Cache-Control"] = "no-cache, must-revalidate";     // HTTP/1.1
+        $this->_headers["Pragma"] = "no-cache";     // HTTP/1.0
         ini_set('session.gc_maxlifetime', 7200);
         session_name($name);
         $this->_started = FALSE;
@@ -154,13 +154,14 @@ class core_Session {
      * @param string $varName
      * @return mixed
      */
-    function get($varName, $part = NULL)
+    static function get($varName, $part = NULL)
     {
-        if(is_a($this, 'core_Session')) {
-            $Session = $this;
-        } else {
-            $Session = cls::get('core_Session');
-        }
+        //if(is_a($this, 'core_Session')) {
+        //     $Session = $this;
+        //} else {
+        $Session = cls::get('core_Session');
+        
+        // }
         
         if($Session->_started) {
             $dv = $Session->_decorate($varName);
@@ -193,15 +194,11 @@ class core_Session {
      * @param string $varName
      * @param mixed $value
      */
-    function set($varName, $value)
+    static function set($varName, $value)
     {
-        if(is_a($this, 'core_Session')) {
-            $Session = $this; bp();
-        } else {
-            $Session = cls::get('core_Session');
-        }
+        $Session = cls::get('core_Session');
         
-        $Session->_start();    // Стартираме сесия, ако не е вече стартирана.
+        $Session->_start();     // Стартираме сесия, ако не е вече стартирана.
         $_SESSION[$Session->_decorate($varName)] = $value;
     }
     

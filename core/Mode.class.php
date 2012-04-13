@@ -1,6 +1,7 @@
 <?php
 
 
+
 /**
  * @todo Чака за документация...
  */
@@ -15,7 +16,7 @@ defIfNot('EF_MODE_SESSION_VAR', 'pMode');
  * така и за текущата сесия.
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -40,7 +41,7 @@ class core_Mode
     /**
      * Записва стойност на параметър na runtime обкръжението.
      */
-    function set($name, $value = TRUE)
+    static function set($name, $value = TRUE)
     {
         
         expect($name, 'Параметъра $name трябва да е непразен стринг', $mode);

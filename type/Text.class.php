@@ -6,7 +6,7 @@
  * Клас  'type_Text' - Тип за дълъг текст
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -32,7 +32,7 @@ class type_Text extends core_Type {
     /**
      * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         if(Mode::is('screenMode', 'narrow')) {
             setIfnot($attr['rows'], $this->params['rows'], 5);

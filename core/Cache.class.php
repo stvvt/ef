@@ -25,7 +25,7 @@ defIfNot('EF_CACHE_HANDLER_SIZE', 32);
  * Клас 'core_Cache' - Кеширане на обекти, променливи или масиви за определено време
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -50,7 +50,7 @@ class core_Cache extends core_Manager
     {
         $this->FLD('key', 'identifier(' . (EF_CACHE_TYPE_SIZE + EF_CACHE_HANDLER_SIZE + 3) . ')', 'caption=Ключ,notNull');
         $this->FLD('data', 'blob(16777215)', 'caption=Данни');
-        $this->FLD('lifetime', 'int', 'caption=Живот,notNull');    // В секунди
+        $this->FLD('lifetime', 'int', 'caption=Живот,notNull');     // В секунди
         $this->load('plg_Created,plg_SystemWrapper,plg_RowTools');
         
         $this->setDbUnique('key');
@@ -60,7 +60,7 @@ class core_Cache extends core_Manager
     /**
      * Връща съдържанието на кеша за посочения обект
      */
-    function get($type, $handler, $keepMinutes = 1, $depends = array())
+    static function get($type, $handler, $keepMinutes = 1, $depends = array())
     {
         $Cache = cls::get('core_Cache');
         
@@ -96,7 +96,7 @@ class core_Cache extends core_Manager
     /**
      * Записва обект в кеша
      */
-    function set($type, $handler, $value, $keepMinutes = 1, $depends = array())
+    static function set($type, $handler, $value, $keepMinutes = 1, $depends = array())
     {
         $Cache = cls::get('core_Cache');
         
@@ -128,7 +128,7 @@ class core_Cache extends core_Manager
     /**
      * Изтрива обектите от указания тип(ове) (и манипулатор)
      */
-    function remove($type, $handler = NULL)
+    static function remove($type, $handler = NULL)
     {
         $Cache = cls::get('core_Cache');
         
@@ -150,7 +150,7 @@ class core_Cache extends core_Manager
     /**
      * Извиква се след подготовката на toolbar-а за табличния изглед
      */
-    function on_AfterPrepareListToolbar($mvc, &$res, $data)
+    static function on_AfterPrepareListToolbar($mvc, &$res, $data)
     {
         $data->toolbar->addBtn('Изтриване на изтеклите записи', array(
                 $mvc,
@@ -208,7 +208,7 @@ class core_Cache extends core_Manager
     /**
      * Инсталация на MVC манипулатора
      */
-    function on_AfterSetupMVC($mvc, &$res)
+    static function on_AfterSetupMVC($mvc, &$res)
     {
         $res .= $mvc->cron_DeleteExpiredData(TRUE);
         
@@ -217,7 +217,7 @@ class core_Cache extends core_Manager
         $rec = new stdClass();
         $rec->systemId = 'ClearCache';
         $rec->description = 'Почиства кеша';
-        $rec->controller = "{$this->className}";
+        $rec->controller = "{$mvc->className}";
         $rec->action = 'DeleteExpiredData';
         $rec->period = 24 * 60;
         $rec->offset = 2 * 60;
@@ -239,7 +239,7 @@ class core_Cache extends core_Manager
     /**
      * Подреждане - най-отгоре са последните записи
      */
-    function on_BeforePrepareListRecs($mvc, &$res, $data)
+    static function on_BeforePrepareListRecs($mvc, &$res, $data)
     {
         $data->query->orderBy('#createdOn', 'DESC');
     }
@@ -321,7 +321,7 @@ class core_Cache extends core_Manager
     function setData($key, $data, $keepMinutes)
     {
         $rec = new stdClass();
-
+        
         // Сериализираме обекта
         $rec->data = serialize($data);
         

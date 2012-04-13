@@ -6,7 +6,7 @@
  * Клас  'type_Url' - Тип за URL адреси
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Yusein Yuseinov <yyuseinov@gmail.com>
  * @copyright 2006 - 2012 Experta OOD
@@ -43,7 +43,7 @@ class type_Url extends type_Varchar {
     /**
      * Добавя атрибут за тип = url, ако изгледа е мобилен
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         if(Mode::is('screenMode', 'narrow') && empty($attr['type'])) {
             $attr['type'] = 'url';
@@ -67,7 +67,7 @@ class type_Url extends type_Varchar {
     /**
      * Проверява и коригира въведеното URL
      */
-    function isValid(&$value)
+    function isValid($value)
     {
         
         $value = trim($value);

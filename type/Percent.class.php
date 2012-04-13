@@ -1,6 +1,7 @@
 <?php
 
 
+
 /**
  * @todo Чака за документация...
  */
@@ -11,7 +12,7 @@ defIfNot('EF_PERCENT_DECIMALS', 2);
  * Клас  'type_Percent' - Тип за проценти
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Yusein Yuseinov <yyuseinov@gmail.com>
  * @copyright 2006 - 2012 Experta OOD
@@ -25,7 +26,7 @@ class type_Percent extends type_Double {
     /**
      * Инициализиране на типа
      */
-    function init($params)
+    function init($params = array())
     {
         parent::init($params);
         setIfNot($this->params['decimals'], EF_PERCENT_DECIMALS);
@@ -91,7 +92,7 @@ class type_Percent extends type_Double {
     /**
      * Преобразуване от вътрешно представяне към вербална стойност за проценти при рендиране (0 - 100%)
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         if (!($this->error)) {
             $value = (100 * $value) . ' %';

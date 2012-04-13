@@ -1,6 +1,7 @@
 <?php
 
 
+
 /**
  * @todo Чака за документация...
  */
@@ -11,7 +12,7 @@ defIfNot('EF_PASS_NO_CHANGE', 'no_change');
  * Клас  'type_Password' - Тип за парола
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -25,7 +26,7 @@ class type_Password extends type_Varchar {
     /**
      * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         $attr['type'] = 'password';
         
@@ -35,7 +36,7 @@ class type_Password extends type_Varchar {
             $attr['autocomplete'] = 'off';
         }
         
-        $attr['onfocus'] = "this.select();";
+        $attr['onfocus'] = "if(this.value == '" . EF_PASS_NO_CHANGE . "') this.select();";
         
         return parent::renderInput_($name, $value, $attr);
     }

@@ -6,7 +6,7 @@
  * Клас 'core_DateTime' ['dt'] - Функции за работа с дата и време
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -17,7 +17,14 @@
 class core_DateTime
 {
     
-    
+    // Дните от седмицата, съкратени
+    static $weekDays = array('Пон', 'Вто', 'Сря', 'Чет', 'Пет', 'Съб', 'Нед');
+
+
+    // Имената на месеците 
+    static $months = array("Януари", "Февруари", "Март", "Април", "Май", "Юни",
+            "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември");
+
     /**
      * Превръща MySQL-ска data/време UNIX timestamp
      */

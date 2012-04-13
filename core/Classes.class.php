@@ -6,7 +6,7 @@
  * Клас 'core_Classes' - Регистър на класовете, имащи някакви интерфейси
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -54,7 +54,7 @@ class core_Classes extends core_Manager
      * @param object $mvc
      * @param object $form
      */
-    function on_AfterInputEditForm ($mvc, $form)
+    static function on_AfterInputEditForm ($mvc, $form)
     {
         if (!$form->isSubmitted()){
             return;
@@ -88,7 +88,7 @@ class core_Classes extends core_Manager
     /**
      * Добавя информация за класа в регистъра
      */
-    function add($class, $title = FALSE)
+    static function add($class, $title = FALSE)
     {
         
         /**

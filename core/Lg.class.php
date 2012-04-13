@@ -1,12 +1,22 @@
 <?php
 
 
+/**
+ * Интерфейс на какви езици поддържа системата?
+ */
+defIfNot('EF_LANGUAGES', 'bg=Български,en=Английски');
+
+
+/**
+ * Езикът по подразбиране е български
+ */
+defIfNot('EF_DEFAULT_LANGUAGE', 'bg');
 
 /**
  * Клас 'core_Lg' - Мениджър за многоезичен превод на интерфейса
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -53,9 +63,9 @@ class core_Lg extends core_Manager
      */
     function description()
     {
-        $this->FLD('kstring', 'varchar(size=34)', array('caption' => 'Стринг'));
-        $this->FLD('translated', 'text', array('caption' => 'Превод'));
-        $this->FLD('lg', 'varchar(2)', array('caption' => 'Език'));
+        $this->FLD('lg', 'enum(' . EF_LANGUAGES . ')', 'caption=Език,export');
+        $this->FLD('kstring', 'varchar(size=34)', 'caption=Стринг,export');
+        $this->FLD('translated', 'text',  'caption=Превод,export');
         
         $this->setDbUnique('kstring,lg');
     }
@@ -68,6 +78,10 @@ class core_Lg extends core_Manager
     {
         $lg = Request::get('lg');
         
+        $langArr = arr::make(EF_LANGUAGES, TRUE);
+
+        expect($langArr[$lg]);
+
         $this->set($lg);
         
         followRetUrl();
@@ -224,7 +238,7 @@ class core_Lg extends core_Manager
     /**
      * Извиква се преди подготовката на масивите $data->recs и $data->rows
      */
-    function on_BeforePrepareListRecs($invoker, &$res, $data)
+    static function on_BeforePrepareListRecs($invoker, &$res, $data)
     {
         // Подрежда словосъчетанията по обратен на постъпването им ред
         $data->query->orderBy(array(
@@ -233,10 +247,9 @@ class core_Lg extends core_Manager
         
         $data->listFilter->FNC('filter', 'varchar', 'caption=Филтър,input');
         
-        $data->listFilter->setOptions('lg', array(
-                'bg' => 'Български',
-                'en' => 'Английски'
-            ));
+        $langArr = arr::make(EF_LANGUAGES, TRUE);
+
+        $data->listFilter->setOptions('lg', $langArr);
         
         $data->listFilter->showFields = 'filter,lg';
         
@@ -293,9 +306,3 @@ class core_Lg extends core_Manager
         return $tpl;
     }
 }
-
-
-/**
- * Езикът по подразбиране е български
- */
-defIfNot('EF_DEFAULT_LANGUAGE', 'bg');

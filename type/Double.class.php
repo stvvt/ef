@@ -24,7 +24,7 @@ defIfNot('EF_NUMBER_THOUSANDS_SEP', ' ');
  * Клас 'type_Double' - Тип за рационални числа
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -96,7 +96,7 @@ class type_Double extends core_Type {
     /**
      * Генерира input-поле за числото
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         if($this->params[0] + $this->params[1] > 0) {
             $attr['size'] = $this->params[0] + $this->params[1] + 1;

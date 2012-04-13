@@ -6,7 +6,7 @@
  * Клас 'plg_Select' - Добавя селектор на ред от таблица
  *
  *
- * @category  all
+ * @category  ef
  * @package   plg
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -26,7 +26,7 @@ class plg_Select extends core_Plugin
         if(Mode::is('printing')) return;
         
         $data->listFields = arr::combine(array("_checkboxes" =>
-                "<input type='checkbox' onclick=\"return toggleAllCheckboxes();\" name='toggle'  class='checkbox'>"), $data->listFields);
+                "|*<input type='checkbox' onclick=\"return toggleAllCheckboxes();\" name='toggle'  class='checkbox'>"), $data->listFields);
     }
     
     
@@ -111,11 +111,12 @@ class plg_Select extends core_Plugin
             
             $res = new ET();
             
-            $res->append("<h2>Действия с избраните редове:</h2>");
-            
+            $res->append("\n<h3>" . tr('Действия с избраните редове') . ":</h3>");
+            $res->append("\n<table>");
+
             foreach($actArr as $action => $caption) {
                 
-                $res->append("<p>");
+                $res->append("\n<tr><td>");
                 $res->append(ht::createBtn($caption . '|* (' . $cnt[$action] . ')', array(
                             $mvc,
                             $action,
@@ -123,9 +124,13 @@ class plg_Select extends core_Plugin
                             'ret_url' => Request::get('ret_url')),
                         NULL,
                         NULL,
-                        "class=btn-$action,style=float:none !important;"));
+                        "class=btn-$action,style=float:none !important;width:100%;text-align:left;"));
+                 $res->append("</td></tr>");
+
             }
             
+            $res->append("\n</table>");
+
             $res = $mvc->renderWrapping($res);
             
             return FALSE;

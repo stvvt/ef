@@ -18,7 +18,7 @@ defIfNot('EF_DATE_NARROW_FORMAT', 'd-m-year');
  * Клас  'type_Date' - Тип за дати
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -94,7 +94,7 @@ class type_Date extends core_Type {
     /**
      * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         $attr['name'] = $name;
         

@@ -10,7 +10,7 @@
  * Например: ключ към групите от визитника
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -24,12 +24,12 @@ class type_Group extends type_Key
     /**
      * Инициализиране на обекта
      */
-    function init($params)
+    function init($params = array())
     {
         parent::init($params);
         
-        expect($base = $this->params['base']);    // Базов модел
-        expect($keylist = $this->params['keylist']);    // Името на keylist полето
+        expect($base = $this->params['base']);     // Базов модел
+        expect($keylist = $this->params['keylist']);     // Името на keylist полето
         $baseMvc = cls::get($base);
         
         expect($mvc = $baseMvc->fields[$keylist]->type->params['mvc'], $baseMvc->fields[$keylist]);
@@ -49,8 +49,8 @@ class type_Group extends type_Key
             return;
         }
         
-        expect($base = $this->params['base']);    // Базов модел
-        expect($keylist = $this->params['keylist']);    // Името на keylist полето
+        expect($base = $this->params['base']);     // Базов модел
+        expect($keylist = $this->params['keylist']);     // Името на keylist полето
         $mvc = cls::get($this->params['mvc']);
         
         $baseMvc = cls::get($base);
@@ -65,8 +65,10 @@ class type_Group extends type_Key
             }
         }
         
-        foreach($groups as $id => $cnt) {
-            $this->options[$id] = $mvc->getTitleById($id) . " ({$cnt})";
+        if (is_array($groups)) {
+            foreach($groups as $id => $cnt) {
+                $this->options[$id] = $mvc->getTitleById($id) . " ({$cnt})";
+            }
         }
     }
     
@@ -74,7 +76,7 @@ class type_Group extends type_Key
     /**
      * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         $this->prepareOptions();
         

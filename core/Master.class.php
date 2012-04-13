@@ -6,7 +6,7 @@
  * Клас 'core_Master' - Мениджър за единичните данни на бизнес обекти
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -16,8 +16,7 @@
  */
 class core_Master extends core_Manager
 {
-    
-    
+
     /**
      * Мениджърите на детайлите записи към обекта
      */
@@ -33,13 +32,17 @@ class core_Master extends core_Manager
     /**
      * Изпълнява се след конструирането на мениджъра
      */
-    function on_AfterDescription($mvc)
+    static function on_AfterDescription(&$mvc)
     {
         // Списъка с детайлите става на масив
-        $this->details = arr::make($this->details, TRUE);
+        $mvc->details = arr::make($mvc->details, TRUE);
         
         // Зарежда mvc класовете
-        $this->load($this->details);
+        $mvc->load($mvc->details);
+        
+        foreach($mvc->details as $var => $class) {
+            $mvc->{$var}->Master = &$mvc;
+        }
     }
     
     
@@ -65,7 +68,7 @@ class core_Master extends core_Manager
         
         // Подготвяме данните за единичния изглед
         $this->prepareSingle($data);
-         
+        
         // Рендираме изгледа
         $tpl = $this->renderSingle($data);
         
@@ -99,6 +102,8 @@ class core_Master extends core_Manager
         // Подготвяме детайлите
         if(count($this->details)) {
             foreach($this->details as $var => $class) {
+                $this->loadSingle($var, $class);
+                
                 if($var == $class) {
                     $method = 'prepareDetail';
                 } else {
@@ -242,7 +247,7 @@ class core_Master extends core_Manager
     function renderSingleLayout_($data)
     {
         if(isset($this->singleLayoutFile)) {
-            $layoutText = file_get_contents(getFullPath($this->singleLayoutFile));
+            $layoutText = tr('|*' . file_get_contents(getFullPath($this->singleLayoutFile)));
         } elseif(isset($this->singleLayoutTpl)) {
             $layoutText = $this->singleLayoutTpl;
         } else {
@@ -262,7 +267,7 @@ class core_Master extends core_Manager
         if(is_string($layoutText)) {
             $layoutText = tr("|*" . $layoutText);
         }
-        
+
         return new ET($layoutText);
     }
     
@@ -291,20 +296,16 @@ class core_Master extends core_Manager
     /**
      * Връща ролите, които могат да изпълняват посоченото действие
      */
-    function getRequiredRoles_($action, $rec = NULL, $userId = NULL)
+    function getRequiredRoles_(&$action, $rec = NULL, $userId = NULL)
     {
         if($action == 'single') {
-            
-            $action1 = 'can' . $action;
-            $action1{0} = strtoupper($action1{0});
-
-            if(!($this->{$action1})) {
+            if(!($requiredRoles = $this->canSingle)) {
                 $requiredRoles = $this->getRequiredRoles('read', $rec, $userId);
             }
-        } else {
+        } else { 
             $requiredRoles = parent::getRequiredRoles_($action, $rec, $userId);
         }
-
+        
         return $requiredRoles;
     }
 }

@@ -6,7 +6,7 @@
  * Клас 'core_Detail' - Мениджър за детайлите на бизнес обектите
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -34,20 +34,20 @@ class core_Detail extends core_Manager
     /**
      * Изпълнява се след началното установяване на модела
      */
-    function on_AfterDescription(&$mvc)
+    static function on_AfterDescription(&$mvc)
     {
         expect($mvc->masterKey);
         
-        expect($masterClass = $mvc->fields[$mvc->masterKey]->type->params['mvc']);
+        expect($mvc->masterClass = $mvc->fields[$mvc->masterKey]->type->params['mvc']);
         
-        $this->fields[$mvc->masterKey]->silent = silent;
+        $mvc->fields[$mvc->masterKey]->silent = silent;
         
         if(!isset($mvc->fields[$mvc->masterKey]->input)) {
             $mvc->fields[$mvc->masterKey]->input = hidden;
         }
         
-        $mvc->Master = &cls::get($masterClass);
-
+        $mvc->Master = cls::get($mvc->masterClass);
+        
         $mvc->currentTab = $masterClass;
         
         setIfNot($mvc->fetchFieldsBeforeDelete, $mvc->masterKey);
@@ -59,6 +59,7 @@ class core_Detail extends core_Manager
      */
     function prepareDetail_($data)
     {
+        
         // Очакваме да masterKey да е зададен
         expect($this->masterKey);
         
@@ -89,6 +90,7 @@ class core_Detail extends core_Manager
      */
     function renderDetailLayout_($data)
     {
+        
         $className = cls::getClassName($this);
         
         // Шаблон за листовия изглед
@@ -110,6 +112,7 @@ class core_Detail extends core_Manager
      */
     function renderDetail_($data)
     {
+        
         // Рендираме общия лейаут
         $tpl = $this->renderDetailLayout($data);
         
@@ -134,6 +137,7 @@ class core_Detail extends core_Manager
      */
     function prepareDetailQuery_($data)
     {
+        
         // Създаваме заявката
         $data->query = $this->getQuery();
         
@@ -191,7 +195,7 @@ class core_Detail extends core_Manager
     /**
      * Връща ролите, които могат да изпълняват посоченото действие
      */
-    function getRequiredRoles_($action, $rec = NULL, $userId = NULL)
+    function getRequiredRoles_(&$action, $rec = NULL, $userId = NULL)
     {
         
         if($action == 'read') {
@@ -201,7 +205,9 @@ class core_Detail extends core_Manager
         if($action == 'write' && isset($rec)) {
             
             expect($masterKey = $this->masterKey);
-            expect($this->Master, $this);
+            
+            expect($this->Master instanceof core_Master, $this);
+            
             $masterRec = $this->Master->fetch($rec->{$masterKey});
             
             return $this->Master->getRequiredRoles('edit', $masterRec, $userId);
@@ -214,7 +220,7 @@ class core_Detail extends core_Manager
     /**
      * След запис в детайла извиква събитието 'AfterUpdateDetail' в мастъра
      */
-    function on_AfterSave($mvc, $id, $rec)
+    static function on_AfterSave($mvc, $id, $rec)
     {
         $masterKey = $mvc->masterKey;
         
@@ -231,8 +237,9 @@ class core_Detail extends core_Manager
     /**
      * След изтриване в детайла извиква събитието 'AfterUpdateDetail' в мастъра
      */
-    function on_AfterDelete($mvc, $numRows, $query, $cond)
+    static function on_AfterDelete($mvc, &$numRows, $query, $cond)
     {
+        
         if($numRows) {
             $masterKey = $mvc->masterKey;
             

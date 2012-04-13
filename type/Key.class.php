@@ -1,6 +1,7 @@
 <?php
 
 
+
 /**
  * @todo Чака за документация...
  */
@@ -11,7 +12,7 @@ defIfNot('TYPE_KEY_MAX_SUGGESTIONS', 1000);
  * Клас  'type_Key' - Ключ към ред от MVC модел
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -126,7 +127,7 @@ class type_Key extends type_Int {
     /**
      * Рендира HTML поле за въвеждане на данни чрез форма
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         expect($this->params['mvc']);
         

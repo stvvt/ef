@@ -6,7 +6,7 @@
  * Клас 'core_String' ['str'] - Функции за за работа със стрингове
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -353,8 +353,13 @@ class core_String
     static function limitLen($str, $maxLen)
     {
         if(mb_strlen($str) > $maxLen) {
-            $remain = (int) ($maxLen - 5) / 2;
-            $str = mb_substr($str, 0, $remain) . ' ... ' . mb_substr($str, -$remain);
+            if($maxLen > 20) {
+                $remain = (int) ($maxLen - 5) / 2;
+                $str = mb_substr($str, 0, $remain) . ' ... ' . mb_substr($str, -$remain);
+            } else {
+                $remain = (int) ($maxLen - 3);
+                $str = mb_substr($str, 0, $remain) . ' ... ';
+            }
         }
         
         return $str;

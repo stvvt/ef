@@ -5,7 +5,7 @@
  * Клас 'tpl_HtmlPage' -
  *
  *
- * @category  all
+ * @category  ef
  * @package   tpl
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -53,7 +53,7 @@ class tpl_HtmlPage extends core_ET {
     /**
      * @todo Чака за документация...
      */
-    function on_Output(&$invoker)
+    static function on_Output(&$invoker)
     {
         $css = $invoker->getArray('CSS');
         

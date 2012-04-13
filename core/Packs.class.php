@@ -6,7 +6,7 @@
  * Клас 'core_Packs' - Управление на пакети
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -65,8 +65,6 @@ class core_Packs extends core_Manager
      */
     function act_Install()
     {
-        
-        set_time_limit(0);
         
         $this->requireRightFor('install');
         
@@ -229,7 +227,7 @@ class core_Packs extends core_Manager
     /**
      * Изпълнява се преди извличането на редовете за листови изглед
      */
-    function on_BeforePrepareListRecs($mvc, &$res, $data)
+    static function on_BeforePrepareListRecs($mvc, &$res, $data)
     {
         $data->query->orderBy("#name");
     }
@@ -284,7 +282,7 @@ class core_Packs extends core_Manager
     /**
      * След конвертирането на един ред от вътрешно към вербално представяне
      */
-    function on_AfterRecToVerbal($mvc, $row, $rec)
+    static function on_AfterRecToVerbal($mvc, $row, $rec)
     {
         // Показва пореден, вместо ID номер
         static $rowNum;
@@ -397,6 +395,9 @@ class core_Packs extends core_Manager
      */
     function setupPack($pack, $version = 0, $force = TRUE)
     {
+        // Максиламно време за инсталиране на пакет
+        set_time_limit(300);
+        
         DEBUG::startTimer("Инсталиране на пакет '{$pack}'");
         
         // Имената на пакетите са винаги с малки букви

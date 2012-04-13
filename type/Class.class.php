@@ -8,7 +8,7 @@
  * Може да се избира по име на интерфейс
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -21,7 +21,7 @@ class type_Class extends type_Key {
     /**
      * Инициализиране на типа
      */
-    function init($params)
+    function init($params = array())
     {
         parent::init($params);
         
@@ -33,7 +33,7 @@ class type_Class extends type_Key {
     /**
      * Рендира INPUT-a
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         expect($this->params['mvc'], $this);
         

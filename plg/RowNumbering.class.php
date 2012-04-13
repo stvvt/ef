@@ -12,7 +12,7 @@
  * Плъгина добавя поле RowNumb, ако то липсва в $data->listFields
  *
  *
- * @category  all
+ * @category  ef
  * @package   plg
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -66,7 +66,7 @@ class plg_RowNumbering extends core_Plugin
             }
         }
         
-        if(!$data->listFields['RowNumb']) {
+        if(!$data->listFields['RowNumb'] && $mvc instanceof core_Detail) {
             $data->listFields = arr::combine(array('RowNumb' => '№') , $data->listFields);
         }
     }

@@ -107,9 +107,9 @@ p.richtext {
 PRE.richtext {
     font-family: Courier New,monospace;
     padding:10px;
-    background-color:#eee;
+    background-color:#ffe;
     color:#000;
-    line-height:100%;
+    line-height:120%;
     border:solid 1px #ccc;
 }
 
@@ -379,7 +379,7 @@ input[type=radio]:checked + label {
     color:red;
 }
 
-.linkWithIcon {
+.linkWithIcon, .docBgIcon {
     padding-left:22px;  
     background-repeat:no-repeat;
     background-position: 3px center;
@@ -441,6 +441,10 @@ FORM[method=post] INPUT[type=submit] {
 
 INPUT.print[type=button] {
     background-image:url('../img/16/printer.png');
+}
+
+INPUT.csvExport[type=button] {
+    background-image:url('../img/16/file_extension_xls.png');
 }
 
 INPUT.btn-new-folder[type=button] {

@@ -6,7 +6,7 @@
  * Клас  'type_Combodate' - Представя дати с избираеми по отделно части (Д/М/Г)
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -20,7 +20,7 @@ class type_Combodate extends type_Varchar {
     /**
      * Дължина на полето в mySql таблица
      */
-    var $dbFieldLen = 10;    // XX-XX-XXXX
+    var $dbFieldLen = 10;     // XX-XX-XXXX
     
     /**
      * Атрибути на елемента "<TD>" когато в него се записва стойност от този тип
@@ -85,7 +85,7 @@ class type_Combodate extends type_Varchar {
      * Генерира поле за въвеждане на дата, състоящо се от
      * селектори за годината, месеца и деня
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         $div = $this->params['div'] ? $this->params['div'] : '-';
         

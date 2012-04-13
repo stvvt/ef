@@ -10,7 +10,7 @@
  * им започва с приставката 'cron_'
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -64,7 +64,7 @@ class core_Cron extends core_Manager
     /**
      * Извиква се след подготовката на toolbar-а за табличния изглед
      */
-    function on_AfterPrepareListToolbar($mvc, &$data)
+    static function on_AfterPrepareListToolbar($mvc, &$data)
     {
         $data->toolbar->addBtn('Логове на Cron', array(
                 'core_Logs',
@@ -265,7 +265,7 @@ class core_Cron extends core_Manager
     /**
      * Изпълнява се след поготовка на формата за редактиране
      */
-    function on_AfterPrepareEditForm($mvc, $data)
+    static function on_AfterPrepareEditForm($mvc, $data)
     {
         $data->form->setOptions('state', array('free' => 'Свободно',
                 'stopped' => 'Спряно'
@@ -276,7 +276,7 @@ class core_Cron extends core_Manager
     /**
      * Изпълнява се при всяко преобразуване на запис към вербални стойности
      */
-    function on_AfterRecToVerbal($mvc, $row, $rec)
+    static function on_AfterRecToVerbal($mvc, $row, $rec)
     {
         // За по-голяма точност, показваме и секундите
         $row->lastStart = dt::mysql2verbal($rec->lastStart, "d-m-y  H:i:s");
@@ -323,7 +323,7 @@ class core_Cron extends core_Manager
         $now = dt::mysql2timestamp(dt::verbal2mysql());
         
         if($rec->state == 'locked' ||
-            ($rec->state == 'free' && ($now - $this->refreshRowsTime / 1000-2) < dt::mysql2timestamp($rec->lastStart))) {
+            ($rec->state == 'free' && ($now - $mvc->refreshRowsTime / 1000-2) < dt::mysql2timestamp($rec->lastStart))) {
             
             $row->ROW_ATTR['style'] .= 'background-color:#ffa;';
         } elseif ($rec->state == 'free') {

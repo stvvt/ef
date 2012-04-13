@@ -12,7 +12,7 @@ defIfNot('EF_NUMBER_THOUSANDS_SEP', ' ');
  * Клас  'type_Int' - Тип за цели числа
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -111,7 +111,7 @@ class type_Int extends core_Type {
     /**
      * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value, $attr = array())
+    function renderInput_($name, $value = '', &$attr = array())
     {
         setIfNot($attr['size'],
             $this->params[0],

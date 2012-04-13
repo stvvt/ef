@@ -6,7 +6,7 @@
  * Клас 'core_Type' - Прототип на класовете за типове
  *
  *
- * @category  all
+ * @category  ef
  * @package   core
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -96,7 +96,7 @@ class core_Type extends core_BaseClass
      * Този метод трябва генерира хHTML код, който да представлява
      * полето за въвеждане на конкретния формат информация
      */
-    function renderInput_($name, $value = '', $attr = array())
+    function renderInput_($name, $value = '', &$attr = array())
     {
         $value = $this->toVerbal($value);
         
@@ -121,7 +121,7 @@ class core_Type extends core_BaseClass
     function getMysqlAttr()
     {
         $res = new stdClass();
-
+        
         $res->size = $this->getDbFieldSize();
         
         $res->type = strtoupper($this->dbFieldType);

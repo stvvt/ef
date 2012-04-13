@@ -12,7 +12,7 @@
  * Когато се записват като стринг в атрибута, ролите могат да бъдат разделени с вертикална черта
  *
  *
- * @category  all
+ * @category  ef
  * @package   type
  * @author    Milen Georgiev <milen@download.bg>
  * @copyright 2006 - 2012 Experta OOD
@@ -27,7 +27,7 @@ class type_Users extends type_Keylist
     /**
      * Инициализиране на обекта
      */
-    function init($params)
+    function init($params = array())
     {
         setIfNot($params['params']['mvc'], 'core_Users');
         setIfNot($params['params']['select'], 'names');
@@ -143,7 +143,7 @@ class type_Users extends type_Keylist
     /**
      * Рендира HTML инпут поле
      */
-    function renderInput_($name, $value = "", $attr = array())
+    function renderInput_($name, $value = "", &$attr = array())
     {
         $this->prepareOptions();
         
