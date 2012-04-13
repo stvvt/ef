@@ -47,7 +47,9 @@ function ef_autoload($className)
         'users' => 'core_Users',
     );
     
-    if($fullName = $aliases[strtolower($className)]) {
+    if (isset($aliases[strtolower($className)])) {
+        $fullName = $aliases[strtolower($className)];
+        
         core_Cls::load($fullName);
         class_alias($fullName, $className);
         
@@ -199,7 +201,9 @@ if ((@include EF_CONF_PATH . '/' . EF_APP_NAME . '.cfg.php') === FALSE) {
 @include EF_CONF_PATH . '/_common.cfg.php';
 
 // Премахваме всякакви "боклуци", които евентуално може да са се натрупали в изходния буфер
-ob_clean();
+if (ob_get_level()) {
+    ob_clean();
+}
 
 // Стартира записа в буфера, като по възможност компресира съдържанието
 ob_start();
@@ -218,7 +222,7 @@ ini_set("display_startup_errors", isDebug());
 /**
  * Времева зона
  */
-defIfNot('EF_TIMEZONE', function_exists("date_default_timezone_get") ? : 'Europe/Sofia');
+defIfNot('EF_TIMEZONE', function_exists("date_default_timezone_get") ? date_default_timezone_get() : 'Europe/Sofia');
 
 // Сетваме времевата зона
 date_default_timezone_set(EF_TIMEZONE);

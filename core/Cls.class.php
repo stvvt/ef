@@ -43,13 +43,7 @@ class core_Cls
     static function getClassName($className)
     {
         if(is_object($className)) {
-            if($className->className) {
-                
-                return $className->className;
-            } else {
-                
-                return get_class($className);
-            }
+            return isset($className->className) ? $className->className : get_class($className);
         }
         
         // Ако името е число, тогава го вземаме от coreClass

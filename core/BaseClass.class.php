@@ -201,6 +201,8 @@ class core_BaseClass
      */
     function __call($method, $args)
     {
+        $mtd = NULL;
+        
         if (method_exists($this, $method . '_')) {
             $mtd = $method . '_';
         }

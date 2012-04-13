@@ -9,6 +9,7 @@ define('EF_APP_PATH', dirname(__FILE__) . '/' . EF_APP_NAME);
 define('EF_CONF_PATH', EF_APP_PATH . '/config');
 define('EF_INDEX_PATH', dirname(__FILE__));
 
-error_reporting(E_ERROR | E_WARNING | E_PARSE | E_DEPRECATED);
+// error_reporting(E_ERROR | E_WARNING | E_PARSE | E_DEPRECATED);
+error_reporting(E_ALL);
 
 require_once( EF_EF_PATH . "/core/boot.inc.php");
