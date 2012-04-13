@@ -364,7 +364,7 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
      */
     public function testPlaceArray()
     {
-    	$this->simpleTpl->placeObject(
+    	$this->simpleTpl->placeArray(
     		array(
     			'placeholder' => '{array}'
     		)
@@ -388,9 +388,6 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
         
         $this->simpleTpl->prepend('content', 'placeholder');
         $this->assertTrue($this->simpleTpl->isPlaceholderExists('placeholder'));
-        
-        $this->simpleTpl->replace('content', 'placeholder');
-        $this->assertFalse($this->simpleTpl->isPlaceholderExists('placeholder'));
     }
 
     /**
@@ -410,9 +407,7 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     {
     	$block = $this->parentTpl->getBlock('block');
     	
-    	if (!$block) {
-    		return;
-    	}
+    	$this->assertInstanceOf(static::$tested, $block);
     	
     	$rows = array(
     		array('row' => '{row-1}'), 
@@ -421,7 +416,7 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     	);
     	
     	foreach ($rows as $row) {
-    		$block->placeObject($row);
+    		$block->placeArray($row);
     		$block->append2Master();
     	}
     	

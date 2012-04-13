@@ -8,7 +8,14 @@ class core_Tpl extends core_BaseClass
      * @var string
      */
     private $content;
-    
+
+
+    /**
+     * Блокове
+     * 
+     * @var array
+     */
+    private $blocks;
     
     /**
      * Стойности за заместване
@@ -16,6 +23,26 @@ class core_Tpl extends core_BaseClass
      * @var array
      */
     private $vars = array();
+    
+    
+    /**
+     * Име на шаблона
+     * 
+     * @see self::getBlock(), self::append2master()
+     * 
+     * @var string
+     */
+    private $name = NULL;
+    
+    
+    /**
+     * Шаблон-родител
+     * 
+     * @see self::getBlock(), self::append2master()
+     * 
+     * @var core_Tpl
+     */
+    private $parent = NULL;
     
     
     /**
@@ -83,7 +110,11 @@ class core_Tpl extends core_BaseClass
     
     public function append2Master()
     {
+        expect(static::isTemplate($this->parent));
+        expect(is_string($this->name));
         
+        $this->parent->append((string)$this, $this->name);
+        $this->resetContext();
     }
     
     
@@ -137,19 +168,7 @@ class core_Tpl extends core_BaseClass
         	}
         }
     }
-    
-
-    /**
-     * Връща даден блок
-     * 
-     * @param string $blockName
-     * @return core_ET
-     */
-    public function getBlock($blockName)
-    {
         
-    }
-    
     
     /**
      * Връща текстовото представяне на шаблона, след всички възможни субституции
@@ -180,7 +199,6 @@ class core_Tpl extends core_BaseClass
         
         if ($removeBlocks) {
             $content = $this->clearPlaceholders($content);
-            $content = $this->clearBlocks($content);
         }
         
         return $content;
@@ -217,6 +235,12 @@ class core_Tpl extends core_BaseClass
                 }
             }
         }
+    }
+    
+    
+    private function resetContext()
+    {
+        $this->vars = array();
     }
     
     
@@ -286,6 +310,8 @@ class core_Tpl extends core_BaseClass
      */
     public function placeArray($data, $block = NULL, $prefix = '')
     {
+        expect(is_array($data));
+        
         foreach ($data as $n=>$v) {
             $this->replace($v, $n);
         }
@@ -303,7 +329,39 @@ class core_Tpl extends core_BaseClass
      */
     public function placeObject($data, $block = NULL, $prefix = NULL)
     {
-        
+        expect(is_object($data));
+
+        $this->placeArray(get_object_vars($data));
+    }
+
+
+    /**
+     * Връща даден блок
+     *
+     * @param string $blockName
+     * @return self
+     */
+    public function getBlock($blockName)
+    {
+    	if (!isset($this->blocks[$blockName])) {
+    	    $pos = NULL;
+    		$this->blocks[$blockName] = $this->getBlockBody($blockName, $pos);
+    
+    		if ($this->blocks[$blockName] !== FALSE) {
+    			$this->blocks[$blockName] = new self($this->blocks[$blockName]);
+    			$this->blocks[$blockName]->name   = $blockName;
+    			$this->blocks[$blockName]->parent = $this;
+    			
+    			// Заместваме блока с [#името_му#]
+    			$this->setContent($this->toPlace($blockName), $pos);
+    		}
+    	}
+    
+    	if (static::isTemplate($this->blocks[$blockName])) {
+    		$this->blocks[$blockName]->resetContext();
+    	}
+    
+    	return $this->blocks[$blockName];
     }
     
     
@@ -343,25 +401,139 @@ class core_Tpl extends core_BaseClass
     
     /**
      * Означение на плейсхолдър със зададено име
+     * 
+     * @param string $name
+     * @return string
      */
     private function toPlace($name)
     {
         return "[#{$name}#]";
     }
+
     
+    /**
+     * Превръща име към означение за начало на блок
+     * 
+     * @param string $name
+     * @return string
+     */
+    private function toBeginMark($blockName)
+    {
+    	return "<!--ET_BEGIN $blockName-->";
+    }
+
+    
+	/**
+	* Превръща име към означение за край на блок
+     * 
+     * @param string $name
+     * @return string
+	*/
+	private function toEndMark($blockName)
+	{
+	    return "<!--ET_END $blockName-->";
+	}
+    
+	
     private function initFromString($str)
     {
         $this->content = $str;
         
-//         if (preg_match_all($this->placesRegex, $this->content, $matches)) {
-//             foreach ($matches[1] as $place) {
-//                 if ($place == $this->globalPlace) {
-//                     throw new Exception("Невалиден плейсхолдър: {$place}");
-//                 }
-//                 $this->vars[$place]['prepend'] = array();
-//                 $this->vars[$place]['append'] = array();
-//             }
-//         }
+        $this->prepareRemovableBlocks(); 
+    }
+    
+    
+    /**
+     * Намира всички блокове и ги замества с едноименни плейсхолдъри
+     * 
+     * @return array масив от блокове. Това са обекти-шаблони, инициализирани с тялото на съотв. блок
+     */
+    private function prepareRemovableBlocks()
+    {
+        $places = $this->getPlaceholders();
+        
+        // Задава самоизчезващите блокове - онези за които има едноименен плейсхолдър
+        foreach ($places as $place) {
+            $this->getBlock($place);
+        }
+    }
+
+    
+    /**
+     * Намира позициите на маркерите за начало и край на блок
+     * 
+     * @param string $blockName
+     * @return stdClass обект с полета {beginStart, beginStop, endStart, endStop}
+     *                  FALSE ако липсва блок с такова име.
+     */
+    private function getBlockPosition($blockName)
+    {
+    	$beginMark = $this->toBeginMark($blockName);
+    
+    	$markerPos = new stdClass();
+    
+    	$markerPos->beginStart = strpos($this->content, $beginMark);
+    
+    	if ($markerPos->beginStart === FALSE) return FALSE;
+    
+    	$endMark = $this->toEndMark($blockName);
+    	$markerPos->beginStop = $markerPos->beginStart + strlen($beginMark);
+    	$markerPos->endStart = strpos($this->content, $endMark, $markerPos->beginStop);
+    
+    	if ($markerPos->endStart === FALSE) return FALSE;
+    
+    	$markerPos->endStop = $markerPos->endStart + strlen($endMark);
+    
+    	return $markerPos;
+    }
+    
+    
+    /**
+     * Текстовото тяло на блок.
+     *  
+     * @param string $blockName
+     * @param stdClass $pos @see self::getBlockPosition()
+     * @return boolean|string FALSE ако няма такъв блок
+     */
+    private function getBlockBody($blockName, &$pos = NULL)
+    {
+    	if (!isset($pos)) {
+    		$pos = $this->getBlockPosition($blockName);
+    	}
+    	if ($pos === FALSE) {
+    		return FALSE;
+    	}
+    
+    	return substr(
+    			$this->content,
+    			$pos->beginStop,
+    			$pos->endStart - $pos->beginStop);
+    }
+    
+
+    private function setContent($newContent, $mp = NULL)
+    {
+    	if (isset($mp)) {
+    		$newContent = 
+    		    substr($this->content, 0, $mp->beginStart) 
+    		    . $newContent 
+    		    . substr($this->content, $mp->endStop);
+    	}
+    
+    	$this->content = $newContent;
+    }
+    
+    
+    /**
+     * Връща плейсхолдерите на шаблона
+     *
+     * @return array
+     */
+    private function getPlaceholders()
+    {
+    	preg_match_all($this->placesRegex, $this->content, $matches);
+    
+    	return $matches[1];
     }
     
     
@@ -396,18 +568,5 @@ class core_Tpl extends core_BaseClass
         }
         
         return $content;
-    }
-}
-
-
-class core_TplReplacement
-{
-    var $prepend = array();
-    var $replace = array();
-    var $append = array();
-    
-    public function flatten(&$unused)
-    {
-        
     }
 }

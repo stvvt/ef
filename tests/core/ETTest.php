@@ -23,4 +23,16 @@ class core_ETTest extends core_ETTestBase
 		$this->assertEquals('master:sub1:{a}:sub2:', (string)$master);
 	}
 	
+
+    /**
+     * @covers core_ET::isPlaceholderExists
+     */
+    public function testIsPlaceholderExists()
+    {
+        parent::testIsPlaceholderExists();
+
+        // След replace плейсхолдърът изчезва
+        $this->simpleTpl->replace('content', 'placeholder');
+        $this->assertFalse($this->simpleTpl->isPlaceholderExists('placeholder'));
+    }
 }
