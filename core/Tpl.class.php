@@ -17,6 +17,7 @@ class core_Tpl extends core_BaseClass
      */
     private $blocks = array();
 
+
     /**
      * Стойности за заместване
      *
@@ -205,9 +206,18 @@ class core_Tpl extends core_BaseClass
      */
     public function getContent($content = NULL, $place = "CONTENT", $output = FALSE, $removeBlocks = TRUE)
     {
-        $content = $this->_getContent();
+        $context = array();
+        $content = $this->_getContent($context);
 
         if ($removeBlocks) {
+            foreach ($this->blocks as $place=>$block) {
+                $blockContent = $block->applyContext($context);
+                if ($block->content == $blockContent) {
+                    $blockContent = '';
+                }
+                $content = str_replace($this->toPlace('@' . $place), $blockContent, $content);
+            }
+
             $content = $this->clearPlaceholders($content);
         }
 
@@ -217,10 +227,33 @@ class core_Tpl extends core_BaseClass
 
     private function _getContent(&$context = array())
     {
-        $localContext = $this->buildContext();
-        $content      = $this->applyContext($localContext);
+        $localContext = array();
 
-        $this->mergeContext($context, $localContext);
+        foreach ($this->vars as $place=>$val) {
+            foreach ($val as $pos=>$data) {
+                foreach ($data as $s) {
+                    if (static::isTemplate($s)) {
+                        $x = $s->_getContent($localContext);
+                        $this->blocks += $s->blocks;
+                    } else {
+                        $x = static::escape($s);
+                    }
+                    $localContext[$place][$pos][] = $x;
+                }
+            }
+        }
+
+        $content = $this->applyContext($localContext);
+
+        foreach ($localContext as $place=>$val) {
+            foreach (array_keys($val) as $pos) {
+                if (isset($context[$place][$pos])) {
+                    $context[$place][$pos] = array_merge($context[$place][$pos], $localContext[$place][$pos]);
+                } else {
+                    $context[$place][$pos] = $localContext[$place][$pos];
+                }
+            }
+        }
 
         return $content;
     }
@@ -276,28 +309,17 @@ class core_Tpl extends core_BaseClass
             }
         }
 
-        foreach ($this->blocks as $place=>$block) {
-            if (!static::isTemplate($block)) {
-                continue;
-            }
-            $blockContent = $block->applyContext($context);
-
-            if ($blockContent != $block->content) {
-                $context[$place]['replace'][0] = $blockContent;
-            }
-        }
-
         return $context;
     }
 
-    private function mergeContext(&$context, $import)
+    private function mergeContext(&$context, $localContext)
     {
-        foreach ($import as $place=>$val) {
+        foreach ($localContext as $place=>$val) {
             foreach (array_keys($val) as $pos) {
                 if (isset($context[$place][$pos])) {
-                    $context[$place][$pos] = array_merge($context[$place][$pos], $import[$place][$pos]);
+                    $context[$place][$pos] = array_merge($context[$place][$pos], $localContext[$place][$pos]);
                 } else {
-                    $context[$place][$pos] = $import[$place][$pos];
+                    $context[$place][$pos] = $localContext[$place][$pos];
                 }
             }
         }
@@ -385,23 +407,24 @@ class core_Tpl extends core_BaseClass
     {
     	if (!isset($this->blocks[$blockName])) {
     	    $pos = NULL;
-    		$this->blocks[$blockName] = $this->getBlockBody($blockName, $pos);
+    		$blockBody = $this->getBlockBody($blockName, $pos);
 
-    		if ($this->blocks[$blockName] !== FALSE) {
-    			$this->blocks[$blockName] = new self($this->blocks[$blockName]);
-    			$this->blocks[$blockName]->name   = $blockName;
+    		if ($blockBody !== FALSE) {
+    			$this->blocks[$blockName] = new self($blockBody);
+    			$this->blocks[$blockName]->name   = '@' . $blockName;
     			$this->blocks[$blockName]->parent = $this;
 
-    			// Заместваме блока с [#името_му#]
-    			$this->setContent($this->toPlace($blockName), $pos);
+    			// Заместваме блока с [#@името_му#]
+    			$this->setContent($this->toPlace('@' . $blockName), $pos);
     		}
     	}
 
-    	if (static::isTemplate($this->blocks[$blockName])) {
+    	if (isset($this->blocks[$blockName])) {
     		$this->blocks[$blockName]->resetContext();
+    	    return $this->blocks[$blockName];
     	}
 
-    	return $this->blocks[$blockName];
+    	return FALSE;
     }
 
 
@@ -488,9 +511,13 @@ class core_Tpl extends core_BaseClass
      *
      * @return array масив от блокове. Това са обекти-шаблони, инициализирани с тялото на съотв. блок
      */
-    private function prepareRemovableBlocks()
+    private function prepareRemovableBlocks($content = NULL)
     {
-        $places = $this->getPlaceholders();
+        if (!isset($content)) {
+            $content = $this->content;
+        }
+
+        $places = $this->getPlaceholders($content);
 
         // Задава самоизчезващите блокове - онези за които има едноименен плейсхолдър
         foreach ($places as $place) {
@@ -569,9 +596,13 @@ class core_Tpl extends core_BaseClass
      *
      * @return array
      */
-    private function getPlaceholders()
+    private function getPlaceholders($content = NULL)
     {
-    	preg_match_all($this->placesRegex, $this->content, $matches);
+        if (!isset($content)) {
+            $content = $this->content;
+        }
+
+    	preg_match_all($this->placesRegex, $content, $matches);
 
     	return $matches[1];
     }

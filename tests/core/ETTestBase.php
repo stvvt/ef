@@ -322,6 +322,18 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     	$this->assertEquals('<prefix /><suffix />', (string)$tpl);
     }
 
+
+    public function testDeepRemovableBlock()
+    {
+        $layout = new static::$tested('[#FORM#]');
+        $form   = new static::$tested('<form <!--ET_BEGIN ON_SUBMIT-->onsubmit="[#ON_SUBMIT#]"<!--ET_END ON_SUBMIT-->>');
+
+        $layout->append($form, 'FORM');
+        $layout->replace('{ON_SUBMIT}', 'ON_SUBMIT');
+
+        $this->assertEquals('<form onsubmit="{ON_SUBMIT}">', (string)$layout);
+    }
+
     /**
      * Блоковете, чиито имена са същите като на плейсхолдър извън тях, трябва да самоизчезват
      */
