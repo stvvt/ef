@@ -27,6 +27,17 @@ class core_Tpl extends core_BaseClass
 
 
     /**
+     * PUSH стойности
+     * 
+     * @see core_Tpl::push()
+     * @see core_Tpl::getArray()
+     *
+     * @var array
+     */
+    private $pushed = array();
+
+
+    /**
      * Име на шаблона
      *
      * @see self::getBlock(), self::append2master()
@@ -173,7 +184,21 @@ class core_Tpl extends core_BaseClass
      */
     public function push($content, $place, $once = FALSE)
     {
-
+        if ($once) {
+            $hash = $this->getHash($content);
+            $this->pushed[$place][$hash] = $content;
+        } else {
+            $this->pushed[$place][] = $content;
+        }
+    }
+    
+    /**
+     * @param string $place
+     * @return array
+     */
+    protected function getArray($place)
+    {
+        return isset($this->pushed[$place]) ? array_values($this->pushed[$place]) : array(); 
     }
 
 

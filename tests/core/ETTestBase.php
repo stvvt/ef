@@ -181,14 +181,17 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
 
     /**
      * @covers core_ET::push
-     * @todo   Implement testPush().
      */
     public function testPush()
     {
-    	$this->simpleTpl->push('one', 'push1');
-    	$this->simpleTpl->push('two', 'push1');
-    	$this->simpleTpl->push('three', 'push2');
-    	$this->simpleTpl->append('four', 'push1');
+    	$this->simpleTpl->push('one', 'JS');
+    	$this->simpleTpl->push('two', 'JS');
+    	
+    	$getArray = static::getMethod('getArray');
+    	
+    	$JS = $getArray->invoke($this->simpleTpl, 'JS');
+
+    	$this->assertEquals(array('one', 'two'), $JS);
     }
 
 
