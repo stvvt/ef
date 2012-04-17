@@ -391,9 +391,9 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     }
 
 
-    public function testDeepRemovableBlock1()
+    public function testMultiReplace()
     {
-        $page    = new static::$tested('<!--ET_BEGIN PAGE_CONTENT-->[#PAGE_CONTENT#]<!--ET_END PAGE_CONTENT-->');
+        $page    = new static::$tested('[#PAGE_CONTENT#]');
         $layout  = new static::$tested('<layout>[#PAGE_CONTENT#]</layout>');
         $content = new static::$tested('<content>This is content</content>');
 
