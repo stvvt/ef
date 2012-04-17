@@ -322,6 +322,13 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     	$this->assertEquals('<prefix /><suffix />', (string)$tpl);
     }
 
+    public function testAppendNullInRemovableBlock()
+    {
+    	$tpl = new static::$tested('<prefix /><!--ET_BEGIN removable--><removable>[#other#][#removable#]</removable><!--ET_END removable--><suffix />');
+    	$tpl->append(NULL, 'removable');
+    	$this->assertEquals('<prefix /><suffix />', (string)$tpl);
+    }
+
 
     public function testDeepRemovableBlock()
     {
@@ -334,6 +341,7 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals('<form onsubmit="{ON_SUBMIT}">', (string)$layout);
     }
 
+    
     /**
      * Блоковете, чиито имена са същите като на плейсхолдър извън тях, трябва да самоизчезват
      */

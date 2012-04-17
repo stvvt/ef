@@ -179,6 +179,10 @@ class core_Tpl extends core_BaseClass
 
     private function sub($position, $content, $place = NULL, $once = FALSE, $global = TRUE)
     {
+        if (!isset($content)) {
+            return;
+        }
+        
         if (!isset($place)) {
         	$place = $this->globalPlace;
         }
@@ -206,9 +210,11 @@ class core_Tpl extends core_BaseClass
      */
     public function getContent($content = NULL, $place = "CONTENT", $output = FALSE, $removeBlocks = TRUE)
     {
+        /* @var $block core_Tpl */
+        
         $context = array();
         $content = $this->_getContent($context);
-
+        
         if ($removeBlocks) {
             foreach ($this->blocks as $place=>$block) {
                 $blockContent = $block->applyContext($context);
