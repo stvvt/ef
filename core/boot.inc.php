@@ -37,7 +37,9 @@ function ef_autoload($className)
     $aliases = array('arr' => 'core_Array',
         'dt' => 'core_DateTime',
         'ht' => 'core_Html',
-        'et' => 'core_ET',
+        'core_et' => 'core_Tpl',
+        'et' => 'core_Tpl',
+//         'et' => 'core_ET',
         'str' => 'core_String',
         'debug' => 'core_Debug',
         'mode' => 'core_Mode',
@@ -46,13 +48,13 @@ function ef_autoload($className)
         'url' => 'core_Url',
         'users' => 'core_Users',
     );
-    
+
     if (isset($aliases[strtolower($className)])) {
         $fullName = $aliases[strtolower($className)];
-        
+
         core_Cls::load($fullName);
         class_alias($fullName, $className);
-        
+
         return TRUE;
     } else {
         return core_Cls::load($className, TRUE);;
@@ -88,15 +90,15 @@ function haveRole($roles)
 function tr($text, $userId = 0, $key = FALSE)
 {
     $Lg = core_Cls::get('core_Lg');
-    
+
     return $Lg->translate($text, $userId, $key);
 }
 
 
 // За съвместимост с версиите преди 5.3
 if (!function_exists('class_alias')) {
-    
-    
+
+
     /**
      * @todo Чака за документация...
      */
@@ -133,12 +135,12 @@ defIfNot('EF_CONF_PATH', EF_ROOT_PATH . '/conf');
  */
 defIfNot('EF_DEBUG_HOSTS', 'localhost,127.0.0.1');
 
-// Ако index.php стои в директория с име, за което съществува конфигурационен 
+// Ако index.php стои в директория с име, за което съществува конфигурационен
 // файл, приема се, че това име е името на приложението
 if (!defined('EF_APP_NAME') &&
     file_exists(EF_CONF_PATH . '/' . basename(EF_INDEX_PATH) . '.cfg.php')) {
-    
-    
+
+
     /**
      * Името на приложението. Използва се за определяне на други константи
      */
@@ -160,21 +162,21 @@ if (!defined('EF_APP_NAME')) {
     if(!$_GET['App']) {
         halt('Error: Unable to determinate application name (EF_APP_NAME)</b>');
     }
-    
-    
+
+
     /**
      * Името на приложението. Използва се за определяне на други константи.
      */
     defIfNot('EF_APP_NAME', $_GET['App']);
-    
-    
+
+
     /**
      * Дали името на приложението е зададено фиксирано
      */
     DEFINE('EF_APP_NAME_FIXED', FALSE);
 } else {
-    
-    
+
+
     /**
      * Дали името на приложението е зададено фиксирано
      */
@@ -186,7 +188,7 @@ if (!defined('EF_APP_NAME')) {
  */
 defineIfNot('EF_SBF_PATH', EF_INDEX_PATH . "/" . EF_SBF . "/" . EF_APP_NAME);
 
-// Зареждаме конфигурационния файл на приложението. 
+// Зареждаме конфигурационния файл на приложението.
 // Ако липсва - показваме грешка.
 // Шаблон за този файл има в директорията [_docs]
 if ((@include EF_CONF_PATH . '/' . EF_APP_NAME . '.cfg.php') === FALSE) {
@@ -195,7 +197,7 @@ if ((@include EF_CONF_PATH . '/' . EF_APP_NAME . '.cfg.php') === FALSE) {
 }
 
 // Зареждаме общата за всички приложения конфигурация
-// Той може да липсва. Параметрите в него са с по-нисък 
+// Той може да липсва. Параметрите в него са с по-нисък
 // Приоритет, спрямо тези в index.cfg.php и EF_APP_NAME.cfg.php
 // Шаблон за този файл има в директорията [_docs]
 @include EF_CONF_PATH . '/_common.cfg.php';
