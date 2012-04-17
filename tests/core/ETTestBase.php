@@ -331,6 +331,15 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers core_ET::output
+     */
+    public function testOutputParams()
+    {
+        $this->expectOutputString('Sample {placeholder} template');
+        $this->simpleTpl->output('{placeholder}', 'placeholder');
+    }
+
+    /**
      * Блоковете, чиито имена са същите като на плейсхолдър вътре в тях, трябва да самоизчезват
      */
     public function testRemovableBlock() {

@@ -410,9 +410,15 @@ class core_Tpl extends core_BaseClass
      */
     public function output($content = '', $place = NULL)
     {
+        if (!empty($content)) {
+            $this->replace($content, $place);
+        }
+
+        $this->invoke('output');
+
         echo (string)$this;
     }
-    
+
 
     /**
      * Прави субституция на елементите на масив в плейсхолдери започващи
