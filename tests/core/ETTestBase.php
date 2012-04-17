@@ -391,6 +391,19 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     }
 
 
+    public function testDeepRemovableBlock1()
+    {
+        $page    = new static::$tested('<!--ET_BEGIN PAGE_CONTENT-->[#PAGE_CONTENT#]<!--ET_END PAGE_CONTENT-->');
+        $layout  = new static::$tested('<layout>[#PAGE_CONTENT#]</layout>');
+        $content = new static::$tested('<content>This is content</content>');
+
+        $page->replace($layout, 'PAGE_CONTENT');
+        $page->replace($content, 'PAGE_CONTENT');
+
+        $this->assertEquals('<layout><content>This is content</content></layout>', (string)$page);
+    }
+
+
     /**
      * Блоковете, чиито имена са същите като на плейсхолдър извън тях, трябва да самоизчезват
      */

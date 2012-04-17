@@ -217,7 +217,7 @@ class core_Tpl extends core_BaseClass
         if (!isset($place)) {
         	$place = $this->globalPlace;
         }
-        if (!$this->isReplaced($place)) {
+//        if (!$this->isReplaced($place)) {
         	if ($once) {
         		$hash = $this->getHash($content);
         		if (!$this->isContentUsed($hash, $place)) {
@@ -226,7 +226,7 @@ class core_Tpl extends core_BaseClass
         	} else {
         		$this->vars[$place][$position][] = $this->importContent($content);
         	}
-        }
+  //      }
     }
 
 
