@@ -28,7 +28,7 @@ class core_Tpl extends core_BaseClass
 
     /**
      * PUSH стойности
-     * 
+     *
      * @see core_Tpl::push()
      * @see core_Tpl::getArray()
      *
@@ -184,21 +184,27 @@ class core_Tpl extends core_BaseClass
      */
     public function push($content, $place, $once = FALSE)
     {
-        if ($once) {
-            $hash = $this->getHash($content);
-            $this->pushed[$place][$hash] = $content;
-        } else {
-            $this->pushed[$place][] = $content;
+        if (!is_array($content)) {
+            $content = array($content);
+        }
+
+        foreach ($content as $c) {
+            if ($once) {
+                $hash = $this->getHash($c);
+                $this->pushed[$place][$hash] = $c;
+            } else {
+                $this->pushed[$place][] = $c;
+            }
         }
     }
-    
+
     /**
      * @param string $place
      * @return array
      */
     protected function getArray($place)
     {
-        return isset($this->pushed[$place]) ? array_values($this->pushed[$place]) : array(); 
+        return isset($this->pushed[$place]) ? array_values($this->pushed[$place]) : array();
     }
 
 
@@ -207,7 +213,7 @@ class core_Tpl extends core_BaseClass
         if (!isset($content)) {
             return;
         }
-        
+
         if (!isset($place)) {
         	$place = $this->globalPlace;
         }
@@ -215,12 +221,28 @@ class core_Tpl extends core_BaseClass
         	if ($once) {
         		$hash = $this->getHash($content);
         		if (!$this->isContentUsed($hash, $place)) {
-        			$this->vars[$place][$position][$hash] = $content;
+        		    $this->vars[$place][$position][$hash] = $this->importContent($content);
         		}
         	} else {
-        		$this->vars[$place][$position][] = $content;
+        		$this->vars[$place][$position][] = $this->importContent($content);
         	}
         }
+    }
+
+
+    private function importContent($content)
+    {
+		if (static::isTemplate($content)) {
+		    foreach ($content->pushed as $place=>$val) {
+		        if (!isset($this->pushed[$place])) {
+		            $this->pushed[$place] = $val;
+		        } else {
+		            $this->pushed[$place] = array_merge($this->pushed[$place], $val);
+		        }
+		    }
+		}
+
+        return $content;
     }
 
 
@@ -236,10 +258,10 @@ class core_Tpl extends core_BaseClass
     public function getContent($content = NULL, $place = "CONTENT", $output = FALSE, $removeBlocks = TRUE)
     {
         /* @var $block core_Tpl */
-        
+
         $context = array();
         $content = $this->_getContent($context);
-        
+
         if ($removeBlocks) {
             foreach ($this->blocks as $place=>$block) {
                 $blockContent = $block->applyContext($context);
@@ -390,7 +412,7 @@ class core_Tpl extends core_BaseClass
     {
         echo (string)$this;
     }
-
+    
 
     /**
      * Прави субституция на елементите на масив в плейсхолдери започващи

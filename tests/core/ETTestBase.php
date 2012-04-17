@@ -179,6 +179,7 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals("Sample {replace} template", (string)$this->simpleTpl);
     }
 
+
     /**
      * @covers core_ET::push
      */
@@ -186,12 +187,48 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
     {
     	$this->simpleTpl->push('one', 'JS');
     	$this->simpleTpl->push('two', 'JS');
-    	
+
     	$getArray = static::getMethod('getArray');
-    	
+
     	$JS = $getArray->invoke($this->simpleTpl, 'JS');
 
     	$this->assertEquals(array('one', 'two'), $JS);
+    }
+
+
+    /**
+     * @covers core_ET::push
+     */
+    public function testPushArray()
+    {
+    	$this->simpleTpl->push(array('one', 'two'), 'JS');
+
+    	$getArray = static::getMethod('getArray');
+
+    	$JS = $getArray->invoke($this->simpleTpl, 'JS');
+
+    	$this->assertEquals(array('one', 'two'), $JS);
+    }
+
+
+    /**
+     * @covers core_ET::push
+     */
+    public function testPushDeep()
+    {
+        $sub = new static::$tested('sub');
+        $sub->push('sub', 'JS');
+
+    	$this->simpleTpl->push('one', 'JS');
+    	$this->simpleTpl->push('two', 'JS');
+
+    	$this->simpleTpl->replace($sub, 'whatever');
+
+    	$getArray = static::getMethod('getArray');
+
+    	$JS = $getArray->invoke($this->simpleTpl, 'JS');
+
+    	$this->assertEquals(array('one', 'two', 'sub'), $JS);
     }
 
 
@@ -344,7 +381,7 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals('<form onsubmit="{ON_SUBMIT}">', (string)$layout);
     }
 
-    
+
     /**
      * Блоковете, чиито имена са същите като на плейсхолдър извън тях, трябва да самоизчезват
      */
