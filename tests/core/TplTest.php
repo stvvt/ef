@@ -1,6 +1,11 @@
 <?php
 require 'ETTestBase.php';
 
+/**
+ * Зареждаме тествания клас за да избегнем автоматичното зареждане на евентуален клас-псевдоним
+ */
+require EF_EF_PATH . '/core/Tpl.class.php';
+
 class core_TplTest extends core_ETTestBase
 {
 	protected static $tested = 'core_Tpl';
