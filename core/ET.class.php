@@ -180,14 +180,14 @@ class core_ET extends core_BaseClass
                 $body);
             
             $newTemplate->master = $this;
-            $newTemplate->detailName = $blockName;
+        	$newTemplate->detailName = strtoupper($blockName);
             
             $newTemplate->backup();
             
-            $this->places[$blockName] = 1;
+            $this->places[$newTemplate->detailName] = 1;
             
             // Заместваме блока с [#името_му#]
-            $this->setContent($this->toPlace($blockName), $mp);
+            $this->setContent($this->toPlace($newTemplate->detailName), $mp);
         }
         
         return $this->blocks[$blockName];

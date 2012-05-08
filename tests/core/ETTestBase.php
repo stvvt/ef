@@ -505,28 +505,59 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals($this->simpleTpl->getContent(), (string)$this->simpleTpl);
     }
 
+
     /**
      * @covers core_ET::append2Master
-     * @todo   Implement testAppend2Master().
      */
     public function testAppend2Master()
     {
-    	$block = $this->parentTpl->getBlock('block');
-
-    	$this->assertInstanceOf(static::$tested, $block);
+        $tpl = new static::$tested("before <!--ET_BEGIN BLOCK-->with [#field#]<!--ET_END BLOCK--> after");
 
     	$rows = array(
-    		array('row' => '{row-1}'),
-    		array('row' => '{row-2}'),
-    		array('row' => '{row-3}'),
+    		array('field' => '{row-1}'),
+    		array('field' => '{row-2}'),
+    		array('field' => '{row-3}'),
     	);
+
+	    $block = $tpl->getBlock('BLOCK');
+
+	    $this->assertInstanceOf(static::$tested, $block);
+
+    	foreach ($rows as $row) {
+    	    $block->placeObject($row);
+    		$block->append2Master();
+    	}
+
+    	$this->assertEquals('before with {row-1}with {row-2}with {row-3} after', (string)$tpl);
+    }
+
+
+    /**
+     * Дали appendToMaster() работи според очакванията за блокове с имена с малки букви?
+     *
+     * @covers core_ET::append2Master
+     * @covers core_ET::getBlock
+     */
+    public function testLowerCaseBlock()
+    {
+        $tpl = new static::$tested("before <!--ET_BEGIN block-->with [#field#]<!--ET_END block--> after");
+
+    	$rows = array(
+    		array('field' => '{row-1}'),
+    		array('field' => '{row-2}'),
+    		array('field' => '{row-3}'),
+    	);
+
+	    $block = $tpl->getBlock('block');
+
+	    $this->assertInstanceOf(static::$tested, $block);
 
     	foreach ($rows as $row) {
     		$block->placeArray($row);
     		$block->append2Master();
     	}
 
-    	$this->assertEquals('before with {row-1}with {row-2}with {row-3} after', (string)$this->parentTpl);
+    	$this->assertEquals('before with {row-1}with {row-2}with {row-3} after', (string)$tpl);
     }
 
 

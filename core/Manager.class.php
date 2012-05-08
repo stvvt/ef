@@ -239,7 +239,7 @@ class core_Manager extends core_Mvc
             }
         }
         
-        // Генерираме събитие в mvc, след въвеждането на формата, ако е именувана
+        // Генерираме събитие в $this, след въвеждането на формата
         $this->invoke('AfterInputEditForm', array($data->form));
         
         // Дали имаме права за това действие към този запис?
@@ -777,7 +777,7 @@ class core_Manager extends core_Mvc
      */
     function act_ajax_GetOptions()
     {
-        Mode::set('wrapper', 'tpl_DefaultAjax');
+        Mode::set('wrapper', 'page_Ajax');
         
         // Приключваме, ако няма права за четене
         if (!$this->haveRightFor('list')) {

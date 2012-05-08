@@ -37,9 +37,7 @@ function ef_autoload($className)
     $aliases = array('arr' => 'core_Array',
         'dt' => 'core_DateTime',
         'ht' => 'core_Html',
-        'core_et' => 'core_Tpl',
-        'et' => 'core_Tpl',
-//         'et' => 'core_ET',
+        'et' => 'core_ET',
         'str' => 'core_String',
         'debug' => 'core_Debug',
         'mode' => 'core_Mode',
@@ -224,7 +222,7 @@ ini_set("display_startup_errors", isDebug());
 /**
  * Времева зона
  */
-defIfNot('EF_TIMEZONE', function_exists("date_default_timezone_get") ? date_default_timezone_get() : 'Europe/Sofia');
+defIfNot('EF_TIMEZONE', 'Europe/Sofia');
 
 // Сетваме времевата зона
 date_default_timezone_set(EF_TIMEZONE);
