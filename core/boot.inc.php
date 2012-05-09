@@ -30,39 +30,6 @@ expect(PHP_VERSION_ID >= 50300);
 require EF_EF_PATH . '/core/App.class.php';
 
 /**
- * Осигурява автоматичното зареждане на класовете
- */
-function ef_autoload($className)
-{
-    $aliases = array('arr' => 'core_Array',
-        'dt' => 'core_DateTime',
-        'ht' => 'core_Html',
-        'et' => 'core_ET',
-        'str' => 'core_String',
-        'debug' => 'core_Debug',
-        'mode' => 'core_Mode',
-        'redirect' => 'core_Redirect',
-        'request' => 'core_Request',
-        'url' => 'core_Url',
-        'users' => 'core_Users',
-    );
-
-    if (isset($aliases[strtolower($className)])) {
-        $fullName = $aliases[strtolower($className)];
-
-        core_Cls::load($fullName);
-        class_alias($fullName, $className);
-
-        return TRUE;
-    } else {
-        return core_Cls::load($className, TRUE);;
-    }
-}
-
-spl_autoload_register('ef_autoload', true, true);
-
-
-/**
  * Изисква потребителят да има посочената роля
  * Ако я няма - генерира грешка ако е логнат, а
  * ако не е логнат подканя го да се логне
