@@ -89,6 +89,8 @@ class core_Cls
             }
         }
 
+        $className = static::getClassRealName($className);
+
         return $className;
     }
 
