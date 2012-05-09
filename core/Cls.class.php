@@ -406,7 +406,7 @@ class core_Cls
 
     public static function setAlias($class, $alias)
     {
-        expect(class_exists($class, false));
+        expect(!class_exists($class, false), "Не може да се регистрира псевдоним - класът `{$class}` вече е зареден");
 
         static::$aliases[strtolower($class)] = $alias;
     }
