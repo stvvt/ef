@@ -636,7 +636,7 @@ class core_ET extends core_BaseClass
      * 
      * @return array
      */
-    private function getPlaceholders()
+    public function getPlaceholders()
     {
         preg_match_all($this->placesRegex, $this->content, $matches);
         
