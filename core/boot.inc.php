@@ -153,7 +153,16 @@ defIfNot('EF_SBF', 'sbf');
 
 
 // Параметрите от виртуалното URL за зареждат в $_GET
-core_App::processUrl();
+  try
+        {
+			core_App::processUrl();
+        }
+        catch (core_Exception_Expect $e)
+        { 
+            echo $e->getAsHtml();
+            
+            die;
+        }
 
 // Вземаме името на приложението от параметрите на URL, ако не е дефинирано
 if (!defined('EF_APP_NAME')) {
@@ -222,7 +231,7 @@ ini_set("display_startup_errors", isDebug());
 /**
  * Времева зона
  */
-defIfNot('EF_TIMEZONE', function_exists("date_default_timezone_get") ? date_default_timezone_get() : 'Europe/Sofia');
+defIfNot('EF_TIMEZONE', 'Europe/Sofia');
 
 // Сетваме времевата зона
 date_default_timezone_set(EF_TIMEZONE);

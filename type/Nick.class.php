@@ -28,15 +28,15 @@ class type_Nick extends type_Varchar {
      */
     function fromVerbal($value)
     {
-        $value = parent::fromVerbal(str::trim($value));
+        $value = parent::fromVerbal(trim($value));
         
         if($value === '') return NULL;
         
-        $value = strtolower($value);
+        $value = mb_strtolower($value);
         
         if (!self::isValid($value)) {
-            $this->error = 'Въвели сте недопустима стойност:|* ' . $value;
-            
+            $this->error = 'Въвели сте недопустима стойност:|* ' . parent::escape($value);
+
             return FALSE;
         }
         

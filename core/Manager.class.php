@@ -98,7 +98,8 @@ class core_Manager extends core_Mvc
         
         // Създаваме обекта $data
         $data = new stdClass();
-        
+        $data->action = 'list';
+
         // Създаваме заявката
         $data->query = $this->getQuery();
         
@@ -127,7 +128,7 @@ class core_Manager extends core_Mvc
         $tpl = $this->renderList($data);
         
         // Опаковаме изгледа
-        $tpl = $this->renderWrapping($tpl);
+        $tpl = $this->renderWrapping($tpl, $data);
         
         // Записваме, че потребителя е разглеждал този списък
         $this->log('List: ' . ($data->log ? $data->log : tr($data->title)));
@@ -209,6 +210,8 @@ class core_Manager extends core_Mvc
     function act_Manage()
     {
         $data = new stdClass();
+
+        $data->action = 'manage';
         
         // Създаване и подготвяне на формата
         $this->prepareEditForm($data);
@@ -239,7 +242,7 @@ class core_Manager extends core_Mvc
             }
         }
         
-        // Генерираме събитие в mvc, след въвеждането на формата, ако е именувана
+        // Генерираме събитие в $this, след въвеждането на формата
         $this->invoke('AfterInputEditForm', array($data->form));
         
         // Дали имаме права за това действие към този запис?
@@ -273,7 +276,7 @@ class core_Manager extends core_Mvc
         $tpl = $data->form->renderHtml();
         
         // Опаковаме изгледа
-        $tpl = $this->renderWrapping($tpl);
+        $tpl = $this->renderWrapping($tpl, $data);
         
         return $tpl;
     }
@@ -654,7 +657,7 @@ class core_Manager extends core_Mvc
      * Прави стандартна 'обвивка' на изгледа
      * @todo: да се отдели като плъгин
      */
-    function renderWrapping_($tpl)
+    function renderWrapping_($tpl, $data = NULL)
     {
         return $tpl;
     }
@@ -713,6 +716,11 @@ class core_Manager extends core_Mvc
         if(!is_object($rec) && $rec > 0) {
             $rec = $self->fetch($rec);
         }
+
+        // Ако нямаме зададен потребите - приемаме, че въпроса се отнася за текущия
+        if(!isset($userId)) {
+            $userId = core_Users::getCurrent();
+        }
         
         $requiredRoles = $self->getRequiredRoles(strtolower($action), $rec, $userId);
         
@@ -732,6 +740,11 @@ class core_Manager extends core_Mvc
             $rec = $self->fetch($rec);
         }
         
+        // Ако нямаме зададен потребите - приемаме, че въпроса се отнася за текущия
+        if(!isset($userId)) {
+            $userId = core_Users::getCurrent();
+        }
+
         $requiredRoles = $self->getRequiredRoles(strtolower($action), $rec, $userId);
         
         return Users::requireRole($requiredRoles, $retUrl, $action);
@@ -777,7 +790,7 @@ class core_Manager extends core_Mvc
      */
     function act_ajax_GetOptions()
     {
-        Mode::set('wrapper', 'tpl_DefaultAjax');
+        Mode::set('wrapper', 'page_Ajax');
         
         // Приключваме, ако няма права за четене
         if (!$this->haveRightFor('list')) {

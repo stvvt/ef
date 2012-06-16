@@ -41,7 +41,7 @@ class plg_Printing extends core_Plugin
         $url['Printing'] = 'yes';
         
         $data->toolbar->addBtn('Печат', $url,
-            'id=btnPrint,target=_blank,class=print');
+            'id=btnPrint,target=_blank,class=btn-print');
     }
     
     
@@ -59,7 +59,7 @@ class plg_Printing extends core_Plugin
                 $data->rec->id,
                 'Printing' => 'yes',
             ),
-            'id=btnPrint,target=_blank,class=print');
+            'id=btnPrint,target=_blank,class=btn-print');
     }
     
     
@@ -69,7 +69,7 @@ class plg_Printing extends core_Plugin
     function on_BeforeAction($mvc, &$res, $act)
     {
         if(Request::get('Printing')) {
-            Mode::set('wrapper', 'tpl_PrintPage');
+            Mode::set('wrapper', 'page_Print');
             Mode::set('printing');
         }
     }
@@ -82,7 +82,7 @@ class plg_Printing extends core_Plugin
     {
         if(Request::get('Printing')) {
             
-            $tpl->append(tr($mvc->title) . " » ", 'PAGE_TITLE');
+            $tpl->prepend(tr($mvc->title) . " » ", 'PAGE_TITLE');
             
             $res = $tpl;
             

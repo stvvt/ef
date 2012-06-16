@@ -1,13 +1,6 @@
 <?php
 
 
-
-/**
- * Формат по подразбиране за времевата част
- */
-defIfNot('EF_DATETIME_TIME_PART', ' H:i');
-
-
 /**
  * Клас  'type_Datetime' - Тип за време
  *
@@ -32,7 +25,7 @@ class type_Datetime extends type_Date {
     /**
      * Формат на времевата част
      */
-    var $timePart = EF_DATETIME_TIME_PART;
+    var $timePart = ' H:i';
     
     
     /**
@@ -91,7 +84,7 @@ class type_Datetime extends type_Date {
             return $value;
         } else {
             $now = $this->toVerbal(dt::verbal2mysql('', !empty($this->timePart)));
-            $this->error = "Не е в допустимите формати, като например|*: '<B>{$now}</B>'";
+            $this->error = "Не е в допустимите формати, като например|*: '<B>" . parent::escape($now) . "</B>'";
             
             return FALSE;
         }

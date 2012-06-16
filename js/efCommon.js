@@ -68,6 +68,10 @@ function ajaxRefreshContent(url, sec, id)
 					if(res.alert) {
 						alert(res.alert);
 					}
+
+					if(res.script) {
+						eval(res.script);
+					}
 				}
 
  			}
@@ -179,22 +183,18 @@ function comboBoxInit(id, suffix)
 	var txtCombo = get$(id);
 	var selCombo = get$(id + suffix);
 	var width = txtCombo.offsetWidth;
-
- 	var arrow = selCombo.clientHeight-10;
+ 	var arrow = selCombo.offsetHeight - 7;
 
 	selCombo.style.width = (width + 0) + 'px'; 
-	txtCombo.style.width = (width - 2*arrow + 20) + 'px';
-	txtCombo.style.marginRight = (arrow-2) + 'px';
-
-	selCombo.style.clip = 'rect(auto, auto, auto, ' + (width - 2*arrow + 8) + 'px)';
-	
+	txtCombo.style.width = (width -  arrow + 2) + 'px';
+	txtCombo.style.marginRight = (arrow+2) + 'px';
+	selCombo.style.clip = 'rect(auto, auto, auto, ' + (width -  arrow) + 'px)';
+	txtCombo.style.paddingRight = '2px';
 
 	if(txtCombo.offsetHeight != selCombo.offsetHeight) {
 		txtCombo.style.height = (selCombo.offsetHeight -0) + 'px';
 		txtCombo.style.lineHeight = (selCombo.offsetHeight + 6) + 'px';
-		
 		txtCombo.style.marginTop = '2px';
-
 		selCombo.style.marginTop = '2px';
 	}
 
@@ -204,7 +204,7 @@ function comboBoxInit(id, suffix)
 
 // Помощна функция за комбобокс компонента
 // Прехвърля съдържанието от SELECT елемента към INPUT полето
-function comboSelectOnChange(id, value ) 
+function comboSelectOnChange(id, value, suffix) 
 {   
 	var inp = get$(id);
 
@@ -217,6 +217,8 @@ function comboSelectOnChange(id, value )
 	}
 
 	get$(id).focus();
+	var selCombo = get$(id + suffix);
+	selCombo.value = '';
 }
 
 // Присвоява стойност на вътрешния елемент, като отчита проблемите на IE
@@ -394,13 +396,10 @@ function rp(text, textarea)
 {
 	if (typeof(textarea.caretPos) != 'undefined' && textarea.createTextRange)
 	{
-
 		var caretPos = textarea.caretPos;
-
 		caretPos.text = caretPos.text.charAt(caretPos.text.length - 1) == ' ' ? text + ' ' : text;
 		caretPos.select();
-	} else if (typeof(textarea.selectionStart) != 'undefined' && textarea.selectionStart >  0) {
-
+	} else if (typeof(textarea.selectionStart) != 'undefined' ) {
 
 		var begin = textarea.value.substr(0, textarea.selectionStart);
 		var end = textarea.value.substr(textarea.selectionEnd);
@@ -439,7 +438,7 @@ function s(text1, text2, textarea)
 		}
 		else
 			textarea.focus(caretPos);
-	} else if (typeof(textarea.selectionStart) != 'undefined' && textarea.selectionStart > 0) {
+	} else if (typeof(textarea.selectionStart) != 'undefined') {
 
 		var begin = textarea.value.substr(0, textarea.selectionStart);
 		var selection = textarea.value.substr(textarea.selectionStart, textarea.selectionEnd - textarea.selectionStart);
@@ -624,15 +623,48 @@ function SetWithCheckedButton()
 
 	 var btn = get$('with_selected');
 
-	btn.className = btn.className.replace(' btn-checked-disabled', '');
-	btn.className = btn.className.replace(' btn-checked', '');
+	btn.className = btn.className.replace(' btn-with-selected-disabled', '');
+	btn.className = btn.className.replace(' btn-with-selected', '');
 
 	if(state) {
-		btn.className += ' btn-checked';
+		btn.className += ' btn-with-selected';
 		btn.disabled = false;
 	} else {
-		btn.className += ' btn-checked-disabled';
+		btn.className += ' btn-with-selected-disabled';
 		btn.disabled = true;
 		btn.blur();
 	 }
+}
+
+function flashHashDoc()
+{
+	var h = window.location.hash.substr(1); 
+	if(h) {
+		flashDoc(h);
+	}
+}
+
+function flashDoc(docId, i)
+{
+	var tr = get$(docId);
+	var cells = tr.getElementsByTagName('td');
+	if(typeof i == 'undefined') {
+        i = 1;
+    }  
+	var col = i * 5 + 155;
+
+	var y = col.toString(16);
+
+	var color = '#' + y + 'ff' + y;
+
+	cells[0].style.backgroundColor = color;
+	cells[1].style.backgroundColor = color;
+
+	if(i<20) {
+		i++;
+		setTimeout( "flashDoc('" + docId + "', " + i + ")", 120);
+	} else {
+		cells[0].style.backgroundColor = 'transparent';
+		cells[1].style.backgroundColor = 'transparent';
+	}
 }

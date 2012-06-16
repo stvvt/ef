@@ -38,7 +38,7 @@ class core_Message extends core_BaseClass
             } else {
                 $msg->text = tr('Липсващо съобщение');
             }
-            $msg->tpl = 'tpl_Error';
+            $msg->tpl = 'page_Error';
             $msg->next = NULL;
             $msg->cancel = NULL;
         }
@@ -74,6 +74,7 @@ class core_Message extends core_BaseClass
     static function redirect($text, $tpl = 'error', $cancel = '', $next = '')
     {
         // Създава съобщението
+        $msg = new stdClass();
         $msg->text = tr($text);
         $msg->tpl = $tpl;
         

@@ -62,7 +62,7 @@ class plg_RowTools extends core_Plugin
                 'ret_url' => TRUE
             );
             
-            $editLink = ht::createLink($editImg, $editUrl);
+            $editLink = ht::createLink($editImg, $editUrl, NULL, "id=edt{$rec->id}");
         }
         
         if ($mvc->haveRightFor('delete', $rec)) {
@@ -77,12 +77,12 @@ class plg_RowTools extends core_Plugin
             );
             
             $deleteLink = ht::createLink($deleteImg, $deleteUrl,
-                tr('Наистина ли желаете записът да бъде изтрит?'));
+                tr('Наистина ли желаете записът да бъде изтрит?'), "id=del{$rec->id}");
         }
         
         if($singleLink || $editLink || $deleteLink) {
             // Вземаме съдържанието на полето, като шаблон
-            $tpl = new ET("<div class='rowtools'><div class='l nw'>[#TOOLS#]</div><div class='r'>[#ROWTOOLS_CAPTION#]</span></div>");
+            $tpl = new ET("<div class='rowtools'><div class='l nw'>[#TOOLS#]</div><div class='r'>[#ROWTOOLS_CAPTION#]</div></div>");
             $tpl->append($row->{$field}, 'ROWTOOLS_CAPTION');
             $tpl->append($singleLink, 'TOOLS');
             $tpl->append($editLink, 'TOOLS');

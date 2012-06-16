@@ -138,7 +138,7 @@ class core_Cache extends core_Manager
             
             foreach ($type as $t) {
                 $key = $Cache->getKey($t, $handler);
-                $Cache->delete(array("#key LIKE '[#1#]'", "{$key}%"));
+                $Cache->delete(array("#key LIKE '[#1#]'", "{$key}"));
             }
         } else {
             $key = $Cache->getKey($type, $handler);
@@ -311,7 +311,7 @@ class core_Cache extends core_Manager
      */
     function deleteData($key)
     {
-        return $this->delete(array("#key = '[#1#]'", $key));
+        return $this->delete(array("#key LIKE '[#1#]'", $key));
     }
     
     

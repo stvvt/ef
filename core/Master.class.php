@@ -161,7 +161,7 @@ class core_Master extends core_Manager
      */
     function prepareSingleTitle_($data)
     {
-        $title = $this->getRecTitle($data->rec);
+        $title = $this->getTitleById($data->rec->id);
         
         $data->title = $this->singleTitle . "|* <b style='color:green;'>{$title}</b>";
         
@@ -244,7 +244,7 @@ class core_Master extends core_Manager
     /**
      * Подготвя шаблона за единичния изглед
      */
-    function renderSingleLayout_($data)
+    function renderSingleLayout_(&$data)
     {
         if(isset($this->singleLayoutFile)) {
             $layoutText = tr('|*' . file_get_contents(getFullPath($this->singleLayoutFile)));

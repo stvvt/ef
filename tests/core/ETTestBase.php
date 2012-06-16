@@ -334,6 +334,7 @@ class core_ETTestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals('<form onsubmit="{ON_SUBMIT}">', (string)$layout);
     }
 
+
     /**
      * Блоковете, чиито имена са същите като на плейсхолдър извън тях, трябва да самоизчезват
      */

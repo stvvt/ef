@@ -87,6 +87,12 @@ class core_Db extends core_BaseClass
      */
     const MYSQL_MISSING_TABLE = 1146;
     
+
+    /**
+     * Номер на mySQL код за грешка при непозната колона в таблица
+     */
+    const MYSQL_UNKNOWN_COLUMN = 1054;
+    
     
     /**
      * Инициализиране на обекта
@@ -132,8 +138,13 @@ class core_Db extends core_BaseClass
             mysql_query('set collation_connection=' . $this->dbCollation, $link);
             mysql_query('set character_set_client=' . $this->dbCharsetClient, $link);
             
-            // Избираме указаната база от данни на сървъра
-            mysql_select_db($this->dbName);
+            // Избираме указаната база от данни на сървъра ако я няма я създаваме
+            if (!mysql_select_db($this->dbName)) {
+				$this->query("CREATE DATABASE IF NOT EXISTS {$this->dbName}");
+				$Packs = cls::get('core_Packs');
+				self::$noAutoSetup = TRUE;
+				$Packs->checkSetup();
+			}
         }
         
         return $this->link;
@@ -635,26 +646,33 @@ class core_Db extends core_BaseClass
                 ($_GET['Ctr'] != 'core_Cron' || $_GET['Act'] != 'cron')) {
                 
                 $errno = mysql_errno($this->link);
-                $eeror = mysql_error($this->link);
+                $error = mysql_error($this->link);
                 
-                // Ако таблицата липсва, предлагаме на Pack->Setup да провери
-                // да не би да трябва да се прави начално установяване
                 if($errno == self::MYSQL_MISSING_TABLE) {
-                    $Packs = cls::get('core_Packs');
+                   $Packs = cls::get('core_Packs');
                     self::$noAutoSetup = TRUE;
                     $Packs->checkSetup();
-                } elseif(strpos($eeror, "Unknown column 'core_") !== FALSE) {
+                } 
+                
+                if($errno == self::MYSQL_MISSING_TABLE || $errno == self::MYSQL_UNKNOWN_COLUMN) { 
+                    // strpos($error, "Unknown column '") !== FALSE || strpos($error, "doesn't exist") !== FALSE
                     $Packs = cls::get('core_Packs');
+                    
                     self::$noAutoSetup = TRUE;
                     $res = $Packs->setupPack('core');
+
+                    if(strpos($error, 'core_') === FALSE) {
+                        $res .= $Packs->setupPack(EF_APP_CODE_NAME);
+                        $app = 'и пакета `' . EF_APP_CODE_NAME . '`';
+                    }
                     
-                    redirect(array('core_Packs'), FALSE, "Пакета `core` беше обновен");
+                    redirect(array('core_Packs'), FALSE, "Пакета `core` {$app} беше обновен");
                 }
             }
             
-            error("Грешка в БД при " . $action, array(
+            error("Грешка {$errno} в БД при " . $action, array(
                     "query" => $this->query,
-                    "error" => $eeror
+                    "error" => $error
                 ), 'ГРЕШКА В БАЗАТА ДАННИ');
         }
         

@@ -8,11 +8,6 @@ defIfNot('EF_LANGUAGES', 'bg=Български,en=Английски');
 
 
 /**
- * Езикът по подразбиране е български
- */
-defIfNot('EF_DEFAULT_LANGUAGE', 'bg');
-
-/**
  * Клас 'core_Lg' - Мениджър за многоезичен превод на интерфейса
  *
  *
@@ -225,10 +220,12 @@ class core_Lg extends core_Manager
      */
     static function getCurrent()
     {
+    	$conf = core_Packs::getConfig('core');
+    	
         $lg = Mode::get('lg');
         
         if (!$lg) {
-            $lg = EF_DEFAULT_LANGUAGE;
+            $lg = $conf->EF_DEFAULT_LANGUAGE;
         }
         
         return $lg;

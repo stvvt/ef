@@ -194,7 +194,7 @@ class core_Users extends core_Manager
     function act_Login()
     {
         if (Request::get('popup')) {
-            Mode::set('wrapper', 'tpl_BlankPage');
+            Mode::set('wrapper', 'page_Empty');
         }
         
         // Ако нямаме регистриран нито един потребител
@@ -332,7 +332,7 @@ class core_Users extends core_Manager
                     $layout->append($form->renderHtml('nick,password,ret_url', $inputs), 'FORM');
                 }
                 
-                $layout->append(tr('Вход') . ' » ', 'PAGE_TITLE');
+                $layout->prepend(tr('Вход') . ' » ', 'PAGE_TITLE');
                 $layout->push('js/login.js', 'JS');
                 $layout->replace('LoginFormSubmit(this,\'' . EF_USERS_PASS_SALT . '\');', 'ON_SUBMIT');
                 
@@ -489,6 +489,55 @@ class core_Users extends core_Manager
         $Users = cls::get('core_Users');
         
         $Users->isSystemUser = FALSE;
+    }
+    
+    
+    /**
+     * Временна подмяна на текущия потребител
+     * 
+     * След изпълнението на този метод системата работи точно както ако зададения потребител
+     * се беше логнал през логин формата.
+     * 
+     * Този ефект продължава до извикването на метода @see core_Users::exitSudo().
+     * 
+     * @param int $id key(mvc=core_Users)
+     * @return boolean TRUE ако всичко е наред, FALSE ако има проблем - тогава текущия 
+     *                                                                  потребител не 
+     *                                                                  се променя.
+     */
+    static function sudo($id)
+    {
+        if (!$id) {
+            return FALSE;
+        }
+        
+        $userRec = static::fetch($id);
+        
+        $bValid = !empty($userRec);
+        
+        /**
+         * @TODO Други проверки за допустимостта на sudo - напр. дали е активен потребителя и
+         * пр.
+         */ 
+        
+        if($bValid) {
+            core_Mode::push('currentUserRec', $userRec);
+        }
+        
+        return $bValid;
+    }
+    
+    
+    /**
+     * Възстановява текущия потребител до предишна стойност.
+     * 
+     * Текущ става потребителя, който е бил такъв точно преди последното извикване на 
+     * @see core_Users::sudo().
+     * 
+     */
+    static function exitSudo()
+    {
+        core_Mode::pop('currentUserRec');
     }
     
     
@@ -981,5 +1030,16 @@ class core_Users extends core_Manager
         $id = self::fetchField("#roles LIKE '%|$adminId|%'", 'id');
         
         return $id;
+    }
+    
+    
+	/**
+     * Проверявамед дали потребителя е активен
+     */
+    static function isActiveUser($nick)
+    {
+        $user = static::fetch("#nick = '{$nick}' AND #state = 'active'");
+        
+        return $user;
     }
 }

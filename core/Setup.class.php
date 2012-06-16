@@ -1,6 +1,38 @@
 <?php
 
 
+/**
+ * Дали да се презаписват .htaccess файловете?
+ * Може да се зададе друга стойност в конфигурационния файл (напр. conf/bgerp.cfg.php)
+ */
+defIfNot('CORE_OVERWRITE_HTAACCESS', TRUE);
+
+
+/**
+ * SALT ключа за генериране на уникален sid (status id)
+ */
+defIfNot('EF_STATUSE_SALT', '');
+
+
+/**
+ * Формат по подразбиране за датите
+ */
+defIfNot('EF_DATE_FORMAT', 'd-m-YEAR');
+
+/**
+ * Формат по подразбиране за датата при тесни екрани
+ */
+defIfNot('EF_DATE_NARROW_FORMAT', 'd-m-year');
+
+/**
+ * @todo Чака за документация...
+ */
+defIfNot('TYPE_KEY_MAX_SUGGESTIONS', 1000);
+
+/**
+ * Езикът по подразбиране е български
+ */
+defIfNot('EF_DEFAULT_LANGUAGE', 'bg');
 
 /**
  * class 'core_Setup' - Начално установяване на пакета 'core'
@@ -42,9 +74,26 @@ class core_Setup {
     
     
     /**
+     * Описание на конфигурационните константи
+     */
+    var $configDescription = array(
+        
+               
+           'EF_DATE_FORMAT'   => array ('varchar'),
+    
+           'EF_DATE_NARROW_FORMAT'   => array ('varchar'),
+         
+           'TYPE_KEY_MAX_SUGGESTIONS'   => array ('int'), 
+
+           'EF_DEFAULT_LANGUAGE'   => array ('varchar'),
+           
+    
+        );
+    
+    /**
      * Инсталиране на пакета
      */
-    function install($Plugins = NULL)
+    function install()
     {
         // Установяване за първи път
         
@@ -113,20 +162,37 @@ class core_Setup {
             }
         }
         
-        $filesToCopy = array(EF_EF_PATH . '/_docs/tpl/htaccessSBF.txt' => EF_SBF_PATH . '/.htaccess',
-            EF_EF_PATH . '/_docs/tpl/htaccessIND.txt' => EF_INDEX_PATH . '/.htaccess'
-        );
-        
-        foreach($filesToCopy as $src => $dest) {
-            if(!file_exists(EF_SBF_PATH . '/.htaccess') || ($src == (EF_EF_PATH . '/_docs/tpl/htaccessSBF.default'))) {
+        if( CORE_OVERWRITE_HTAACCESS ) {
+            $filesToCopy = array(
+                EF_EF_PATH . '/_docs/tpl/htaccessSBF.txt' => EF_SBF_PATH . '/.htaccess',
+                EF_EF_PATH . '/_docs/tpl/htaccessIND.txt' => EF_INDEX_PATH . '/.htaccess'
+            );
+            
+            foreach($filesToCopy as $src => $dest) {
                 if(copy($src, $dest)) {
-                    $html .= "<li style='color:green;'>Копиран е файла: <b>{$path}</b>";
+                        $html .= "<li style='color:green;'>Копиран е файла: <b>{$src}</b> => <b>{$dest}</b>";
                 } else {
-                    $html .= "<li style='color:red;'>Не може да бъде копиран файла: <b>{$path}</b>";
+                        $html .= "<li style='color:red;'>Не може да бъде копиран файла: <b>{$src}</b> => <b>{$dest}</b>";
                 }
             }
         }
-        
+
+        // Изтриваме всички поддиректории на sbf които не започват със символа '_'
+	    if ($handle = opendir(EF_SBF_PATH)) {
+		    while (false !== ($entry = readdir($handle))) {
+		        if ($entry != "." && $entry != ".." && false === strpos($entry, '_') && $entry != '.htaccess') {
+		        	if (core_Os::deleteDir(EF_SBF_PATH . "/{$entry}")) {
+		        		$html .= "<li style='color:green;'>Директория: <b>" . EF_SBF_PATH . "/{$entry}</b> е изтрита";
+		        	}
+		        	else {
+		        		$html .= "<li style='color:red;'>Директория: <b>" . EF_SBF_PATH . "/{$entry}</b> не беше изтрита";	
+		        	}
+		        }
+		    }
+	    
+		    closedir($handle);
+		}
+		     
         return $html;
     }
 }

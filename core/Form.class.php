@@ -252,14 +252,14 @@ class core_Form extends core_FieldSet
     {
         if ($result['warning'] && !$result['error']) {
             $this->setWarning($name, "Възможен проблем с полето|" .
-                "* <b>'|{$field->caption}" .
+                "* <b>'|" . $field->caption .
                 "|*'</b>!<br><small style='color:red'>" . "|" .
                 $result['warning'] . "|*</small>");
         }
         
         if ($result['error']) {
             $this->setError($name, "Некоректна стойност на полето|" .
-                "* <b>'|{$field->caption}" .
+                "* <b>'|" . $field->caption .
                 "|*'</b>!<br><small style='color:red'>" . "|" .
                 $result['error'] .
                 ($result['warning'] ? ("|*<br>|" .
@@ -326,7 +326,7 @@ class core_Form extends core_FieldSet
         if (!$this->title)
         return NULL;
         
-        return new ET(tr($this->title));
+        return new ET('[#1#]', tr($this->title));
     }
     
     
@@ -454,7 +454,10 @@ class core_Form extends core_FieldSet
                 if ($field->width) {
                     $attr['style'] .= "width:{$field->width};";
                 }
-                
+                if ($field->class) {
+                    $attr['class'] = trim($attr['class']) . " {$field->class}";
+                }
+               
                 if ($field->height) {
                     $attr['style'] .= "height:{$field->height};";
                 }
@@ -644,7 +647,7 @@ class core_Form extends core_FieldSet
             
             $lastCaptionArr = array();
             
-            $tpl = new ET("<table cellpadding=\"3\" border=0 cellspacing=\"0\">[#FIELDS#]</table>");
+            $tpl = new ET("<table cellpadding=\"3\" border=0 cellspacing=\"0\" width='100%'>[#FIELDS#]</table>");
             
             foreach ($fields as $name => $field) {
                 
@@ -681,8 +684,9 @@ class core_Form extends core_FieldSet
                     if ($headerRow) {
                         $tpl->append("<tr><td>$headerRow</td></tr>", 'FIELDS');
                     }
-                    $fld = new ET("<tr><td nowrap style='padding-top:5px;'><small>{$caption}[#UNIT#]</small><br>[#{$field->name}#]</td></tr>");
+                    $fld = new ET("<tr><td nowrap style='padding-top:5px;'><small>[#CAPTION#][#UNIT#]</small><br>[#{$field->name}#]</td></tr>");
                     $fld->replace($field->unit ? (', ' . $field->unit) : '', 'UNIT');
+                    $fld->replace($caption, 'CAPTION');
                 } else {
                     if ($emptyRow > 0) {
                         $tpl->append("<tr><td colspan=2></td></tr>", 'FIELDS');
@@ -691,8 +695,9 @@ class core_Form extends core_FieldSet
                     if ($headerRow) {
                         $tpl->append("<tr><td colspan=2>$headerRow</td></tr>", 'FIELDS');
                     }
-                    $fld = new ET("<tr><td  align=right valign=top class='formFieldCaption'>{$caption}:</td><td>[#{$field->name}#][#UNIT#]</td></tr>");
+                    $fld = new ET("<tr><td  align=right valign=top class='formFieldCaption'>[#CAPTION#]:</td><td>[#{$field->name}#][#UNIT#]</td></tr>");
                     $fld->replace($field->unit ? ('&nbsp;' . $field->unit) : '', 'UNIT');
+                    $fld->replace($caption, 'CAPTION');
                 }
                 
                 $tpl->append($fld, 'FIELDS');
@@ -746,13 +751,22 @@ class core_Form extends core_FieldSet
         return $tpl;
     }
     
+
+    /**
+     * Връща метода на заявката на формата
+     */
+    function getMethod()
+    {
+        return $this->method ? strtoupper($this->method) : 'POST';
+    }
+
     
     /**
      * Рендира метода на формата
      */
     function renderMethod_()
     {
-        return new ET($this->method ? $this->method : 'POST');
+        return new ET($this->getMethod());
     }
     
     
@@ -937,7 +951,13 @@ class core_Form extends core_FieldSet
      */
     function isSubmitted()
     {
-        return $this->cmd && $this->cmd != 'refresh' && !$this->gotErrors();
+        $status = $this->cmd && $this->cmd != 'refresh' && !$this->gotErrors();
+
+        if($status) {
+            expect($this->getMethod() == $_SERVER['REQUEST_METHOD']);
+        }
+
+        return $status;
     }
     
     
