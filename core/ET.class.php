@@ -45,7 +45,7 @@ class core_ET extends core_BaseClass
      * 
      * @var string
      */
-    private $placesRegex = '/\[#([a-zA-Z0-9_]{1,})#\]/';
+    private $placesRegex = '/\[#([a-zA-Z0-9_:]{1,})#\]/';
     
     /**
      * Масив с хешове на съдържание, което се замества еднократно
