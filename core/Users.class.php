@@ -107,7 +107,7 @@ class core_Users extends core_Manager
             $this->FLD('nick', 'nick(64)', 'caption=Ник,notNull,mandatory');
         }
         
-        $this->FLD('ps5Enc', 'varchar(32)', 'caption=Ключ,column=none,input=none');
+        $this->FLD('ps5Enc', 'varchar(38)', 'caption=Ключ,column=none,input=none');
         $this->FNC('password', 'password(autocomplete=on)', 'caption=Парола,column=none,input');
         
         $this->FLD('email', 'email(64)', 'caption=Имейл,mandatory,width=100%');
@@ -193,6 +193,8 @@ class core_Users extends core_Manager
      */
     function act_Login()
     {
+    	$conf = core_Packs::getConfig('core');
+    	
         if (Request::get('popup')) {
             Mode::set('wrapper', 'page_Empty');
         }
@@ -212,7 +214,7 @@ class core_Users extends core_Manager
         $currentUserRec = Mode::get('currentUserRec');
         $retUrl = getRetUrl();
         $form = $this->getForm(array(
-                'title' => "|*<img src=" . sbf('img/signin.png') . " align='top'>&nbsp;|Вход в|* " . EF_APP_TITLE,
+                'title' => "|*<img src=" . sbf('img/signin.png') . " align='top'>&nbsp;|Вход в|* " . $conf->EF_APP_TITLE,
                 'name' => 'login'
             ));
         
@@ -408,18 +410,7 @@ class core_Users extends core_Manager
         
         // Изчисляваме останалите роли на потребителя
         foreach($rolesArr as $roleId => $dummy) {
-            
-            $rolesArr[$roleId] = TRUE;
-            
-            $roleRec = $mvc->core_Roles->fetch($roleId);
-            
-            $inheritArr = type_Keylist::toArray($roleRec->inherit);
-            
-            if(count($inheritArr)) {
-                foreach($inheritArr as $rId) {
-                    $rolesArr[$rId] = TRUE;
-                }
-            }
+            $rolesArr += core_Roles::getRolesArr($roleId);
         }
         
         // Правим масива от изчислени роли към keylist
@@ -451,7 +442,7 @@ class core_Users extends core_Manager
     /**
      * Връща id-то (или друга зададена част) от записа за текущия потребител
      */
-    static function getCurrent($part = 'id')
+    static function getCurrent($part = 'id', $escaped = FALSE)
     {
         $Users = cls::get('core_Users');
         
@@ -463,7 +454,11 @@ class core_Users extends core_Manager
             $res = $rec->{$part};
         } else {
             $cRec = Mode::get('currentUserRec');
-            $res = $cRec->{$part};
+            if ($escaped) {
+                $res = core_Users::getVerbal($cRec, $part);    
+            } else {
+                $res = $cRec->$part;    
+            }
         }
         
         return $res;

@@ -224,6 +224,7 @@ class core_App
             error_log("EF Error: Mising file: {$name}");
 
             if (static::isDebug()) {
+                error_log("EF Error: Mising file: {$name}");
                 header('Content-Type: text/html; charset=UTF-8');
                 header("Content-Encoding: none");
                 echo "<script type=\"text/javascript\">\n";
@@ -293,20 +294,27 @@ class core_App
                     header("Content-Length: " . filesize($file));
                 } else {
                     // Компресираме в движение
-                    ob_start("ob_gzhandler");
+                    // ob_start("ob_gzhandler");
                 }
             }
         } else {
             header("Content-Length: " . filesize($file));
         }
-
+ 
         // Изпращаме съдържанието към браузъра
         readfile($file);
         
+        flush();
+
         // Копираме файла за директно сервиране от Apache
         // @todo: Да се минимализират .js и .css
         if(!isDebug()) {
             $sbfPath = EF_SBF_PATH . '/' . $name;
+
+            $sbfDir = dirname($sbfPath);
+
+            mkdir($sbfDir, 0777, TRUE);
+
             @copy($file, $sbfPath);
         }
 

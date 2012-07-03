@@ -23,9 +23,12 @@
  *                                                                                          *
  ********************************************************************************************/
 
-require EF_EF_PATH . '/core/exception/Expect.class.php';
+if (PHP_VERSION_ID < 50300) {
+	echo ('Необходимо е php 5.3+!');
+	die;	
+}
 
-expect(PHP_VERSION_ID >= 50300);
+require EF_EF_PATH . '/core/exception/Expect.class.php';
 
 require EF_EF_PATH . '/core/App.class.php';
 
@@ -151,6 +154,15 @@ if (!defined('EF_APP_NAME') &&
  */
 defIfNot('EF_SBF', 'sbf');
 
+
+/**
+ * Проверка за SetUp файл
+ */
+	if ($_GET['SetUp']) {
+		require_once(EF_EF_PATH . "/core/SetUp.inc.php");
+    	die;	
+	}
+    
 
 // Параметрите от виртуалното URL за зареждат в $_GET
   try
